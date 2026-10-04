@@ -302,7 +302,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 6.3, y: 10, z: 8.8}
+  m_LocalPosition: {x: 6.3, y: 10, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -341,6 +341,19 @@ MonoBehaviour:
   height: 8
   groundTilePrefab: {fileID: 1863828957697776540, guid: e26f966ed5f6d234d9b94b7a7284e35a, type: 3}
   cellGap: 0.1
+  blockPiecePrefab: {fileID: 9052203429458667081, guid: bf869b8e47fb1c74f981f4fcc435a5e5, type: 3}
+  outerCornerMesh: {fileID: -3023630919892535758, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  palette:
+  - {r: 0.91, g: 0.27, b: 0.27, a: 1}
+  - {r: 0.25, g: 0.52, b: 0.95, a: 1}
+  - {r: 0.3, g: 0.8, b: 0.35, a: 1}
+  - {r: 0.98, g: 0.82, b: 0.2, a: 1}
+  - {r: 0.62, g: 0.36, b: 0.88, a: 1}
+  - {r: 0.98, g: 0.55, b: 0.18, a: 1}
+  blocks:
+  - color: 0
+    cells:
+    - {x: 2, y: 3}
 --- !u!4 &1573337860
 Transform:
   m_ObjectHideFlags: 0

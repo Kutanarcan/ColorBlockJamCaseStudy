@@ -11,12 +11,14 @@
 - Any polyomino block shape is in V1 scope, including L/T (Q1).
 - Block and wall pivots sit at ground level; meshes extend below the ground. BlockPiece offset 0, ArrowPiece +0.656.
 - Prototype colors are runtime materials — new Material(template) per color, cached, shared by blocks and doors. Authored .mat assets are a production concern.
+- Level authoring = inspector field list: `List<BlockData { color, cells }>` on `Board`; block id = list index (Q2).
 
 ## Tuning
 
 ## Cost
 
 ## Rejected
+- Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit; gap comes from pitch = 2 + cellGap instead.
 - Physics colliders for movement — snap and tunneling problems; a grid check is enough.
 - Quadrant-resolution grid (2W×2H) — adds nothing to the logic; quadrants are visual only.
 - BlockPiece +0.656 offset — lifted the block off the ground; the "bottom rests on the ground" assumption was wrong.

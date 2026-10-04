@@ -212,8 +212,8 @@ One phase per answer, following the prototype process. **Files touched** for eac
 
 | # | Phase | Done when (visible in Editor) | Depends on | Status |
 |---|---|---|---|---|
-| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | In progress |
-| 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Not started |
+| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | Done |
+| 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | In progress |
 | 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Not started |
 | 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Not started |
 | 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Not started |
@@ -234,7 +234,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | # | Question | Needed by | Answer |
 |---|---|---|---|
 | Q1 | Are L/T blocks (`InnerCorner`) in V1 scope? | Phase 4 | **Answered:** yes, via `BlockDrawRule` (Phases 3–4). |
-| Q2 | Level authoring format: inspector field list, ASCII text, or hand-placed in scene? (Fastest for a prototype: inspector field list.) | Phase 2 | — |
+| Q2 | Level authoring format: inspector field list, ASCII text, or hand-placed in scene? (Fastest for a prototype: inspector field list.) | Phase 2 | **Answered:** inspector field list (`List<BlockData>` on `Board`). |
 | Q3 | Which piece goes on the outer corners: `Corner_1`, `corner_4` or `corner_5`? | Phase 5 | **Answered:** `corner_5`, kept as the only `Corner`. |
 | Q4 | Where should `Door_Arrow` be placed? | Phase 6 | **Answered:** on the door top, centered; shares the `Door` pivot. |
 | Q5 | Drag style: free 2D, or one axis per step? Settle by trying it. | Phases 7–8 | — |
