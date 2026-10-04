@@ -81,6 +81,9 @@ namespace Game.Prototype
         [Header("Exit")]
         [SerializeField] BlockExit exit = new BlockExit();
 
+        [Header("Recording")]
+        [SerializeField] HandCursor handCursor = new HandCursor();
+
         const string BlockClipShader = "Prototype/BlockClip";
         Material arrowClipMaterial;
 
@@ -110,11 +113,13 @@ namespace Game.Prototype
 
             drag.Init(this, Camera.main, audioSource);
             exit.Init(audioSource);
+            handCursor.Init();
         }
 
         void Update()
         {
             drag.Tick();
+            handCursor.Tick();
         }
 
         // World point -> blockId on that cell, -1 if empty or off the board.
