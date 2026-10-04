@@ -21,5 +21,5 @@ These rules apply to every file under `Assets/Prototype/`, in any mode. Producti
 - Proposing architecture, patterns, refactors or abstractions.
 - Writing tests.
 - Saying "we should do this properly later".
-- Fixing a design smell on sight. Log it in FINDINGS.md and move on.
+- Fixing a design smell on sight. Log it in `docs/prototype/FINDINGS.md` and move on.
 - asmdef splits, Core/Runtime separation, interfaces for non-determinism, size limits, SOLID checks, allocation rules, benchmarks, profiling.

@@ -18,12 +18,16 @@ MODE: PROTOTYPE
 - `Assets/Prototype/` (`Game.Prototype.asmdef`) — disposable, excluded from player builds.
 - `Assets/Scripts/` — production.
 - The two assemblies never reference each other.
+- `docs/prototype/` — prototype docs: plan (`PrototypeV1.md`) and `FINDINGS.md`.
+- `docs/production/` — production docs.
+- `docs/` sits next to `Assets/`, outside the Unity project content. Never put `.md` files under `Assets/`.
 - Code rules live in `.claude/rules/` and load by folder. Before creating the first file in a folder, read the rule files whose `paths` match it.
 
 ## Plan
 Active prototype plan (game summary, asset analysis, phase list, open questions):
-@Assets/Prototype/PrototypeV1.md
+@docs/prototype/PrototypeV1.md
 
 - Work the phases in order, one per answer, following the active mode's process.
 - When a phase is done, update its **Status** in the plan. Do not edit anything else in the plan unless the user asks.
-- When an open question is answered, move the answer into `FINDINGS.md` and mark the question answered in the plan.
+- When an open question is answered, move the answer into `docs/prototype/FINDINGS.md` and mark the question answered in the plan.
+- This import belongs to prototype mode. If the mode changes, ask the user which plan to import; do not keep loading this one.

@@ -1,6 +1,6 @@
 # Mode: Production — Process
 
-Code rules for this mode: `.claude/rules/production/`. Required input for the first phase: the Harvest from `Assets/Prototype/FINDINGS.md`.
+Code rules for this mode: `.claude/rules/production/`. Required input for the first phase: the Harvest from `docs/prototype/FINDINGS.md`.
 
 ## Phase-based progress
 - One **actionable phase** per answer. Never write the whole architecture at once.

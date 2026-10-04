@@ -3,7 +3,7 @@
 ## Purpose
 Answer one question about the game as fast as possible. The output is **knowledge, not code**. The code is disposable and will be deleted.
 
-Every prototype opens by writing its question into `Assets/Prototype/FINDINGS.md`.
+Every prototype opens by writing its question into `docs/prototype/FINDINGS.md`.
 
 Code rules for this mode: `.claude/rules/prototype.md`.
 

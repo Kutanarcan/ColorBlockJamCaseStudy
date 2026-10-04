@@ -242,7 +242,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | — |
 
 ## 9. FINDINGS.md Seed
-When opening Phase 1, create `Assets/Prototype/FINDINGS.md` with the prototype question (section 1) and these lines:
+When opening Phase 1, create `docs/prototype/FINDINGS.md` with the prototype question (section 1) and these lines:
 - `Rule: GroundGrid, BlockParts and Arrows FBX are not modified; their fixes live on the prefab's Mesh level. WallAndDoor.fbx was cleaned once and needs no fix.`
 - `Rule: Prefab = Root (grid position/rotation, gameplay) → Visuals (effects only) → Mesh (import fix; script swaps mesh/material only).`
 - `Rule: Wall family shares one profile (1 wide, top +0.611, 12-segment bevel); Wall and Door run along X at rotation 0.`
