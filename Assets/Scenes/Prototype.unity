@@ -345,6 +345,12 @@ MonoBehaviour:
   edgeMesh: {fileID: 4163668623295024386, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   centerMesh: {fileID: -3289860805121049569, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   innerCornerMesh: {fileID: 3222031244701842341, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  arrowPiecePrefab: {fileID: 4083678253565155017, guid: 042352c4a3b35c14fb87caa60b6ec890, type: 3}
+  arrowMeshes:
+  - {fileID: -4135818882167075391, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  - {fileID: -1341611790480939518, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  - {fileID: 7264089000736223243, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  arrowYawOffset: 90
   palette:
   - {r: 0.91, g: 0.27, b: 0.27, a: 1}
   - {r: 0.25, g: 0.52, b: 0.95, a: 1}
@@ -359,24 +365,28 @@ MonoBehaviour:
   doorArrowUsesDoorColor: 0
   blocks:
   - color: 0
+    axisLock: 1
     cells:
     - {x: 0, y: 0}
     - {x: 0, y: 1}
     - {x: 0, y: 2}
     - {x: 1, y: 0}
   - color: 1
+    axisLock: 2
     cells:
     - {x: 3, y: 0}
     - {x: 4, y: 0}
     - {x: 5, y: 0}
     - {x: 4, y: 1}
   - color: 2
+    axisLock: 0
     cells:
     - {x: 7, y: 0}
     - {x: 7, y: 1}
     - {x: 8, y: 1}
     - {x: 8, y: 2}
   - color: 3
+    axisLock: 0
     cells:
     - {x: 1, y: 4}
     - {x: 0, y: 5}
@@ -384,6 +394,7 @@ MonoBehaviour:
     - {x: 2, y: 5}
     - {x: 1, y: 6}
   - color: 4
+    axisLock: 0
     cells:
     - {x: 4, y: 4}
     - {x: 5, y: 4}
@@ -391,6 +402,7 @@ MonoBehaviour:
     - {x: 4, y: 5}
     - {x: 6, y: 5}
   - color: 5
+    axisLock: 0
     cells:
     - {x: 0, y: 8}
     - {x: 1, y: 8}
@@ -401,6 +413,7 @@ MonoBehaviour:
     - {x: 1, y: 10}
     - {x: 2, y: 10}
   - color: 1
+    axisLock: 0
     cells:
     - {x: 4, y: 8}
     - {x: 4, y: 9}

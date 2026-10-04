@@ -20,6 +20,7 @@
 - Border renders as runs: consecutive equal edges = one piece; Mesh_Wall scaled 2N, Mesh_Door scaled N, DoorArrow unscaled at the run center. Verified in Editor.
 - Selection = ray onto the ground plane → floor(local / 2) → cells[x, y]; no colliders. Verified in Editor.
 - Drag is free 2D (as in the original): the visual follows the pointer, clamped to reachable space; logic still walks cell by cell; release snaps to the nearest reachable cell (Q5).
+- Step valid = every target cell inside + empty or own + crossed edge Open. Logic walks toward the pointer's rounded cell, larger axis first, other axis if blocked. Verified in Editor.
 
 ## Tuning
 - Door arrow color = light (prefab default), `doorArrowUsesDoorColor = false`.

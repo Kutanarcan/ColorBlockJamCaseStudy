@@ -4,10 +4,14 @@ using UnityEngine;
 
 namespace Game.Prototype
 {
+    // Horizontal = moves along X only, Vertical = along Y (board Z) only.
+    public enum AxisLock { None, Horizontal, Vertical }
+
     [Serializable]
     public class BlockData
     {
         public int color;
+        public AxisLock axisLock;
         public List<Vector2Int> cells = new List<Vector2Int>();
     }
 
@@ -42,6 +46,9 @@ namespace Game.Prototype
         [SerializeField] Mesh edgeMesh;
         [SerializeField] Mesh centerMesh;
         [SerializeField] Mesh innerCornerMesh;
+        [SerializeField] GameObject arrowPiecePrefab;
+        [SerializeField] Mesh[] arrowMeshes = new Mesh[3]; // Arrow_1, Arrow_2, Arrow_3
+        [SerializeField] float arrowYawOffset = 0f;        // set to 90 if Arrow_N lies along Z at rotation 0
         [SerializeField] Color[] palette =
         {
             new Color(0.91f, 0.27f, 0.27f), // red
@@ -119,8 +126,13 @@ namespace Game.Prototype
 
         // Could the block sit at its current cells + delta? Every target cell inside the board and empty or its own.
         // For a one-cell orthogonal step, the crossed edge must also be Open (not Wall or Door).
+        // An axis-locked block never moves along its locked axis.
         public bool CanPlace(int id, Vector2Int delta)
         {
+            var axisLock = blocks[id].axisLock;
+            if (axisLock == AxisLock.Horizontal && delta.y != 0) return false;
+            if (axisLock == AxisLock.Vertical && delta.x != 0) return false;
+
             bool step = Mathf.Abs(delta.x) + Mathf.Abs(delta.y) == 1;
 
             foreach (var c in blocks[id].cells)
@@ -316,7 +328,50 @@ namespace Game.Prototype
                     var p = pieces[i];
                     SpawnPiece(root, MeshFor(p.kind), p.localPos, p.yRot, data.color, $"{p.kind}_{i}_r{p.yRot}");
                 }
+
+                if (data.axisLock != AxisLock.None) SpawnArrow(root, data);
             }
+        }
+
+        // 1. Pick the block cell nearest to the bounding-box center (so concave shapes do not put it on an empty cell).
+        // 2. From that cell, count the unbroken run of block cells along the locked axis.
+        // 3. Arrow_N with N = min(run, 3), placed at the run's center.
+        void SpawnArrow(Transform root, BlockData data)
+        {
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+            foreach (var c in data.cells)
+            {
+                minX = Mathf.Min(minX, c.x); maxX = Mathf.Max(maxX, c.x);
+                minY = Mathf.Min(minY, c.y); maxY = Mathf.Max(maxY, c.y);
+            }
+
+            // Bounding-box center and cell centers, in cell units.
+            var center = new Vector2((minX + maxX + 1) * 0.5f, (minY + maxY + 1) * 0.5f);
+            var anchor = data.cells[0];
+            float best = float.MaxValue;
+            foreach (var c in data.cells)
+            {
+                float d = (new Vector2(c.x + 0.5f, c.y + 0.5f) - center).sqrMagnitude;
+                if (d < best) { best = d; anchor = c; }
+            }
+
+            bool horizontal = data.axisLock == AxisLock.Horizontal;
+            var dir = horizontal ? Vector2Int.right : Vector2Int.up;
+            var body = new HashSet<Vector2Int>(data.cells);
+
+            var runStart = anchor;
+            while (body.Contains(runStart - dir)) runStart -= dir;
+            var runEnd = anchor;
+            while (body.Contains(runEnd + dir)) runEnd += dir;
+
+            int run = horizontal ? runEnd.x - runStart.x + 1 : runEnd.y - runStart.y + 1;
+            var runCenter = new Vector3((runStart.x + runEnd.x + 1) * 0.5f * CellSize, 0f, (runStart.y + runEnd.y + 1) * 0.5f * CellSize);
+
+            var arrow = Instantiate(arrowPiecePrefab, root);
+            arrow.name = $"Arrow_{data.axisLock}_{run}";
+            arrow.transform.localPosition = runCenter;
+            arrow.transform.localRotation = Quaternion.Euler(0f, (horizontal ? 0f : 90f) + arrowYawOffset, 0f);
+            arrow.GetComponentInChildren<MeshFilter>().sharedMesh = arrowMeshes[Mathf.Min(run, arrowMeshes.Length) - 1];
         }
 
         Mesh MeshFor(PieceKind kind)

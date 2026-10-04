@@ -219,8 +219,8 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Done |
 | 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | Done |
 | 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | Done |
-| 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | In progress |
-| 9 | Axis lock | A locked block moves on one axis only, with an `Arrow` on top | — | Not started |
+| 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | Done |
+| 9 | Axis lock | A locked block moves on one axis only, with an `Arrow` on top | — | In progress |
 | 10 | Exit through door | A block reaching a matching-color door that is wide enough disappears | — | Not started |
 | 11 | Win | A win message appears when all blocks have exited | — | Not started |
 
