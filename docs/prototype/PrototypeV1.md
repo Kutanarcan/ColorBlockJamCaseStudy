@@ -212,7 +212,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 
 | # | Phase | Done when (visible in Editor) | Depends on | Status |
 |---|---|---|---|---|
-| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | Not started |
+| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | In progress |
 | 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Not started |
 | 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Not started |
 | 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Not started |
