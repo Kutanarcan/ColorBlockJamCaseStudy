@@ -12,13 +12,15 @@
 - Block and wall pivots sit at ground level; meshes extend below the ground. BlockPiece offset 0, ArrowPiece +0.656.
 - Prototype colors are runtime materials — new Material(template) per color, cached, shared by blocks and doors. Authored .mat assets are a production concern.
 - Level authoring = inspector field list: `List<BlockData { color, cells }>` on `Board`; block id = list index (Q2).
+- At rotation 0, OuterCorner / Edge / Center cover the pivot's top-right quadrant (+X, +Z); OuterCorner rounds toward (+X, +Z), Edge wall faces +Z (Q6).
 
 ## Tuning
 
 ## Cost
 
 ## Rejected
-- Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit; gap comes from pitch = 2 + cellGap instead.
+- Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit.
+- Extra cell gap (pitch = 2 + gap) — seams inside multi-cell blocks; the mesh's own 0.047 tile gap is enough, pitch stays 2.
 - Physics colliders for movement — snap and tunneling problems; a grid check is enough.
 - Quadrant-resolution grid (2W×2H) — adds nothing to the logic; quadrants are visual only.
 - BlockPiece +0.656 offset — lifted the block off the ground; the "bottom rests on the ground" assumption was wrong.
@@ -29,6 +31,7 @@
 
 ## Shape
 - BlockDrawRule = block cells → list of (mesh, local position, Y rotation); pass 1 vertices (InnerCorner), pass 2 quadrants (OuterCorner/Edge/Center). Reads only the block's own cells.
+- Piece placement = rotation picks the wall/corner direction, pivot offset puts the footprint on its quadrant: pos = cellCenter + quadrant − R(θ)·(0.5, 0.5). Rotation alone reaches only 4 of the 8 Edge cases.
 - Prefabs GroundTile, BlockPiece, ArrowPiece, WallPiece (Wall/Corner/WallNotch swap, fixed material), DoorPiece (Door + DoorArrow fixed, door color).
 - WallNotch = 1-cell wall tooth; longer teeth add 2 Walls per cell. No T-junction piece.
 - One GroundGrid tile = one cell = 4 BlockPiece quadrants; InnerCorner sits on the corner shared by 4 tiles.

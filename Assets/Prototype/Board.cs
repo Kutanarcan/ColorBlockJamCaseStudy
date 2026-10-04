@@ -18,11 +18,12 @@ namespace Game.Prototype
         [SerializeField] int width = 6;
         [SerializeField] int height = 8;
         [SerializeField] GameObject groundTilePrefab;
-        [SerializeField, Range(0f, 1f)] float cellGap = 0.1f; // added to the 2-unit pitch; the mesh already leaves 0.047
 
         [Header("Blocks")]
         [SerializeField] GameObject blockPiecePrefab;
         [SerializeField] Mesh outerCornerMesh;
+        [SerializeField] Mesh edgeMesh;
+        [SerializeField] Mesh centerMesh;
         [SerializeField] Color[] palette =
         {
             new Color(0.91f, 0.27f, 0.27f), // red
@@ -38,8 +39,6 @@ namespace Game.Prototype
         {
             new BlockData { color = 0, cells = new List<Vector2Int> { new Vector2Int(2, 3) } },
         };
-
-        float Pitch => CellSize + cellGap;
 
         Transform tiles;
         readonly Dictionary<int, Material> colorMaterials = new Dictionary<int, Material>();
@@ -72,10 +71,22 @@ namespace Game.Prototype
                 var root = new GameObject($"Block_{id}").transform;
                 root.SetParent(transform, false);
 
-                // Phase 2: every cell is dressed as a lone 1x1 (4 x OuterCorner). BlockDrawRule replaces this in Phase 3.
-                foreach (var cell in data.cells)
-                    for (int rot = 0; rot < 360; rot += 90)
-                        SpawnPiece(root, outerCornerMesh, CellCenter(cell.x, cell.y), rot, data.color, $"OuterCorner_{cell.x}_{cell.y}_r{rot}");
+                var pieces = BlockDrawRule.Build(data.cells, CellSize);
+                for (int i = 0; i < pieces.Count; i++)
+                {
+                    var p = pieces[i];
+                    SpawnPiece(root, MeshFor(p.kind), p.localPos, p.yRot, data.color, $"{p.kind}_{i}_r{p.yRot}");
+                }
+            }
+        }
+
+        Mesh MeshFor(PieceKind kind)
+        {
+            switch (kind)
+            {
+                case PieceKind.Edge: return edgeMesh;
+                case PieceKind.Center: return centerMesh;
+                default: return outerCornerMesh;
             }
         }
 
@@ -104,7 +115,7 @@ namespace Game.Prototype
         // Board origin = bottom-left corner of cell (0, 0).
         public Vector3 CellCenter(int x, int y)
         {
-            return new Vector3(x * Pitch + Pitch * 0.5f, 0f, y * Pitch + Pitch * 0.5f);
+            return new Vector3(x * CellSize + CellSize * 0.5f, 0f, y * CellSize + CellSize * 0.5f);
         }
     }
 }
