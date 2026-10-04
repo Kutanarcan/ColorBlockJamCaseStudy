@@ -143,8 +143,8 @@ before          after
 - **Memory:** none; the cell list is moved in place.
 
 ### Edge cases
-- **Diagonal delta skips the edge check.** Only `Lean` asks for diagonals. Today every inner edge is `Open`, so this is harmless; with inner walls a diagonal lean could visually pass a wall corner.
-- **The edge check is effectively dormant.** Border edges are never reached because `n` is out of bounds first, and every inner edge is `Open`. It starts to matter once inner walls exist.
+- **Diagonal delta skips the edge check.** Only `Lean` asks for diagonals. Today every inner edge is `Open`, so this is harmless in the prototype; with inner walls a diagonal lean could visually pass a wall corner. Production moves on the grid, and logic authored there must not allow a diagonal past a wall corner.
+- **The edge check is effectively dormant.** Border edges are never reached because `n` is out of bounds first, and every inner edge is `Open`. Walls inside the board are a planned future feature; the check is kept for them and starts to matter once they exist.
 - **`blocks[id].cells` is changed in place.** Play mode reverts it on stop; a runtime level reload would not.
 
 ---
@@ -198,7 +198,7 @@ y0  .  .  .  .  .  .
 
 ### Edge cases
 - **Recess cells.** Every covered column is checked, not only the front cells. A U shape open toward the door needs the door under the recess column too.
-- **Exit through a block in a recess.** Only the border edge is checked, not the cells between the block and the border. A block sitting inside a U's recess would be "passed through". The original game has no such shape; accepted.
+- **Exit through a block in a recess.** Only the border edge is checked, not the cells between the block and the border. A block sitting inside a U's recess would be "passed through": the U exits while the other block stays. Known bug, accepted in the prototype; production exit must check the cells between every column and the border.
 - **Exit mid-drag.** `Drag` sees `IsExited` and drops the hold; the rest of that press does nothing.
 
 ---

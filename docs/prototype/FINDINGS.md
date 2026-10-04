@@ -31,6 +31,9 @@
 ## Cost
 - `DoorData.length` is not bounds-checked; a door running past the board edge throws. Accepted in the prototype.
 - Exit checks every covered column/row, so recess cells (e.g. a U open toward the door) must also face the door. Not seen in the original; accepted.
+- Exit checks only the border edge, not the cells between a column and the border: a U exits through a block sitting in its recess. Accepted in the prototype; production exit must check those cells.
+- CanPlace edge check is dormant (border is caught by bounds, inner edges all Open). Kept on purpose: walls inside the board are a planned feature.
+- Diagonal CanPlace (only Lean uses it) skips the edge check, so with inner walls the visual could lean past a wall corner. Fine in the prototype; production moves on the grid and its logic must not allow it.
 - Run stretching writes Mesh-level scale (prefab rule says the Mesh transform is fixed). Prototype shortcut; production needs another approach.
 
 ## Rejected
