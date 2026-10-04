@@ -1,7 +1,9 @@
 {
     "name": "Game.Prototype",
     "rootNamespace": "Game.Prototype",
-    "references": [],
+    "references": [
+        "GUID:5bc35ef1fcdc2924ab6e222a2c1e369b"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
