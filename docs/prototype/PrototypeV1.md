@@ -190,22 +190,22 @@ The place where the autotile rule above lives: given a block's shape, it decides
 ```
 int[,] cells            // W×H, value = blockId, -1 = empty
 Block { id, color, axisLock, List<Vector2Int> cells }
-Door  { side, index, length, color }
+hEdges[W, H+1]          // horizontal cell edges (below / above a cell): Open / Wall / Door(color)
+vEdges[W+1, H]          // vertical cell edges (left / right of a cell):  Open / Wall / Door(color)
 ```
+- **Two layers.** The cell layer holds blocks. The edge layer holds walls and doors. Logic reads both; visuals, level editor and JSON may use another form but load into these.
 - **The grid is at cell resolution.** Quadrants exist only in the visuals.
-- **Walls are not stored.** Everything outside the grid counts as wall.
-- **Doors are edge data**, not grid cells.
+- **Edges:** board border edges default to `Wall`; inner edges default to `Open`. An N-cell door = N consecutive `Door` edges of the same color.
 - **Visuals:** one root GameObject per block, dressed **once** from same-blockId neighbors. A move only changes the root transform; no re-dressing.
 - **Click:** cast a ray onto the ground plane, convert the hit point to a cell with `floor(x / 2), floor(z / 2)`, read `cells[x, y]` to get the `blockId`. No colliders.
 - **Move:**
-  - Advance the block one cell at a time. A step is valid when every target cell is inside the grid and is either empty or the block's own.
+  - Advance the block one cell at a time. A step is valid when every target cell is inside the grid and is either empty or the block's own, and no edge the block crosses is a `Wall` or `Door`.
   - On a valid step, set the old cells to −1 and write the `blockId` into the new cells.
   - Step-by-step movement prevents tunneling.
   - During drag the visual position follows the finger, clamped to the furthest reachable cell. On release it snaps to the nearest cell.
-- **Exit:** the block is removed when all three hold:
-  - It is pressed against an edge that has a door.
-  - The door's color matches the block's.
-  - The door opening covers the block's full span along that edge.
+- **Exit (width rule):** the block is removed when, on the side it is pushed toward, **every** block cell that touches that side faces a `Door` edge of the block's color.
+  - This is the "door ≥ block span" rule as a per-cell check: one `Wall` edge or a wrong color blocks the exit.
+  - No `length` or span math is needed.
 
 ## 6. Phase Plan
 One phase per answer, following the prototype process. **Files touched** for each phase are decided when that phase starts.
@@ -216,7 +216,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Done |
 | 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Done |
 | 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Done |
-| 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Not started |
+| 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | In progress |
 | 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | Not started |
 | 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | Not started |
 | 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | Not started |

@@ -277,7 +277,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 16
+  orthographic size: 16.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -352,6 +352,9 @@ MonoBehaviour:
   - {r: 0.98, g: 0.82, b: 0.2, a: 1}
   - {r: 0.62, g: 0.36, b: 0.88, a: 1}
   - {r: 0.98, g: 0.55, b: 0.18, a: 1}
+  wallPiecePrefab: {fileID: 3143194697046485747, guid: a63af7ae1f345c849ae80cf0fccee3e7, type: 3}
+  wallMesh: {fileID: 8733429697405204941, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
+  cornerMesh: {fileID: -5221963080773851136, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
   blocks:
   - color: 0
     cells:

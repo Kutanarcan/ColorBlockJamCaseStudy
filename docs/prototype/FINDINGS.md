@@ -14,6 +14,7 @@
 - Level authoring = inspector field list: `List<BlockData { color, cells }>` on `Board`; block id = list index (Q2).
 - At rotation 0, OuterCorner / Edge / Center cover the pivot's top-right quadrant (+X, +Z); OuterCorner rounds toward (+X, +Z), Edge wall faces +Z (Q6).
 - InnerCorner pivot = vertex; at rotation 0 its empty quadrant is (+X, +Z); placed by the cell diagonal to the empty cell (Q6).
+- Exit width rule: a block exits only if every cell on the pushed side faces a Door edge of its color; one Wall edge or wrong color blocks it.
 
 ## Tuning
 
@@ -29,6 +30,7 @@
 - One prefab per piece — repeats the same orientation fix ~10 times.
 - Door inside WallPiece via mesh swap — DoorArrow had to be placed separately; DoorPiece places door + arrow in one step.
 - Corner_1, corner_4, corner_3 — same function as corner_5 with worse topology (corner_4 had a triangle fan) or redundant (corner_3 = Corner + 2 Walls).
+- Door list `{ side, index, length, color }` — border-only and needs span math; per-edge doors make the width rule a per-cell check and allow doors on any edge.
 
 ## Shape
 - BlockDrawRule = block cells → list of (mesh, local position, Y rotation); pass 1 vertices (InnerCorner), pass 2 quadrants (OuterCorner/Edge/Center). Reads only the block's own cells.
@@ -36,4 +38,4 @@
 - Prefabs GroundTile, BlockPiece, ArrowPiece, WallPiece (Wall/Corner/WallNotch swap, fixed material), DoorPiece (Door + DoorArrow fixed, door color).
 - WallNotch = 1-cell wall tooth; longer teeth add 2 Walls per cell. No T-junction piece.
 - One GroundGrid tile = one cell = 4 BlockPiece quadrants; InnerCorner sits on the corner shared by 4 tiles.
-- Single grid int[,] (blockId, -1 empty) + Block list (id, color, axisLock, cells) + Door list (side, index, length, color).
+- Runtime grid = cell layer `int[,] cells` (blockId, -1 empty) + edge layer `hEdges[W,H+1]`, `vEdges[W+1,H]` (Open / Wall / Door(color)) + Block list (id, color, axisLock, cells). Editor, JSON and visuals may differ but load into this.

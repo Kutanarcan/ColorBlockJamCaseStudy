@@ -35,6 +35,11 @@ namespace Game.Prototype
             new Color(0.98f, 0.55f, 0.18f), // orange
         };
 
+        [Header("Walls")]
+        [SerializeField] GameObject wallPiecePrefab;
+        [SerializeField] Mesh wallMesh;
+        [SerializeField] Mesh cornerMesh;
+
         [Header("Level")]
         [SerializeField] List<BlockData> blocks = new List<BlockData>
         {
@@ -42,11 +47,13 @@ namespace Game.Prototype
         };
 
         Transform tiles;
+        Transform walls;
         readonly Dictionary<int, Material> colorMaterials = new Dictionary<int, Material>();
 
         void Start()
         {
             BuildTiles();
+            BuildWalls();
             BuildBlocks();
         }
 
@@ -62,6 +69,43 @@ namespace Game.Prototype
                 tile.name = $"Tile_{x}_{y}";
                 tile.transform.localPosition = CellCenter(x, y);
             }
+        }
+
+        // Edge pieces sit in a 1-unit ring outside the board. Wall segments are 1 unit, 2 per cell edge.
+        // Rotations: bottom 0, top 180, left 90, right 270. Corners: BL 0, BR 270, TR 180, TL 90.
+        void BuildWalls()
+        {
+            walls = new GameObject("Walls").transform;
+            walls.SetParent(transform, false);
+
+            float w = width * CellSize;
+            float h = height * CellSize;
+
+            for (int k = 0; k < width * 2; k++)
+            {
+                SpawnWall(wallMesh, new Vector3(k + 0.5f, 0f, -0.5f), 0f, $"Wall_Bottom_{k}");
+                SpawnWall(wallMesh, new Vector3(k + 0.5f, 0f, h + 0.5f), 180f, $"Wall_Top_{k}");
+            }
+
+            for (int k = 0; k < height * 2; k++)
+            {
+                SpawnWall(wallMesh, new Vector3(-0.5f, 0f, k + 0.5f), 90f, $"Wall_Left_{k}");
+                SpawnWall(wallMesh, new Vector3(w + 0.5f, 0f, k + 0.5f), 270f, $"Wall_Right_{k}");
+            }
+
+            SpawnWall(cornerMesh, new Vector3(-0.5f, 0f, -0.5f), 0f, "Corner_BL");
+            SpawnWall(cornerMesh, new Vector3(w + 0.5f, 0f, -0.5f), 270f, "Corner_BR");
+            SpawnWall(cornerMesh, new Vector3(w + 0.5f, 0f, h + 0.5f), 180f, "Corner_TR");
+            SpawnWall(cornerMesh, new Vector3(-0.5f, 0f, h + 0.5f), 90f, "Corner_TL");
+        }
+
+        void SpawnWall(Mesh mesh, Vector3 localPos, float yRot, string pieceName)
+        {
+            var piece = Instantiate(wallPiecePrefab, walls);
+            piece.name = pieceName;
+            piece.transform.localPosition = localPos;
+            piece.transform.localRotation = Quaternion.Euler(0f, yRot, 0f);
+            piece.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
         }
 
         void BuildBlocks()
