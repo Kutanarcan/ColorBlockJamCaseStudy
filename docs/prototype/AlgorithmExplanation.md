@@ -167,10 +167,11 @@ If a step toward the border is blocked, check whether every column (or row) the 
 4. Read the border edge on `c`'s column or row. If it is not the block's color, reject.
 5. Return **pressed**.
 
-### Step by step: `Exit(id)`
-1. Clear the block's cells to `-1`.
+### Step by step: `Exit(id, dir)`
+1. Clear the block's cells to `-1`. From here the block cannot be clicked (`BlockAt` returns `-1`).
 2. Mark `exited[id]`.
-3. Hide the block root.
+3. Find a world point on the border line and the exit direction in world space.
+4. Hand off to `BlockExit.Play` for the visual (see Exit visual). The root is disabled when it finishes.
 
 ### Worked example: blue T pushed down
 Blue T = `(2,1)`, `(3,1)`, `(4,1)`, `(3,2)`. Bottom door: blue, x = 2–4.
@@ -199,7 +200,8 @@ y0  .  .  .  .  .  .
 ### Edge cases
 - **Recess cells.** Every covered column is checked, not only the front cells. A U shape open toward the door needs the door under the recess column too.
 - **Exit through a block in a recess.** Only the border edge is checked, not the cells between the block and the border. A block sitting inside a U's recess would be "passed through": the U exits while the other block stays. Known bug, accepted in the prototype; production exit must check the cells between every column and the border.
-- **Exit mid-drag.** `Drag` sees `IsExited` and drops the hold; the rest of that press does nothing.
+- **Exit mid-drag.** `Drag` sees `IsExited` and drops the hold; the rest of that press does nothing, and no Drop sound plays.
+- **Logic finishes before the visual.** Cells are free while the block is still sliding into the door; another block may move into them during the short animation.
 
 ---
 
@@ -226,7 +228,7 @@ mouse → ray on ground plane → pointer (cells)
 ```
 
 ### Step by step
-1. **Grab (mouse down).** Ray onto the ground plane, `BlockAt` → block id. Remember the hit point and the block's offset. Any block still settling is snapped onto its cell first.
+1. **Grab (mouse down).** Ray onto the ground plane, `BlockAt` → block id. Remember the hit point and the block's offset. Any block still settling is snapped onto its cell first. Plays the Select sound.
 2. **Pointer.** `pointer = grabOffset + (hit − grabHit) / CellSize`, in the board's local space.
 3. **Walk** toward `target = round(pointer)`, at most `maxStepsPerFrame` steps:
    - Remaining distance `rem = target − offset`. Zero → done.
@@ -239,7 +241,7 @@ mouse → ray on ground plane → pointer (cells)
    - If a step in `f`'s X direction is not allowed, `f.x = 0`. Same for Y.
    - If both are non-zero and the diagonal is not allowed, drop the smaller axis.
 6. **Hold.** Root goes to `offset + f`, lifted by `lift`, eased by `followSpeed` (0 = instant).
-7. **Release (mouse up).** Settle onto the current offset with `snapSpeed`.
+7. **Release (mouse up).** Settle onto the current offset with `snapSpeed`. Plays the Drop sound. A block that exited in step 4 is no longer held, so it never reaches this step.
 
 ### Worked example: pointer behind a block
 Red bar at offset `(0,0)`, another block one cell to its right. Pointer at `(1.4, 0.2)`.
@@ -261,6 +263,66 @@ Red bar at offset `(0,0)`, another block one cell to its right. Pointer at `(1.4
 - **Fast flick.** More than `maxStepsPerFrame` cells in one frame → the block catches up over the next frames.
 - **Routing around obstacles.** Larger axis first, other axis when blocked: a block can slide around a corner instead of stopping. This matches the original's feel.
 - **Ray parallel to the ground.** No hit → the frame is skipped.
+
+---
+
+## Exit visual
+
+Make an exited block look like it slides into the door. Source: `BlockExit.cs`, `BlockClip.shader`, `BlockExitParticles.cs`.
+
+### The idea in one line
+Slide the block through the door and let the shader throw away every pixel past a plane inside the door.
+
+### Terms
+- **Cut plane:** a world-space plane `(normal, distance)` inside the door. Pixels on its far side are not drawn.
+- **Front row:** the block cells nearest the door. Rows are counted along the exit direction, front = 0.
+- **Depth:** the number of rows along the exit direction.
+- **Cap shade:** how dark the inside of the block looks through the cut.
+
+### Step by step: `BlockExit.Play`
+1. **Rows.** Group the block's cells by `dot(cell, dir)`; the largest value is row 0 (front).
+2. **Cut plane.** Border point + `clipOffset` along the exit normal (0.5 = door center). `distance = dot(cutPoint, normal)`.
+3. **Apply it to this block only.** Put the plane in a `MaterialPropertyBlock` on every renderer under the root (pieces and arrow). Color materials are shared, so writing the material would cut every block of that color.
+4. **Sequence (DOTween):**
+   - **Snap:** move onto the cell in front of the door in `snapDuration` (drops the drag lift and lean).
+   - **Sound:** Crunch, once.
+   - **Slide:** move `depth · cellSize + clipOffset` along the normal at `speed`. That is exactly how far the rear edge is from the cut.
+   - **Every frame of the slide:** `traveled = dot(root − rest, normal)`. Row `k` bursts when `traveled ≥ k · cellSize + cellSize / 2 + clipOffset`, which is when its center is on the cut line.
+   - **Complete:** burst any row not yet burst, disable the root.
+
+### Step by step: `BlockClip.shader`
+1. `clip(distance − dot(worldPos, normal))`: drop pixels past the plane. A zero plane `(0,0,0,0)` keeps everything, so normal play is unaffected.
+2. **Front face:** lit like Standard (color, texture, smoothness, metallic).
+3. **Back face** (`Cull Off`, `VFACE < 0`): the inside of the block, seen only through the cut. Drawn flat and unlit as `color × _CapShade`.
+4. `addshadow`: the shadow pass clips too, so the cut part casts no shadow.
+
+### Worked example: blue T through the bottom door
+Cells at exit: `(2,0)`, `(3,0)`, `(4,0)`, `(3,1)`. Exit dir `(0,-1)`.
+
+```
+y1  .  .  .  B  .  .     row 1 (1 cell)
+y0  .  .  B  B  B  .     row 0 (3 cells)
+    ----[ blue  ]----    border z = 0, cut z = -0.5
+```
+
+- Normal = `(0,0,-1)`, cut point z = −0.5 → `distance = 0.5`. Pixels with z < −0.5 are dropped.
+- Depth = 2 → slide `2 · 2 + 0.5 = 4.5` units, `0.45 s` at speed 10.
+- Row 0 center starts at z = 1 → reaches the cut after `1.5` → first burst (3 cells).
+- Row 1 center starts at z = 3 → reaches the cut after `3.5` → second burst (1 cell).
+
+### Two details
+- **The clip plane solves InnerCorner for free.** Hiding meshes row by row breaks on `InnerCorner`, which spans two rows. A per-pixel cut does not care which mesh a pixel belongs to.
+- **Bursts are timed by distance, not time.** Any `ease` keeps the bursts on the cut line.
+
+### Cost
+- **Per exit:** one `MaterialPropertyBlock`, row lists, a DOTween sequence, one particle instance per row. Prototype allocation; production would pool these.
+- **Per frame:** one dot product in `OnUpdate`.
+- **Rendering:** the exiting block loses batching while it carries a property block.
+
+### Edge cases
+- **Particles use Standard.** It ignores particle vertex color, so `BlockExitParticles` tints each spawned copy with a `MaterialPropertyBlock`. Color over Lifetime has no effect.
+- **Door height.** The door top (+0.611) is below the block top (+0.656). `doorHeightScale` can raise it to hide the cut edge; at 1 the shaded cut face is enough.
+- **Two blocks exiting at once.** Each has its own plane, sequence and particles; sounds overlap via `PlayOneShot`.
 
 ---
 

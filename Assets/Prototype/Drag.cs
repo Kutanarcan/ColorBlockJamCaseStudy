@@ -10,19 +10,24 @@ namespace Game.Prototype
     {
         [SerializeField] DragCollision collision = new DragCollision();
         [SerializeField] Placement placement = new Placement();
+        [SerializeField] AudioClip selectSound; // on grab
+        [SerializeField] AudioClip dropSound;   // on release (not when the block exits mid-drag)
+        [SerializeField, Range(0f, 1f)] float soundVolume = 1f;
 
         Board board;
         Camera cam;
+        AudioSource audioSource;
 
         int heldId = -1;
         Transform held;
         Vector3 grabHit;       // pointer hit when grabbed
         Vector2Int grabOffset; // block offset (in cells) when grabbed
 
-        public void Init(Board board, Camera cam)
+        public void Init(Board board, Camera cam, AudioSource audioSource)
         {
             this.board = board;
             this.cam = cam;
+            this.audioSource = audioSource;
             collision.Init(board);
             placement.Init(board);
         }
@@ -48,6 +53,7 @@ namespace Game.Prototype
             held = board.BlockRoot(id);
             grabHit = hit;
             grabOffset = board.BlockOffset(id);
+            Play(selectSound);
         }
 
         void Follow()
@@ -76,6 +82,12 @@ namespace Game.Prototype
             placement.StartSettle(held, board.BlockOffset(heldId));
             held = null;
             heldId = -1;
+            Play(dropSound);
+        }
+
+        void Play(AudioClip clip)
+        {
+            if (audioSource != null && clip != null) audioSource.PlayOneShot(clip, soundVolume);
         }
 
         // Ray onto the board's ground plane; no colliders.

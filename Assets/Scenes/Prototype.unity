@@ -432,6 +432,9 @@ MonoBehaviour:
       lift: 0.3
       followSpeed: 0
       snapSpeed: 50
+    selectSound: {fileID: 8300000, guid: 2cca23a32f6cd6c49be7010ccdbde3ba, type: 3}
+    dropSound: {fileID: 8300000, guid: 195da8d85d7d51740ae9bafd390ea2c4, type: 3}
+    soundVolume: 1
   exit:
     snapDuration: 0.08
     speed: 10

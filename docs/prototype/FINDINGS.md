@@ -22,11 +22,21 @@
 - Drag is free 2D (as in the original): the visual follows the pointer, clamped to reachable space; logic still walks cell by cell; release snaps to the nearest reachable cell (Q5).
 - Step valid = every target cell inside + empty or own + crossed edge Open. Logic walks toward the pointer's rounded cell, larger axis first, other axis if blocked. Verified in Editor.
 - Axis lock is enforced only in CanPlace (drag code untouched). Arrow: nearest block cell to the bounding-box center → unbroken run along the locked axis → Arrow_min(run, 3) at the run center. Arrow_N lies along Z at rotation 0 (arrowYawOffset = 90). Verified in Editor.
-- Exit = a blocked step checks CanExit: block pressed against the border on that side, every covered column/row faces a Door edge of its color; then its cells clear and the root hides. Triggers mid-drag. Verified in Editor on a 6×8 level.
+- Exit = a blocked step checks CanExit: block pressed against the border on that side, every covered column/row faces a Door edge of its color; then its cells clear at once (no longer clickable) and the exit visual plays. Triggers mid-drag. Verified in Editor on a 6×8 level.
+- Exit visual: snap onto the door cell → slide depth·cell + clipOffset along the exit dir → root disabled. The block is cut by a per-block world clip plane (MaterialPropertyBlock) inside the door, so InnerCorner and Arrow need no special handling. Verified in Editor.
+- Exit cut face: BlockClip draws back faces too (Cull Off), flat and unlit (color × _CapShade), so the cut reads as solid; no cap mesh.
+- Exit particles burst per row (front first) when the row center reaches the cut line; timed by travel distance, not time, so any ease works.
+- Exit particles use a lit mesh material (Standard). Color comes from a per-instance MaterialPropertyBlock because Standard ignores particle vertex color; Color over Lifetime has no effect with it.
+- SFX: Select on grab, Drop on release (skipped when the block exited mid-drag), Crunch when the exit slide starts. One shared 2D AudioSource on Board, PlayOneShot.
+- `Block_{id}` has no Visuals level: exit and drag tweens move the root, because logic never reads an exited block's root (Q7).
+- Tweens use DOTween. Game.Prototype references DOTween.Modules by GUID; `Assets/Plugins` and `Assets/Resources` must be committed with their .meta files or the GUID breaks.
 
 ## Tuning
 - Door arrow color = light (prefab default), `doorArrowUsesDoorColor = false`.
 - Drag lift = 0.3 feels fine; original has almost none, 0 is a valid candidate.
+- Release settle `snapSpeed = 50`.
+- Exit: `snapDuration = 0.08`, `speed = 10` units/s, `ease = Linear`, `clipOffset = 0.5` (door center), `_CapShade = 0.6`.
+- `doorHeightScale = 1`: the shaded cut face is enough; a taller door was not needed.
 
 ## Cost
 - `DoorData.length` is not bounds-checked; a door running past the board edge throws. Accepted in the prototype.
@@ -34,7 +44,9 @@
 - Exit checks only the border edge, not the cells between a column and the border: a U exits through a block sitting in its recess. Accepted in the prototype; production exit must check those cells.
 - CanPlace edge check is dormant (border is caught by bounds, inner edges all Open). Kept on purpose: walls inside the board are a planned feature.
 - Diagonal CanPlace (only Lean uses it) skips the edge check, so with inner walls the visual could lean past a wall corner. Fine in the prototype; production moves on the grid and its logic must not allow it.
-- Run stretching writes Mesh-level scale (prefab rule says the Mesh transform is fixed). Prototype shortcut; production needs another approach.
+- Run stretching writes Mesh-level scale (prefab rule says the Mesh transform is fixed). Prototype shortcut; production needs another approach. Same for `doorHeightScale` (door Y scale + DoorArrow position).
+- Exit needs a custom block shader (BlockClip) instead of the FBX's Standard material; MaterialPropertyBlock per exiting block breaks batching for that block while it exits.
+- Exit allocates per call (MaterialPropertyBlock, row lists, tween closures, particle instance). Prototype mode; production removes it with pooled particles, cached property blocks and reused row buffers.
 
 ## Rejected
 - Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit.
@@ -48,6 +60,10 @@
 - Door inside WallPiece via mesh swap — DoorArrow had to be placed separately; DoorPiece places door + arrow in one step.
 - Corner_1, corner_4, corner_3 — same function as corner_5 with worse topology (corner_4 had a triangle fan) or redundant (corner_3 = Corner + 2 Walls).
 - Door list `{ side, index, length, color }` — border-only and needs span math; per-edge doors make the width rule a per-cell check and allow doors on any edge.
+- Exit by hiding meshes row by row — chunky, and InnerCorner spans two rows so one of them always shows a hole or an overhang.
+- Exit via depth mask outside the door — camera clears with Skybox (artifacts in the masked area), view-dependent, also hides particles.
+- Exit via stencil — needs a block shader change anyway; no gain over a clip plane.
+- Exit via squashing the root along the exit axis — reads as crushing, not entering; studs deform.
 
 ## Shape
 - BlockDrawRule = block cells → list of (mesh, local position, Y rotation); pass 1 vertices (InnerCorner), pass 2 quadrants (OuterCorner/Edge/Center). Reads only the block's own cells.
@@ -57,3 +73,5 @@
 - One GroundGrid tile = one cell = 4 BlockPiece quadrants; InnerCorner sits on the corner shared by 4 tiles.
 - Runtime grid = cell layer `int[,] cells` (blockId, -1 empty) + edge layer `hEdges[W,H+1]`, `vEdges[W+1,H]` (Open / Wall / Door(color)) + Block list (id, color, axisLock, cells). Editor, JSON and visuals may differ but load into this.
 - Door authoring: prototype uses `DoorData { cell, side, length, color }`. Production level editor and level data store doors per cell edge (one entry = one edge, deterministic, 1:1 with the edge layer); length stays a visual concern only.
+- Materials: blocks and the axis-lock Arrow render with `Prototype/BlockClip` (Standard-like surface shader + world clip plane `(normal, distance)`, default off); doors stay on the template shader. One material per color, clip plane per block via MaterialPropertyBlock.
+- Exit pipeline: Board (logic exit + border point + normal) → BlockExit (clip plane, DOTween sequence snap → sound → slide, row bursts) → BlockExitParticles (per-row emit).

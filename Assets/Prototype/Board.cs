@@ -104,11 +104,11 @@ namespace Game.Prototype
             BuildTiles();
             BuildWalls();
             BuildBlocks();
-            drag.Init(this, Camera.main);
-
             // 2D source for UI-like sounds; added at runtime so the scene needs no extra component.
             var audioSource = GetComponent<AudioSource>();
             if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+
+            drag.Init(this, Camera.main, audioSource);
             exit.Init(audioSource);
         }
 

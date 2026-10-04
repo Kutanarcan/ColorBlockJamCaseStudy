@@ -239,7 +239,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | Q4 | Where should `Door_Arrow` be placed? | Phase 6 | **Answered:** on the door top, centered; shares the `Door` pivot. |
 | Q5 | Drag style: free 2D, or one axis per step? Settle by trying it. | Phases 7–8 | **Answered:** free 2D drag (as in the original), visual clamped to reachable space; snaps to the nearest reachable cell on release. |
 | Q6 | At root rotation 0, which Unity quadrant does a single `BlockPiece` cover, and which quadrant is `InnerCorner`'s empty one? Mesh data says they should be the same. Early screenshots showed top-right vs. bottom-right, possibly due to a Y rotation on the test object. | Phases 2–4 | **Answered:** at rotation 0 OuterCorner, Edge, Center all cover the pivot's top-right quadrant; Edge wall faces +Z. InnerCorner pivot = vertex, empty quadrant (+X, +Z) at rotation 0. |
-| Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | — |
+| Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | **Answered:** no; exit and drag tween the root, since logic never reads an exited block's root. The exit cut is a shader clip plane, not a Visuals effect. |
 
 ## 9. FINDINGS.md Seed
 When opening Phase 1, create `docs/prototype/FINDINGS.md` with the prototype question (section 1) and these lines:
