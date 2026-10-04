@@ -9,6 +9,9 @@ namespace Game.Prototype
         [SerializeField] int width = 6;
         [SerializeField] int height = 8;
         [SerializeField] GameObject groundTilePrefab;
+        [SerializeField, Range(0f, 1f)] float cellGap = 0.1f; // added to the 2-unit pitch; the mesh already leaves 0.047
+
+        float Pitch => CellSize + cellGap;
 
         Transform tiles;
 
@@ -32,9 +35,9 @@ namespace Game.Prototype
         }
 
         // Board origin = bottom-left corner of cell (0, 0).
-        public static Vector3 CellCenter(int x, int y)
+        public Vector3 CellCenter(int x, int y)
         {
-            return new Vector3(x * CellSize + CellSize * 0.5f, 0f, y * CellSize + CellSize * 0.5f);
+            return new Vector3(x * Pitch + Pitch * 0.5f, 0f, y * Pitch + Pitch * 0.5f);
         }
     }
 }
