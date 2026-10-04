@@ -22,6 +22,7 @@
 - Drag is free 2D (as in the original): the visual follows the pointer, clamped to reachable space; logic still walks cell by cell; release snaps to the nearest reachable cell (Q5).
 - Step valid = every target cell inside + empty or own + crossed edge Open. Logic walks toward the pointer's rounded cell, larger axis first, other axis if blocked. Verified in Editor.
 - Axis lock is enforced only in CanPlace (drag code untouched). Arrow: nearest block cell to the bounding-box center → unbroken run along the locked axis → Arrow_min(run, 3) at the run center. Arrow_N lies along Z at rotation 0 (arrowYawOffset = 90). Verified in Editor.
+- Exit = a blocked step checks CanExit: block pressed against the border on that side, every covered column/row faces a Door edge of its color; then its cells clear and the root hides. Triggers mid-drag. Verified in Editor on a 6×8 level.
 
 ## Tuning
 - Door arrow color = light (prefab default), `doorArrowUsesDoorColor = false`.
@@ -29,6 +30,7 @@
 
 ## Cost
 - `DoorData.length` is not bounds-checked; a door running past the board edge throws. Accepted in the prototype.
+- Exit checks every covered column/row, so recess cells (e.g. a U open toward the door) must also face the door. Not seen in the original; accepted.
 - Run stretching writes Mesh-level scale (prefab rule says the Mesh transform is fixed). Prototype shortcut; production needs another approach.
 
 ## Rejected

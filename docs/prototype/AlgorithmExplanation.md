@@ -92,3 +92,314 @@ How some quadrants get their piece:
 - **Ring with a hole:** each of the 4 corner points around the hole has 3 cells, giving 4 `InnerCorner`s.
 - **Full 2 × 2:** 4 cells around the middle corner point, so all four quadrants there become `Center`.
 - **Assumes no gap between cells:** pieces are exactly 1 unit and `InnerCorner` spans 3 cells, so any gap shows a seam.
+
+---
+
+## Movement
+
+Can a block move by one cell, and if so, move it. Source: `Board.CanPlace`, `Board.TryStep`.
+
+### The idea in one line
+A block moves one cell at a time. A step is allowed when every cell of the block lands on a free spot and crosses an open edge.
+
+### Terms
+- **Delta:** how far to move, in cells. A **step** is a delta of exactly one cell on one axis: `(1,0)`, `(-1,0)`, `(0,1)`, `(0,-1)`.
+- **Own cell:** a cell that already belongs to the moving block. It counts as free, because the block leaves it as it moves.
+- **Crossed edge:** the edge between a cell and the cell it steps into (see Edge layer).
+
+### Step by step: `CanPlace(id, delta)`
+1. **Axis lock.** A `Horizontal` block rejects any Y movement; a `Vertical` block rejects any X movement.
+2. **Loop over every cell `c` of the block**, and let `n = c + delta`.
+3. **Inside the board?** If `n` is outside, reject.
+4. **Free?** `cells[n]` must be `-1` (empty) or the block's own id. Otherwise reject.
+5. **Edge open?** Only for a step: the edge between `c` and `n` must be `Open`. `Wall` and `Door` reject.
+6. All cells passed → allowed.
+
+### Step by step: `TryStep(id, dir)`
+1. Already exited → do nothing.
+2. `CanPlace` fails → try `CanExit` (see Exit). Either way, return `false`.
+3. **Clear all** old cells to `-1`, **then write all** new cells with the id.
+4. Add `dir` to `blockOffsets[id]`.
+
+### Worked example: 1×2 bar stepping right
+Block 4 = `(1,5)`, `(2,5)`. Step `(1,0)`.
+
+```
+before          after
+. R R .         . . R R
+  1 2 3           1 2 3
+```
+
+- `(1,5)` → `(2,5)`: it is block 4's own cell → free.
+- `(2,5)` → `(3,5)`: empty → free.
+- Clear `(1,5)` and `(2,5)`, then write `(2,5)` and `(3,5)`.
+
+### Two details
+- **Clear first, write second.** If the move cleared and wrote one cell at a time, writing `(2,5)` and then clearing it as an old cell would erase the block from a cell it still covers.
+- **Own cells count as free.** Without this, any block longer than one cell could never move along its length.
+
+### Cost
+- **Time:** O(n) per step for n block cells.
+- **Memory:** none; the cell list is moved in place.
+
+### Edge cases
+- **Diagonal delta skips the edge check.** Only `Lean` asks for diagonals. Today every inner edge is `Open`, so this is harmless; with inner walls a diagonal lean could visually pass a wall corner.
+- **The edge check is effectively dormant.** Border edges are never reached because `n` is out of bounds first, and every inner edge is `Open`. It starts to matter once inner walls exist.
+- **`blocks[id].cells` is changed in place.** Play mode reverts it on stop; a runtime level reload would not.
+
+---
+
+## Exit
+
+When does a blocked step make the block leave the board? Source: `Board.CanExit`, `Board.BorderEdge`, `Board.Exit`.
+
+### The idea in one line
+If a step toward the border is blocked, check whether every column (or row) the block covers faces a door of its own color on that border.
+
+### Terms
+- **Pressed:** at least one cell of the block is on the border row/column in the push direction, so the next step would leave the board.
+- **Border edge:** the edge on the board's border in the push direction, on the cell's column (pushing up or down) or row (pushing left or right).
+
+### Step by step: `CanExit(id, dir)`
+1. **Axis lock.** Same check as `CanPlace`; a locked block cannot exit sideways.
+2. **Loop over every cell `c`.**
+3. If `c + dir` is outside the board, mark **pressed**.
+4. Read the border edge on `c`'s column or row. If it is not the block's color, reject.
+5. Return **pressed**.
+
+### Step by step: `Exit(id)`
+1. Clear the block's cells to `-1`.
+2. Mark `exited[id]`.
+3. Hide the block root.
+
+### Worked example: blue T pushed down
+Blue T = `(2,1)`, `(3,1)`, `(4,1)`, `(3,2)`. Bottom door: blue, x = 2–4.
+
+```
+y2  .  .  .  B  .  .
+y1  .  .  B  B  B  .
+y0  .  .  .  .  .  .
+    ----[ blue  ]----
+    0  1  2  3  4  5
+```
+
+- First drag down: `(2,0)`, `(3,0)`, `(4,0)`, `(3,1)` are free → normal step.
+- Next step down: `(2,-1)` is out of bounds → `CanPlace` fails → `CanExit`.
+- Cells `(2,0)`, `(3,0)`, `(4,0)` are on the border → pressed.
+- Columns 2, 3 and 4 (cell `(3,1)` also checks column 3) all face blue → exit.
+- With the door only at x = 2–3, column 4 would face a `Wall` → no exit, the block just stops.
+
+### Two details
+- **Exit only runs on a blocked step.** There is no separate "exit" input; the same drag that moves a block also pushes it out.
+- **Why `pressed` is needed.** Without it, a block stopped by another block in the middle of the board would exit as long as its columns face a matching door.
+
+### Cost
+- **Time:** O(n) for n block cells; each border lookup is O(1).
+
+### Edge cases
+- **Recess cells.** Every covered column is checked, not only the front cells. A U shape open toward the door needs the door under the recess column too.
+- **Exit through a block in a recess.** Only the border edge is checked, not the cells between the block and the border. A block sitting inside a U's recess would be "passed through". The original game has no such shape; accepted.
+- **Exit mid-drag.** `Drag` sees `IsExited` and drops the hold; the rest of that press does nothing.
+
+---
+
+## Drag pipeline
+
+Turn the pointer into block movement every frame. Source: `Drag.cs`, `DragCollision.cs`, `Placement.cs`.
+
+### The idea in one line
+The logic walks the block cell by cell toward the pointer; the visual leans up to half a cell further, then eases onto its cell on release.
+
+### Terms
+- **Offset:** how many cells the block has moved since it was built (`blockOffsets[id]`). All drag math is in offsets, not world units.
+- **Pointer:** where the finger wants the block, as an offset with fractions, e.g. `(2.3, -0.6)`.
+- **Target:** the pointer rounded to whole cells.
+- **Lean:** the small visual shift from the block's cell toward the pointer, at most ±0.5 per axis.
+- **Settle:** the ease from the lifted, leaning position onto the cell after release.
+
+### Pipeline per frame
+```
+mouse → ray on ground plane → pointer (cells)
+      → Walk(target)        logic: cells move, may exit
+      → Lean(pointer)       visual offset, clamped
+      → Placement.Hold      root position + lift
+```
+
+### Step by step
+1. **Grab (mouse down).** Ray onto the ground plane, `BlockAt` → block id. Remember the hit point and the block's offset. Any block still settling is snapped onto its cell first.
+2. **Pointer.** `pointer = grabOffset + (hit − grabHit) / CellSize`, in the board's local space.
+3. **Walk** toward `target = round(pointer)`, at most `maxStepsPerFrame` steps:
+   - Remaining distance `rem = target − offset`. Zero → done.
+   - Try a step on the axis with the larger `|rem|` (X wins a tie).
+   - Blocked → try the other axis.
+   - Both blocked → stop for this frame.
+4. **Exited?** Drop the hold and return.
+5. **Lean:**
+   - `f = pointer − offset`, each axis clamped to ±0.5.
+   - If a step in `f`'s X direction is not allowed, `f.x = 0`. Same for Y.
+   - If both are non-zero and the diagonal is not allowed, drop the smaller axis.
+6. **Hold.** Root goes to `offset + f`, lifted by `lift`, eased by `followSpeed` (0 = instant).
+7. **Release (mouse up).** Settle onto the current offset with `snapSpeed`.
+
+### Worked example: pointer behind a block
+Red bar at offset `(0,0)`, another block one cell to its right. Pointer at `(1.4, 0.2)`.
+
+- Target `(1, 0)`. X step blocked, Y remaining is 0 → Walk stops.
+- Lean: `f = (1.4, 0.2)` → clamped `(0.5, 0.2)` → X step blocked → `(0, 0.2)`. Y step up allowed → stays.
+- The block stays on its cell, leans slightly up, and does not slide into the neighbor.
+
+### Two details
+- **Logic and visual are separate.** Collision only ever sees whole cells. The half-cell lean is only on screen, so the block never visually enters a cell the logic refused.
+- **The ease is frame-rate independent.** `Lerp(from, to, 1 − e^(−speed·dt))` gives the same feel at 30 and 60 fps; a plain `Lerp(…, speed·dt)` would not.
+
+### Cost
+- **Walk:** up to `maxStepsPerFrame` × O(n) per frame.
+- **Lean:** up to 3 `CanPlace` calls, O(n) each.
+- No colliders, no per-frame allocation.
+
+### Edge cases
+- **Fast flick.** More than `maxStepsPerFrame` cells in one frame → the block catches up over the next frames.
+- **Routing around obstacles.** Larger axis first, other axis when blocked: a block can slide around a corner instead of stopping. This matches the original's feel.
+- **Ray parallel to the ground.** No hit → the frame is skipped.
+
+---
+
+## Edge layer
+
+Where walls and doors live in the logic. Source: `Board.BuildEdges`, `Board.EdgeBetween`.
+
+### The idea in one line
+Walls and doors are not cells; they sit on the lines between cells, stored in two arrays.
+
+### Terms
+- **hEdges[x, y]:** the horizontal edge **below** cell `(x, y)`. Size `[W, H+1]`: H+1 lines for H rows.
+- **vEdges[x, y]:** the vertical edge **left of** cell `(x, y)`. Size `[W+1, H]`: W+1 lines for W columns.
+- **Values:** `-1` Open, `-2` Wall, `≥ 0` Door of that color.
+
+### The four edges of a cell
+```
+          hEdges[x, y+1]
+         +--------------+
+         |              |
+vEdges   |   cell x,y   |   vEdges
+[x, y]   |              |   [x+1, y]
+         +--------------+
+           hEdges[x, y]
+```
+
+### Step by step: `BuildEdges`
+1. Every border edge = `Wall` (`y == 0` or `y == H` for hEdges, `x == 0` or `x == W` for vEdges).
+2. Every inner edge = `Open`.
+3. Each door writes its color into `length` consecutive edges:
+   - Bottom → `hEdges[x+i, y]`, Top → `hEdges[x+i, y+1]`
+   - Left → `vEdges[x, y+i]`, Right → `vEdges[x+1, y+i]`
+
+### Two details
+- **Below and left are the "own" edges.** The edge above a cell is the edge below the next cell, so each edge is stored once.
+- **A door is just edges with a color.** The width rule becomes a per-edge check (see Exit); no span math.
+
+### Cost
+- **Memory:** `W(H+1) + (W+1)H` ints.
+- **Lookup:** O(1).
+
+### Edge cases
+- **`DoorData.length` is not bounds-checked.** A door running past the board throws.
+- **Inner walls and doors** fit the same arrays but are not drawn yet (deferred).
+
+---
+
+## Coordinates
+
+Short reference used by the sections above. Source: `Board.cs`.
+
+| What | Formula |
+|---|---|
+| Board origin | bottom-left corner of cell `(0,0)` |
+| Cell center | `(2x + 1, 0, 2y + 1)` |
+| World → cell | `floor(local.x / 2)`, `floor(local.z / 2)` |
+| Block root position | `offset × 2` (the root is built at the board origin; pieces sit at their cell positions inside it) |
+| Board Y ↔ world Z | cell `y` runs along world `+Z` |
+
+- **`blockOffsets` vs `cells`:** both move together. `cells` says which cells the block covers now; the offset says how far the root moved, so the visual never needs re-dressing.
+- **Fractional offsets** exist only in the visual (`Lean`, settle). Logic is always whole cells.
+
+---
+
+## Border runs
+
+Draw the board's border from the edge layer with as few pieces as possible. Source: `Board.BuildWalls`, `SpawnSide`, `SpawnWallRun`, `SpawnDoorRun`.
+
+### The idea in one line
+Walk along each side; consecutive equal edges form a run, and each run is one stretched piece.
+
+### Step by step
+1. Copy each side's edges into an array (bottom, top, left, right).
+2. `SpawnSide` walks the array:
+   - `start` = first edge of a run; move `end` while the value stays the same.
+   - Run length `N = end − start`, center = `origin + along × (start + N/2) × 2`.
+   - `Wall` → `WallPiece`, mesh scaled to `2N` (the mesh is 1 unit long).
+   - Door → `DoorPiece`, mesh scaled to `N` (the mesh is 2 units long). The arrow is not scaled and stays at the center.
+3. Place the 4 corners: BL 0, BR 270, TR 180, TL 90.
+
+### Worked example: bottom side of the 6×8 level
+Edges: `orange, wall, blue, blue, blue, wall`.
+
+```
+[O][ wall ][   blue   ][ wall ]
+ 0    1      2  3  4      5
+```
+
+→ 4 pieces: door N=1, wall N=1 (scale 2), door N=3 (one arrow at x=3), wall N=1.
+
+### Two details
+- **Same-color neighbors merge.** Two adjacent blue door edges become one 2-cell door with one arrow, in logic and visuals.
+- **Side rotation does the outward flip.** Top uses 180, so the door arrow points out of the board on every side without extra code.
+
+### Cost
+- **Time:** O(W + H).
+- **Pieces:** one per run plus 4 corners.
+
+### Edge cases
+- **Scale on the Mesh level.** The prefab rule says that transform is fixed; prototype shortcut (logged in FINDINGS).
+- **An `Open` border edge is not drawn**, leaving a gap. Not possible today because borders default to `Wall`.
+
+---
+
+## Arrow placement
+
+Put a fitting arrow on an axis-locked block. Source: `Board.SpawnArrow`.
+
+### The idea in one line
+Find the block's most central cell, measure the straight run through it along the locked axis, and place `Arrow_min(run, 3)` at that run's center.
+
+### Step by step
+1. Compute the bounding box and its center (in cell units).
+2. **Anchor** = the block cell whose center is nearest to the bounding-box center (the first cell wins a tie).
+3. From the anchor, walk backward and forward along the locked axis while the cells are in the block → `runStart`, `runEnd`.
+4. `run = runEnd − runStart + 1`. Mesh = `Arrow_min(run, 3)`.
+5. Position = center of the run. Rotation = 0 for Horizontal, 90 for Vertical, plus `arrowYawOffset`.
+
+### Worked example: vertical L
+Cells `(0,0)`, `(0,1)`, `(0,2)`, `(1,0)`. Lock: Vertical.
+
+```
+y2  #  .
+y1  #  .      bounding box x 0–1, y 0–2 → center (1, 1.5)
+y0  #  #
+    0  1
+```
+
+- Distances² from the center: `(0,1)` → 0.25; all others → 1.25. Anchor = `(0,1)`.
+- Run up/down from `(0,1)`: `(0,0)` to `(0,2)` → run = 3 → `Arrow_3`.
+- Center of the run: `(1, 0, 3)` in local units.
+
+### Two details
+- **Why not the bounding box.** The first version sized the arrow from the bounding box; on an L it reached over the empty cell.
+- **Why the nearest cell.** The bounding-box center of a concave shape can be an empty cell; snapping to the nearest block cell keeps the arrow on the block.
+
+### Cost
+- **Time:** O(n) for n cells (one pass for the box, one for the anchor, the run walk is ≤ n).
+
+### Edge cases
+- **Run longer than 3.** The arrow stays `Arrow_3` and is centered on the run, shorter than the block.
+- **Ties.** An even-sized shape (e.g. 2 × 2) has several equally near cells; the first in the list wins, so the arrow may sit off-center.
