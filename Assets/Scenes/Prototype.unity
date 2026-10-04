@@ -355,6 +355,25 @@ MonoBehaviour:
   wallPiecePrefab: {fileID: 3143194697046485747, guid: a63af7ae1f345c849ae80cf0fccee3e7, type: 3}
   wallMesh: {fileID: 8733429697405204941, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
   cornerMesh: {fileID: -5221963080773851136, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
+  doorPiecePrefab: {fileID: 957778086012557049, guid: 3957e5a286d9a33429081e8a850e0b6b, type: 3}
+  doorArrowUsesDoorColor: 0
+  doors:
+  - cell: {x: 1, y: 0}
+    side: 0
+    length: 2
+    color: 0
+  - cell: {x: 5, y: 11}
+    side: 1
+    length: 2
+    color: 1
+  - cell: {x: 0, y: 3}
+    side: 2
+    length: 3
+    color: 2
+  - cell: {x: 8, y: 4}
+    side: 3
+    length: 1
+    color: 3
   blocks:
   - color: 0
     cells:

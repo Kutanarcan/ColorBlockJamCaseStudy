@@ -15,10 +15,13 @@
 - At rotation 0, OuterCorner / Edge / Center cover the pivot's top-right quadrant (+X, +Z); OuterCorner rounds toward (+X, +Z), Edge wall faces +Z (Q6).
 - InnerCorner pivot = vertex; at rotation 0 its empty quadrant is (+X, +Z); placed by the cell diagonal to the empty cell (Q6).
 - Exit width rule: a block exits only if every cell on the pushed side faces a Door edge of its color; one Wall edge or wrong color blocks it.
+- Board edge table verified in Editor: Wall = 1-unit segments, 2 per cell edge, ring 0.5 outside the board; Corner rotations BL 0, BR 270, TR 180, TL 90.
+- Adjacent same-color door edges merge into one door (logic and visuals). The original game shows no separate adjacent same-color doors.
 
 ## Tuning
 
 ## Cost
+- `DoorData.length` is not bounds-checked; a door running past the board edge throws. Accepted in the prototype.
 
 ## Rejected
 - Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit.
@@ -39,3 +42,4 @@
 - WallNotch = 1-cell wall tooth; longer teeth add 2 Walls per cell. No T-junction piece.
 - One GroundGrid tile = one cell = 4 BlockPiece quadrants; InnerCorner sits on the corner shared by 4 tiles.
 - Runtime grid = cell layer `int[,] cells` (blockId, -1 empty) + edge layer `hEdges[W,H+1]`, `vEdges[W+1,H]` (Open / Wall / Door(color)) + Block list (id, color, axisLock, cells). Editor, JSON and visuals may differ but load into this.
+- Door authoring: prototype uses `DoorData { cell, side, length, color }`. Production level editor and level data store doors per cell edge (one entry = one edge, deterministic, 1:1 with the edge layer); length stays a visual concern only.
