@@ -215,7 +215,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | Done |
 | 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Done |
 | 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Done |
-| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | In progress |
+| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Done |
 | 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Not started |
 | 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | Not started |
 | 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | Not started |
@@ -238,7 +238,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | Q3 | Which piece goes on the outer corners: `Corner_1`, `corner_4` or `corner_5`? | Phase 5 | **Answered:** `corner_5`, kept as the only `Corner`. |
 | Q4 | Where should `Door_Arrow` be placed? | Phase 6 | **Answered:** on the door top, centered; shares the `Door` pivot. |
 | Q5 | Drag style: free 2D, or one axis per step? Settle by trying it. | Phases 7–8 | — |
-| Q6 | At root rotation 0, which Unity quadrant does a single `BlockPiece` cover, and which quadrant is `InnerCorner`'s empty one? Mesh data says they should be the same. Early screenshots showed top-right vs. bottom-right, possibly due to a Y rotation on the test object. | Phases 2–4 | **Answered (BlockPiece):** at rotation 0 OuterCorner, Edge, Center all cover the pivot's top-right quadrant; Edge wall faces +Z. InnerCorner empty quadrant: check in Phase 4. |
+| Q6 | At root rotation 0, which Unity quadrant does a single `BlockPiece` cover, and which quadrant is `InnerCorner`'s empty one? Mesh data says they should be the same. Early screenshots showed top-right vs. bottom-right, possibly due to a Y rotation on the test object. | Phases 2–4 | **Answered:** at rotation 0 OuterCorner, Edge, Center all cover the pivot's top-right quadrant; Edge wall faces +Z. InnerCorner pivot = vertex, empty quadrant (+X, +Z) at rotation 0. |
 | Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | — |
 
 ## 9. FINDINGS.md Seed

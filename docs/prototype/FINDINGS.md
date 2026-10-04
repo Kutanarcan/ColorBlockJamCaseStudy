@@ -13,6 +13,7 @@
 - Prototype colors are runtime materials — new Material(template) per color, cached, shared by blocks and doors. Authored .mat assets are a production concern.
 - Level authoring = inspector field list: `List<BlockData { color, cells }>` on `Board`; block id = list index (Q2).
 - At rotation 0, OuterCorner / Edge / Center cover the pivot's top-right quadrant (+X, +Z); OuterCorner rounds toward (+X, +Z), Edge wall faces +Z (Q6).
+- InnerCorner pivot = vertex; at rotation 0 its empty quadrant is (+X, +Z); placed by the cell diagonal to the empty cell (Q6).
 
 ## Tuning
 

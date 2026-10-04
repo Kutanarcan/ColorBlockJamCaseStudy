@@ -57,11 +57,13 @@ namespace Game.Prototype
 
                     if (!hasX && !hasZ)
                     {
-                        kind = PieceKind.OuterCorner; rot = CornerRotation(q);
+                        kind = PieceKind.OuterCorner; 
+                        rot = CornerRotation(q);
                     }
                     else if (hasX && hasZ)
                     {
-                        kind = PieceKind.Center; rot = 0f;
+                        kind = PieceKind.Center;
+                        rot = 0f;
                     }
                     else
                     {
@@ -100,6 +102,7 @@ namespace Game.Prototype
             if (q.x > 0 && q.y > 0) return 0f;
             if (q.x > 0) return 90f;
             if (q.y < 0) return 180f;
+
             return 270f;
         }
     }
