@@ -66,8 +66,14 @@ namespace Game.Prototype
         };
         [SerializeField] List<DoorData> doors = new List<DoorData>();
 
+        [Header("Input")]
+        [SerializeField] Drag drag = new Drag();
+
+        int[,] cells;  // [W, H]: blockId, -1 = empty
         int[,] hEdges; // [W, H+1]: hEdges[x, y] = edge below cell (x, y)
         int[,] vEdges; // [W+1, H]: vEdges[x, y] = edge left of cell (x, y)
+        readonly List<Transform> blockRoots = new List<Transform>();
+        Vector2Int[] blockOffsets;
 
         Transform tiles;
         Transform walls;
@@ -81,6 +87,76 @@ namespace Game.Prototype
             BuildTiles();
             BuildWalls();
             BuildBlocks();
+            drag.Init(this, Camera.main);
+        }
+
+        void Update()
+        {
+            drag.Tick();
+        }
+
+        // World point -> blockId on that cell, -1 if empty or off the board.
+        public int BlockAt(Vector3 worldPos)
+        {
+            var local = transform.InverseTransformPoint(worldPos);
+            int x = Mathf.FloorToInt(local.x / CellSize);
+            int y = Mathf.FloorToInt(local.z / CellSize);
+
+            if (x < 0 || y < 0 || x >= width || y >= height) return -1;
+            return cells[x, y];
+        }
+
+        public Transform BlockRoot(int id) => blockRoots[id];
+
+        public float CellWorldSize => CellSize;
+
+        // How many cells the block has moved from where it was built.
+        public Vector2Int BlockOffset(int id) => blockOffsets[id];
+
+        // Offset in cells (fractions allowed) -> world position of the block root.
+        public Vector3 OffsetToWorld(Vector2 offset) =>
+            transform.TransformPoint(new Vector3(offset.x * CellSize, 0f, offset.y * CellSize));
+
+        // Could the block sit at its current cells + delta? Every target cell inside the board and empty or its own.
+        // For a one-cell orthogonal step, the crossed edge must also be Open (not Wall or Door).
+        public bool CanPlace(int id, Vector2Int delta)
+        {
+            bool step = Mathf.Abs(delta.x) + Mathf.Abs(delta.y) == 1;
+
+            foreach (var c in blocks[id].cells)
+            {
+                var n = c + delta;
+                if (n.x < 0 || n.y < 0 || n.x >= width || n.y >= height) return false;
+                if (cells[n.x, n.y] != -1 && cells[n.x, n.y] != id) return false;
+                if (step && EdgeBetween(c, delta) != EdgeOpen) return false;
+            }
+
+            return true;
+        }
+
+        // One cell step: check, then move the block in the cell layer.
+        public bool TryStep(int id, Vector2Int dir)
+        {
+            if (!CanPlace(id, dir)) return false;
+
+            var body = blocks[id].cells;
+            foreach (var c in body) cells[c.x, c.y] = -1;
+            for (int i = 0; i < body.Count; i++)
+            {
+                body[i] += dir;
+                cells[body[i].x, body[i].y] = id;
+            }
+
+            blockOffsets[id] += dir;
+            return true;
+        }
+
+        int EdgeBetween(Vector2Int c, Vector2Int dir)
+        {
+            if (dir.x > 0) return vEdges[c.x + 1, c.y];
+            if (dir.x < 0) return vEdges[c.x, c.y];
+            if (dir.y > 0) return hEdges[c.x, c.y + 1];
+            return hEdges[c.x, c.y];
         }
 
         // Border edges start as Wall, inner edges as Open; doors overwrite their edge with the door color.
@@ -216,11 +292,23 @@ namespace Game.Prototype
 
         void BuildBlocks()
         {
+            cells = new int[width, height];
+            for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                cells[x, y] = -1;
+
+            // Note: TryStep moves blocks[id].cells in place; Play mode reverts it on exit.
+            blockOffsets = new Vector2Int[blocks.Count];
+
             for (int id = 0; id < blocks.Count; id++)
             {
                 var data = blocks[id];
                 var root = new GameObject($"Block_{id}").transform;
                 root.SetParent(transform, false);
+                blockRoots.Add(root);
+
+                foreach (var c in data.cells)
+                    cells[c.x, c.y] = id;
 
                 var pieces = BlockDrawRule.Build(data.cells, CellSize);
                 for (int i = 0; i < pieces.Count; i++)

@@ -357,23 +357,6 @@ MonoBehaviour:
   cornerMesh: {fileID: -5221963080773851136, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
   doorPiecePrefab: {fileID: 957778086012557049, guid: 3957e5a286d9a33429081e8a850e0b6b, type: 3}
   doorArrowUsesDoorColor: 0
-  doors:
-  - cell: {x: 1, y: 0}
-    side: 0
-    length: 2
-    color: 0
-  - cell: {x: 5, y: 11}
-    side: 1
-    length: 2
-    color: 1
-  - cell: {x: 0, y: 3}
-    side: 2
-    length: 3
-    color: 2
-  - cell: {x: 8, y: 4}
-    side: 3
-    length: 1
-    color: 3
   blocks:
   - color: 0
     cells:
@@ -436,6 +419,30 @@ MonoBehaviour:
     - {x: 5, y: 9}
     - {x: 5, y: 10}
     - {x: 6, y: 9}
+  doors:
+  - cell: {x: 1, y: 0}
+    side: 0
+    length: 2
+    color: 0
+  - cell: {x: 5, y: 11}
+    side: 1
+    length: 2
+    color: 1
+  - cell: {x: 0, y: 3}
+    side: 2
+    length: 3
+    color: 2
+  - cell: {x: 8, y: 4}
+    side: 3
+    length: 1
+    color: 3
+  drag:
+    collision:
+      maxStepsPerFrame: 8
+    placement:
+      lift: 0.3
+      followSpeed: 0
+      snapSpeed: 50
 --- !u!4 &1573337860
 Transform:
   m_ObjectHideFlags: 0

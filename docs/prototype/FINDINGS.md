@@ -17,16 +17,23 @@
 - Exit width rule: a block exits only if every cell on the pushed side faces a Door edge of its color; one Wall edge or wrong color blocks it.
 - Board edge table verified in Editor: Wall = 1-unit segments, 2 per cell edge, ring 0.5 outside the board; Corner rotations BL 0, BR 270, TR 180, TL 90.
 - Adjacent same-color door edges merge into one door (logic and visuals). The original game shows no separate adjacent same-color doors.
+- Border renders as runs: consecutive equal edges = one piece; Mesh_Wall scaled 2N, Mesh_Door scaled N, DoorArrow unscaled at the run center. Verified in Editor.
+- Selection = ray onto the ground plane → floor(local / 2) → cells[x, y]; no colliders. Verified in Editor.
+- Drag is free 2D (as in the original): the visual follows the pointer, clamped to reachable space; logic still walks cell by cell; release snaps to the nearest reachable cell (Q5).
 
 ## Tuning
+- Door arrow color = light (prefab default), `doorArrowUsesDoorColor = false`.
+- Drag lift = 0.3 feels fine; original has almost none, 0 is a valid candidate.
 
 ## Cost
 - `DoorData.length` is not bounds-checked; a door running past the board edge throws. Accepted in the prototype.
+- Run stretching writes Mesh-level scale (prefab rule says the Mesh transform is fixed). Prototype shortcut; production needs another approach.
 
 ## Rejected
 - Tile gap via tile scale — writes scale on the root and drifts from the 2-unit kit.
 - Extra cell gap (pitch = 2 + gap) — seams inside multi-cell blocks; the mesh's own 0.047 tile gap is enough, pitch stays 2.
 - Physics colliders for movement — snap and tunneling problems; a grid check is enough.
+- One-axis-per-step drag with grid snap while held — the original game drags in free 2D.
 - Quadrant-resolution grid (2W×2H) — adds nothing to the logic; quadrants are visual only.
 - BlockPiece +0.656 offset — lifted the block off the ground; the "bottom rests on the ground" assumption was wrong.
 - Toggle prefab (all variants as children, enable one) — InnerCorner (2×2, on a vertex) does not fit a quadrant slot; leaves dead objects.
