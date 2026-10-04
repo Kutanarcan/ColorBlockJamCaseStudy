@@ -65,6 +65,8 @@ namespace Game.Prototype
         [SerializeField] Mesh cornerMesh;
         [SerializeField] GameObject doorPiecePrefab;
         [SerializeField] bool doorArrowUsesDoorColor = false;
+        [SerializeField] float doorHeightScale = 1f; // > 1 makes the door taller than the block top so it hides the exit cut
+        const float DoorTop = 0.611f;
 
         [Header("Level")]
         [SerializeField] List<BlockData> blocks = new List<BlockData>
@@ -76,6 +78,12 @@ namespace Game.Prototype
         [Header("Input")]
         [SerializeField] Drag drag = new Drag();
 
+        [Header("Exit")]
+        [SerializeField] BlockExit exit = new BlockExit();
+
+        const string BlockClipShader = "Prototype/BlockClip";
+        Material arrowClipMaterial;
+
         int[,] cells;  // [W, H]: blockId, -1 = empty
         int[,] hEdges; // [W, H+1]: hEdges[x, y] = edge below cell (x, y)
         int[,] vEdges; // [W+1, H]: vEdges[x, y] = edge left of cell (x, y)
@@ -85,7 +93,8 @@ namespace Game.Prototype
 
         Transform tiles;
         Transform walls;
-        readonly Dictionary<int, Material> colorMaterials = new Dictionary<int, Material>();
+        readonly Dictionary<int, Material> colorMaterials = new Dictionary<int, Material>(); // doors: template shader
+        readonly Dictionary<int, Material> blockMaterials = new Dictionary<int, Material>(); // blocks: BlockClip shader
 
         Material BlockTemplate => blockPiecePrefab.GetComponentInChildren<MeshRenderer>().sharedMaterial;
 
@@ -96,6 +105,11 @@ namespace Game.Prototype
             BuildWalls();
             BuildBlocks();
             drag.Init(this, Camera.main);
+
+            // 2D source for UI-like sounds; added at runtime so the scene needs no extra component.
+            var audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            exit.Init(audioSource);
         }
 
         void Update()
@@ -157,7 +171,7 @@ namespace Game.Prototype
 
             if (!CanPlace(id, dir))
             {
-                if (CanExit(id, dir)) Exit(id);
+                if (CanExit(id, dir)) Exit(id, dir);
                 return false;
             }
 
@@ -201,12 +215,19 @@ namespace Game.Prototype
             return hEdges[c.x, 0];
         }
 
-        // Free the block's cells and hide it. No exit animation yet.
-        void Exit(int id)
+        // Free the block's cells at once (no longer clickable), then play the visual exit through the door.
+        void Exit(int id, Vector2Int dir)
         {
-            foreach (var c in blocks[id].cells) cells[c.x, c.y] = -1;
+            var data = blocks[id];
+            foreach (var c in data.cells) cells[c.x, c.y] = -1;
             exited[id] = true;
-            blockRoots[id].gameObject.SetActive(false);
+
+            // A point on the border line the block is pushed through.
+            var edgeLocal = new Vector3(dir.x > 0 ? width * CellSize : 0f, 0f, dir.y > 0 ? height * CellSize : 0f);
+            var normal = transform.TransformDirection(new Vector3(dir.x, 0f, dir.y)).normalized;
+
+            exit.Play(blockRoots[id], data.cells, blockOffsets[id], dir, palette[data.color], CellSize,
+                OffsetToWorld(blockOffsets[id]), normal, transform.TransformPoint(edgeLocal));
         }
 
         int EdgeBetween(Vector2Int c, Vector2Int dir)
@@ -326,7 +347,11 @@ namespace Game.Prototype
         {
             var piece = SpawnRoot(doorPiecePrefab, localPos, yRot, pieceName);
             var door = piece.transform.Find("Visuals/Mesh_Door");
-            door.localScale = new Vector3(cells, 1f, 1f);
+            door.localScale = new Vector3(cells, doorHeightScale, 1f);
+
+            // Keep the arrow on the (taller) door top: door top is +0.611 at scale 1.
+            var arrow = piece.transform.Find("Visuals/Mesh_DoorArrow");
+            arrow.localPosition += Vector3.up * (DoorTop * (doorHeightScale - 1f));
             door.GetComponent<MeshRenderer>().sharedMaterial = ColorMaterial(color, BlockTemplate);
 
             if (doorArrowUsesDoorColor)
@@ -419,6 +444,12 @@ namespace Game.Prototype
             arrow.transform.localPosition = runCenter;
             arrow.transform.localRotation = Quaternion.Euler(0f, (horizontal ? 0f : 90f) + arrowYawOffset, 0f);
             arrow.GetComponentInChildren<MeshFilter>().sharedMesh = arrowMeshes[Mathf.Min(run, arrowMeshes.Length) - 1];
+
+            // The arrow is cut at the door together with the block, so it needs the clip shader too.
+            var arrowRenderer = arrow.GetComponentInChildren<MeshRenderer>();
+            if (arrowClipMaterial == null)
+                arrowClipMaterial = new Material(arrowRenderer.sharedMaterial) { name = "Arrow_Clip", shader = Shader.Find(BlockClipShader) };
+            arrowRenderer.sharedMaterial = arrowClipMaterial;
         }
 
         Mesh MeshFor(PieceKind kind)
@@ -441,7 +472,20 @@ namespace Game.Prototype
 
             piece.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
             var renderer = piece.GetComponentInChildren<MeshRenderer>();
-            renderer.sharedMaterial = ColorMaterial(color, BlockTemplate);
+            renderer.sharedMaterial = BlockMaterial(color);
+        }
+
+        // Same as ColorMaterial, but on the BlockClip shader so the block can be cut at a door.
+        // Swapping the shader keeps the template's matching values (color, texture, smoothness, metallic).
+        Material BlockMaterial(int color)
+        {
+            if (!blockMaterials.TryGetValue(color, out var mat))
+            {
+                mat = new Material(BlockTemplate) { name = $"Block_{color}", shader = Shader.Find(BlockClipShader) };
+                mat.color = palette[color];
+                blockMaterials[color] = mat;
+            }
+            return mat;
         }
 
         Material ColorMaterial(int color, Material template)
