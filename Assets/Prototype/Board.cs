@@ -81,6 +81,7 @@ namespace Game.Prototype
         int[,] vEdges; // [W+1, H]: vEdges[x, y] = edge left of cell (x, y)
         readonly List<Transform> blockRoots = new List<Transform>();
         Vector2Int[] blockOffsets;
+        bool[] exited;
 
         Transform tiles;
         Transform walls;
@@ -146,10 +147,19 @@ namespace Game.Prototype
             return true;
         }
 
+        public bool IsExited(int id) => exited[id];
+
         // One cell step: check, then move the block in the cell layer.
+        // A blocked step toward a matching, wide-enough door exits the block instead (returns false; check IsExited).
         public bool TryStep(int id, Vector2Int dir)
         {
-            if (!CanPlace(id, dir)) return false;
+            if (exited[id]) return false;
+
+            if (!CanPlace(id, dir))
+            {
+                if (CanExit(id, dir)) Exit(id);
+                return false;
+            }
 
             var body = blocks[id].cells;
             foreach (var c in body) cells[c.x, c.y] = -1;
@@ -161,6 +171,42 @@ namespace Game.Prototype
 
             blockOffsets[id] += dir;
             return true;
+        }
+
+        // Width rule: the block is pressed against the border in dir, and every column (or row) it covers
+        // faces a Door of its own color on that border. One Wall or wrong-color edge blocks the exit.
+        bool CanExit(int id, Vector2Int dir)
+        {
+            var data = blocks[id];
+            if (data.axisLock == AxisLock.Horizontal && dir.y != 0) return false;
+            if (data.axisLock == AxisLock.Vertical && dir.x != 0) return false;
+
+            bool pressed = false;
+            foreach (var c in data.cells)
+            {
+                var n = c + dir;
+                if (n.x < 0 || n.y < 0 || n.x >= width || n.y >= height) pressed = true;
+                if (BorderEdge(c, dir) != data.color) return false;
+            }
+
+            return pressed;
+        }
+
+        // The border edge in dir on the cell's column (or row).
+        int BorderEdge(Vector2Int c, Vector2Int dir)
+        {
+            if (dir.x > 0) return vEdges[width, c.y];
+            if (dir.x < 0) return vEdges[0, c.y];
+            if (dir.y > 0) return hEdges[c.x, height];
+            return hEdges[c.x, 0];
+        }
+
+        // Free the block's cells and hide it. No exit animation yet.
+        void Exit(int id)
+        {
+            foreach (var c in blocks[id].cells) cells[c.x, c.y] = -1;
+            exited[id] = true;
+            blockRoots[id].gameObject.SetActive(false);
         }
 
         int EdgeBetween(Vector2Int c, Vector2Int dir)
@@ -311,6 +357,7 @@ namespace Game.Prototype
 
             // Note: TryStep moves blocks[id].cells in place; Play mode reverts it on exit.
             blockOffsets = new Vector2Int[blocks.Count];
+            exited = new bool[blocks.Count];
 
             for (int id = 0; id < blocks.Count; id++)
             {

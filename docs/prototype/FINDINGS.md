@@ -21,6 +21,7 @@
 - Selection = ray onto the ground plane → floor(local / 2) → cells[x, y]; no colliders. Verified in Editor.
 - Drag is free 2D (as in the original): the visual follows the pointer, clamped to reachable space; logic still walks cell by cell; release snaps to the nearest reachable cell (Q5).
 - Step valid = every target cell inside + empty or own + crossed edge Open. Logic walks toward the pointer's rounded cell, larger axis first, other axis if blocked. Verified in Editor.
+- Axis lock is enforced only in CanPlace (drag code untouched). Arrow: nearest block cell to the bounding-box center → unbroken run along the locked axis → Arrow_min(run, 3) at the run center. Arrow_N lies along Z at rotation 0 (arrowYawOffset = 90). Verified in Editor.
 
 ## Tuning
 - Door arrow color = light (prefab default), `doorArrowUsesDoorColor = false`.

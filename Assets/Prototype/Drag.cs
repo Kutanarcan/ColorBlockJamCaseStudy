@@ -59,6 +59,15 @@ namespace Game.Prototype
             var pointer = new Vector2(grabOffset.x + d.x, grabOffset.y + d.z);
 
             collision.Walk(heldId, new Vector2Int(Mathf.RoundToInt(pointer.x), Mathf.RoundToInt(pointer.y)));
+
+            // Pushed through a matching door: the block is gone, drop it.
+            if (board.IsExited(heldId))
+            {
+                held = null;
+                heldId = -1;
+                return;
+            }
+
             placement.Hold(held, collision.Lean(heldId, pointer));
         }
 

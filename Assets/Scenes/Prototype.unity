@@ -277,7 +277,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 16.5
+  orthographic size: 12.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -302,7 +302,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
-  m_LocalPosition: {x: 9, y: 10, z: 5}
+  m_LocalPosition: {x: 6, y: 10, z: 2.23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -337,8 +337,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87f723c859f584348b0c738cb8f1b9d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 9
-  height: 12
+  width: 6
+  height: 8
   groundTilePrefab: {fileID: 1863828957697776540, guid: e26f966ed5f6d234d9b94b7a7284e35a, type: 3}
   blockPiecePrefab: {fileID: 9052203429458667081, guid: bf869b8e47fb1c74f981f4fcc435a5e5, type: 3}
   outerCornerMesh: {fileID: -3023630919892535758, guid: da198a95277791b4a865d07db6b524d4, type: 3}
@@ -364,91 +364,66 @@ MonoBehaviour:
   doorPiecePrefab: {fileID: 957778086012557049, guid: 3957e5a286d9a33429081e8a850e0b6b, type: 3}
   doorArrowUsesDoorColor: 0
   blocks:
-  - color: 0
-    axisLock: 1
-    cells:
-    - {x: 0, y: 0}
-    - {x: 0, y: 1}
-    - {x: 0, y: 2}
-    - {x: 1, y: 0}
   - color: 1
-    axisLock: 2
-    cells:
-    - {x: 3, y: 0}
-    - {x: 4, y: 0}
-    - {x: 5, y: 0}
-    - {x: 4, y: 1}
-  - color: 2
     axisLock: 0
     cells:
-    - {x: 7, y: 0}
-    - {x: 7, y: 1}
-    - {x: 8, y: 1}
-    - {x: 8, y: 2}
+    - {x: 2, y: 1}
+    - {x: 3, y: 1}
+    - {x: 4, y: 1}
+    - {x: 3, y: 2}
   - color: 3
     axisLock: 0
     cells:
-    - {x: 1, y: 4}
-    - {x: 0, y: 5}
-    - {x: 1, y: 5}
-    - {x: 2, y: 5}
-    - {x: 1, y: 6}
-  - color: 4
-    axisLock: 0
-    cells:
-    - {x: 4, y: 4}
-    - {x: 5, y: 4}
-    - {x: 6, y: 4}
-    - {x: 4, y: 5}
-    - {x: 6, y: 5}
+    - {x: 0, y: 1}
+    - {x: 0, y: 2}
+    - {x: 1, y: 1}
   - color: 5
     axisLock: 0
     cells:
-    - {x: 0, y: 8}
-    - {x: 1, y: 8}
-    - {x: 2, y: 8}
-    - {x: 0, y: 9}
-    - {x: 2, y: 9}
-    - {x: 0, y: 10}
-    - {x: 1, y: 10}
-    - {x: 2, y: 10}
-  - color: 1
+    - {x: 0, y: 4}
+    - {x: 0, y: 5}
+    - {x: 0, y: 6}
+  - color: 2
     axisLock: 0
     cells:
-    - {x: 4, y: 8}
-    - {x: 4, y: 9}
-    - {x: 4, y: 10}
-    - {x: 4, y: 11}
-    - {x: 5, y: 11}
-    - {x: 6, y: 11}
-    - {x: 7, y: 11}
-    - {x: 8, y: 11}
-    - {x: 8, y: 10}
-    - {x: 8, y: 9}
-    - {x: 8, y: 8}
-    - {x: 7, y: 8}
-    - {x: 6, y: 8}
-    - {x: 5, y: 8}
-    - {x: 5, y: 9}
-    - {x: 5, y: 10}
-    - {x: 6, y: 9}
+    - {x: 1, y: 6}
+    - {x: 2, y: 6}
+    - {x: 3, y: 6}
+  - color: 0
+    axisLock: 0
+    cells:
+    - {x: 1, y: 5}
+    - {x: 2, y: 5}
+  - color: 4
+    axisLock: 2
+    cells:
+    - {x: 4, y: 5}
+    - {x: 4, y: 6}
   doors:
-  - cell: {x: 1, y: 0}
+  - cell: {x: 2, y: 0}
     side: 0
+    length: 3
+    color: 1
+  - cell: {x: 0, y: 0}
+    side: 0
+    length: 1
+    color: 5
+  - cell: {x: 5, y: 1}
+    side: 3
     length: 2
-    color: 0
-  - cell: {x: 5, y: 11}
+    color: 3
+  - cell: {x: 0, y: 5}
+    side: 2
+    length: 2
+    color: 2
+  - cell: {x: 1, y: 7}
     side: 1
     length: 2
-    color: 1
-  - cell: {x: 0, y: 3}
-    side: 2
-    length: 3
-    color: 2
-  - cell: {x: 8, y: 4}
-    side: 3
+    color: 0
+  - cell: {x: 4, y: 7}
+    side: 1
     length: 1
-    color: 3
+    color: 4
   drag:
     collision:
       maxStepsPerFrame: 8
