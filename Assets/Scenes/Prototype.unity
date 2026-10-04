@@ -277,7 +277,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 12
+  orthographic size: 16
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -302,7 +302,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
-  m_LocalPosition: {x: 6.3, y: 10, z: 2}
+  m_LocalPosition: {x: 9, y: 10, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -337,13 +337,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87f723c859f584348b0c738cb8f1b9d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 6
-  height: 8
+  width: 9
+  height: 12
   groundTilePrefab: {fileID: 1863828957697776540, guid: e26f966ed5f6d234d9b94b7a7284e35a, type: 3}
   blockPiecePrefab: {fileID: 9052203429458667081, guid: bf869b8e47fb1c74f981f4fcc435a5e5, type: 3}
   outerCornerMesh: {fileID: -3023630919892535758, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   edgeMesh: {fileID: 4163668623295024386, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   centerMesh: {fileID: -3289860805121049569, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  innerCornerMesh: {fileID: 3222031244701842341, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   palette:
   - {r: 0.91, g: 0.27, b: 0.27, a: 1}
   - {r: 0.25, g: 0.52, b: 0.95, a: 1}
@@ -355,30 +356,49 @@ MonoBehaviour:
   - color: 0
     cells:
     - {x: 0, y: 0}
+    - {x: 0, y: 1}
+    - {x: 0, y: 2}
+    - {x: 1, y: 0}
   - color: 1
     cells:
-    - {x: 2, y: 0}
     - {x: 3, y: 0}
     - {x: 4, y: 0}
+    - {x: 5, y: 0}
+    - {x: 4, y: 1}
   - color: 2
     cells:
-    - {x: 0, y: 2}
-    - {x: 0, y: 3}
-    - {x: 0, y: 4}
+    - {x: 7, y: 0}
+    - {x: 7, y: 1}
+    - {x: 8, y: 1}
+    - {x: 8, y: 2}
   - color: 3
     cells:
-    - {x: 2, y: 2}
-    - {x: 3, y: 2}
-    - {x: 2, y: 3}
-    - {x: 3, y: 3}
+    - {x: 1, y: 4}
+    - {x: 0, y: 5}
+    - {x: 1, y: 5}
+    - {x: 2, y: 5}
+    - {x: 1, y: 6}
   - color: 4
     cells:
-    - {x: 2, y: 5}
-    - {x: 3, y: 5}
+    - {x: 4, y: 4}
+    - {x: 5, y: 4}
+    - {x: 6, y: 4}
     - {x: 4, y: 5}
-    - {x: 2, y: 6}
-    - {x: 3, y: 6}
-    - {x: 4, y: 6}
+    - {x: 6, y: 5}
+  - color: 5
+    cells:
+    - {x: 0, y: 8}
+    - {x: 1, y: 8}
+    - {x: 2, y: 8}
+    - {x: 0, y: 9}
+    - {x: 2, y: 9}
+    - {x: 0, y: 10}
+    - {x: 1, y: 10}
+    - {x: 2, y: 10}
+  - color: 1
+    cells:
+    - {x: 5, y: 8}
+    - {x: 6, y: 9}
 --- !u!4 &1573337860
 Transform:
   m_ObjectHideFlags: 0

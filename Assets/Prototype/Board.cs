@@ -24,6 +24,7 @@ namespace Game.Prototype
         [SerializeField] Mesh outerCornerMesh;
         [SerializeField] Mesh edgeMesh;
         [SerializeField] Mesh centerMesh;
+        [SerializeField] Mesh innerCornerMesh;
         [SerializeField] Color[] palette =
         {
             new Color(0.91f, 0.27f, 0.27f), // red
@@ -86,6 +87,7 @@ namespace Game.Prototype
             {
                 case PieceKind.Edge: return edgeMesh;
                 case PieceKind.Center: return centerMesh;
+                case PieceKind.InnerCorner: return innerCornerMesh;
                 default: return outerCornerMesh;
             }
         }

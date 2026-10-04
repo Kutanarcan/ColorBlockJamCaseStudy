@@ -215,7 +215,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | Done |
 | 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Done |
 | 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Done |
-| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Not started |
+| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | In progress |
 | 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Not started |
 | 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | Not started |
 | 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | Not started |
