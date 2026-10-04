@@ -10,6 +10,7 @@ namespace Game.Prototype
     {
         [SerializeField] DragCollision collision = new DragCollision();
         [SerializeField] Placement placement = new Placement();
+        [SerializeField] SelectionOutline outline = new SelectionOutline();
         [SerializeField] AudioClip selectSound; // on grab
         [SerializeField] AudioClip dropSound;   // on release (not when the block exits mid-drag)
         [SerializeField, Range(0f, 1f)] float soundVolume = 1f;
@@ -30,6 +31,7 @@ namespace Game.Prototype
             this.audioSource = audioSource;
             collision.Init(board);
             placement.Init(board);
+            outline.Init(cam);
         }
 
         public void Tick()
@@ -53,6 +55,7 @@ namespace Game.Prototype
             held = board.BlockRoot(id);
             grabHit = hit;
             grabOffset = board.BlockOffset(id);
+            outline.Show(held);
             Play(selectSound);
         }
 
@@ -69,6 +72,7 @@ namespace Game.Prototype
             // Pushed through a matching door: the block is gone, drop it.
             if (board.IsExited(heldId))
             {
+                outline.Hide();
                 held = null;
                 heldId = -1;
                 return;
@@ -80,6 +84,7 @@ namespace Game.Prototype
         void Release()
         {
             placement.StartSettle(held, board.BlockOffset(heldId));
+            outline.Hide();
             held = null;
             heldId = -1;
             Play(dropSound);
