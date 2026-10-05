@@ -222,7 +222,7 @@ One phase per answer, following the prototype process. **Files touched** for eac
 | 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | Done |
 | 9 | Axis lock | A locked block moves on one axis only, with an `Arrow` on top | — | Done |
 | 10 | Exit through door | A block reaching a matching-color door that is wide enough disappears | — | Done |
-| 11 | Win | A win message appears when all blocks have exited | — | Not started |
+| 11 | Win | A win message appears when all blocks have exited | — | Skipped |
 
 ## 7. Deferred
 - Holed and irregular board shapes (board mask).
