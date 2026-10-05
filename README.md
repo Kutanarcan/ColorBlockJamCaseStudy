@@ -62,7 +62,7 @@ The prototype's output is **knowledge, not code**. No architecture, no tests; ev
 <table>
   <tr>
     <th>Gameplay</th>
-    <th>Marketing · Vol. 1</th>
+    <th>Marketing</th>
   </tr>
   <tr>
     <td><video src="https://github.com/user-attachments/assets/b70f40cb-7e7c-474b-8a10-92ef0715b7d5" width="300" controls muted></video></td>
