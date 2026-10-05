@@ -20,6 +20,7 @@ namespace Game.Tests.EditMode
         private readonly List<char> doorSymbols = new List<char>();
         private readonly Dictionary<char, int> colors = new Dictionary<char, int>();
         private readonly Dictionary<char, Direction> doorDirections = new Dictionary<char, Direction>();
+        private readonly Dictionary<char, ModifierData[]> blockModifiers = new Dictionary<char, ModifierData[]>();
         private float timeLimit;
 
         private AsciiLevel(string[] rows) => this.rows = rows;
@@ -32,10 +33,11 @@ namespace Game.Tests.EditMode
 
         public static AsciiLevel Parse(params string[] rows) => new AsciiLevel(rows);
 
-        public AsciiLevel Block(char symbol, int colorId)
+        public AsciiLevel Block(char symbol, int colorId, params ModifierData[] modifiers)
         {
             blockSymbols.Add(symbol);
             colors.Add(symbol, colorId);
+            blockModifiers.Add(symbol, modifiers);
             return this;
         }
 
@@ -69,7 +71,10 @@ namespace Game.Tests.EditMode
             for (int i = 0; i < blockSymbols.Count; i++)
             {
                 char s = blockSymbols[i];
-                level.Blocks[i] = new BlockData { ColorId = colors[s], Cells = CellsOf(cellsBySymbol, s) };
+                level.Blocks[i] = new BlockData
+                {
+                    ColorId = colors[s], Cells = CellsOf(cellsBySymbol, s), Modifiers = blockModifiers[s]
+                };
             }
 
             return level;

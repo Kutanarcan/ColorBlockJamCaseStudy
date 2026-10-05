@@ -367,3 +367,4 @@ One phase per answer, following the production process. Every sub-step ends with
 | D27 | Phase order | Validation before IO; Level Editor last |
 | D28 | ASCII test helper | Test-only; produces `LevelData`; never a level format |
 | D29 | Timer input | Time enters Core only through `ITickable.Tick(dt)`; no `ITimeProvider`, tests pass `dt` directly |
+| D30 | Modifier model | Base block always has `Move` and `Exit`; modifiers only declare parts (`ISuspender`, `IDurable`, `IMoveConstraint`, passive data). Central rules live in `Capabilities` and `ExitResolver`; a depleted modifier is removed. Replaces Gate / Reactor (D9, §6) |

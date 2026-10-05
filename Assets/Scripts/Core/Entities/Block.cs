@@ -5,8 +5,8 @@ namespace Game.Core
         public int ColorId { get; }
         public bool IsExited { get; internal set; }
 
-        public Block(int id, Cell position, Cell[] shape, int colorId)
-            : base(id, position, shape)
+        public Block(int id, Cell position, Cell[] shape, int colorId, IModifier[] modifiers)
+            : base(id, position, shape, modifiers)
         {
             ColorId = colorId;
         }

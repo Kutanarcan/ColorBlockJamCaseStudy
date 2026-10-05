@@ -2,7 +2,8 @@ namespace Game.Core
 {
     /// <summary>
     /// Moves a block one cell. A step is valid when every target cell is empty or the block's own;
-    /// walls, doors and other blocks are all just occupied. A blocked step checks <see cref="ExitRule"/>.
+    /// walls, doors and other blocks are all just occupied. The block must still have the capability
+    /// (<see cref="Capabilities"/>). A blocked step checks <see cref="ExitRule"/>.
     /// </summary>
     public sealed class BlockMover
     {
@@ -12,7 +13,7 @@ namespace Game.Core
 
         public MoveResult TryMove(Block block, Direction direction)
         {
-            if (block.IsExited)
+            if (block.IsExited || !Capabilities.CanMove(block, direction))
                 return MoveResult.Blocked;
 
             Cell offset = direction.ToOffset();
@@ -24,7 +25,7 @@ namespace Game.Core
                 return MoveResult.Moved;
             }
 
-            if (ExitRule.CanExit(board, block, direction))
+            if (Capabilities.CanExit(block) && ExitRule.CanExit(board, block, direction))
             {
                 board.RemoveBlock(block);
 

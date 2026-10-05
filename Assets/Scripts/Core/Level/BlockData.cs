@@ -6,5 +6,6 @@ namespace Game.Core
     {
         public int ColorId;
         public Cell[] Cells = Array.Empty<Cell>();
+        public ModifierData[] Modifiers = Array.Empty<ModifierData>();
     }
 }

@@ -1,0 +1,41 @@
+using Game.Core;
+using NUnit.Framework;
+
+namespace Game.Tests.EditMode
+{
+    public class ArrowTests
+    {
+        // A points right and sits above a matching door.
+        private static Board NewBoard() =>
+            BoardBuilder.Build(AsciiLevel.Parse(
+                    "#####",
+                    "#.A.#",
+                    "##1##")
+                .Block('A', 0, new ArrowData { Direction = Direction.Right })
+                .Door('1', 0, Direction.Down)
+                .Build());
+
+        [Test]
+        public void Arrow_AllowsItsDirection()
+        {
+            Board board = NewBoard();
+            var a = (Block)board.EntityAt(new Cell(2, 1));
+
+            Assert.That(new BlockMover(board).TryMove(a, Direction.Right), Is.EqualTo(MoveResult.Moved));
+        }
+
+        [TestCase(Direction.Left)] // free cell, vetoed
+        [TestCase(Direction.Down)] // matching door, exit vetoed
+        public void Arrow_VetoesEveryOtherDirection(Direction direction)
+        {
+            Board board = NewBoard();
+            var a = (Block)board.EntityAt(new Cell(2, 1));
+
+            MoveResult result = new BlockMover(board).TryMove(a, direction);
+
+            Assert.That(result, Is.EqualTo(MoveResult.Blocked));
+            Assert.That(a.IsExited, Is.False);
+            Assert.That(a.Position, Is.EqualTo(new Cell(2, 1)));
+        }
+    }
+}

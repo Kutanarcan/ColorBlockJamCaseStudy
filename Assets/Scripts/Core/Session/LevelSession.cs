@@ -9,6 +9,7 @@ namespace Game.Core
         private readonly LevelData level;
         private readonly LevelTimer timer = new LevelTimer();
         private BlockMover mover;
+        private ExitResolver exitResolver;
 
         /// <summary>Replaced on <see cref="Restart"/>; entity references from the old board are stale.</summary>
         public Board Board { get; private set; }
@@ -29,7 +30,12 @@ namespace Game.Core
 
             MoveResult result = mover.TryMove(block, direction);
 
-            if (result == MoveResult.Exited && Board.RemainingBlockCount == 0)
+            if (result != MoveResult.Exited)
+                return result;
+
+            exitResolver.Resolve(block);
+
+            if (Board.RemainingBlockCount == 0)
                 State = GameState.Won;
 
             return result;
@@ -62,6 +68,7 @@ namespace Game.Core
         {
             Board = BoardBuilder.Build(level);
             mover = new BlockMover(Board);
+            exitResolver = new ExitResolver(Board);
             timer.Reset(level.TimeLimit);
             State = GameState.Playing;
         }
