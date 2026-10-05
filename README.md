@@ -1,5 +1,3 @@
-
-
 <div align="center">
 
 # 🧱 Color Block Jam — Case Study
@@ -22,202 +20,79 @@ from an existing 3D model kit — prototype first, production later.
 > **Fan-made study, not affiliated with the original game.** Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
 > This repository only rebuilds its core mechanic for learning and portfolio purposes.
 
+---
+
+# 🧪 Prototype
+
 > [!IMPORTANT]
-> **📍 Now:** Prototyping — Phases 1–10 done, plus exit, selection and audio feel
-> **Next:** Phase 11 · Win
+> **Question:** Can the existing model kit build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
+> **Status:** Phases 1–10 done · Next: Phase 11 · Win
+
+The prototype's output is **knowledge, not code**. No architecture, no tests; every feel value is exposed in the Inspector. The code lives in `Assets/Prototype/`, is Editor-only and will be deleted after the harvest.
 
 ## 🎬 Videos
 
-### Gameplay
-<!-- Gameplay_1.mp4: drag the file into the GitHub editor and paste the generated user-attachments URL on the line below -->
+**Gameplay**
 
 https://github.com/user-attachments/assets/b0947644-7580-4f5f-8c1e-7055974298b3
 
-
-### Marketing · Vol. 1
-<!-- Marketing_Vol1.mp4: drag the file into the GitHub editor and paste the generated user-attachments URL on the line below -->
+**Marketing · Vol. 1**
 
 https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080
 
-## 🗺️ Roadmap
+## 🎮 The Game
 
-```mermaid
-flowchart LR
-    A["📋 Planning"] --> B["🧪 Prototype"] --> H["🌾 Harvest"] --> P["🏗️ Production"]
-
-    classDef done fill:#2ea043,color:#fff,stroke:#2ea043
-    classDef active fill:#d29922,color:#fff,stroke:#d29922
-    classDef todo fill:#6e7681,color:#fff,stroke:#6e7681
-    class A done
-    class B active
-    class H,P todo
-```
-
-| Stage | Question it answers | Status | Progress |
-|---|---|---|---|
-| 📋 Planning | What is the game, and what can the model kit do? | ✅ Done | `██████████` 100% |
-| 🧪 Prototype | Can the kit build a playable board with blocks, doors and exits? | 🚧 In Progress | `█████████░` 91% (10/11) |
-| 🌾 Harvest | What did we learn? | ⏳ Planned | `░░░░░░░░░░` 0% |
-| 🏗️ Production | Can it be rebuilt clean, tested and extensible? | ⏳ Planned | `░░░░░░░░░░` 0% |
-
----
-
-## 🎮 Core Loop
-
-<sub>Click a tab to open it. Opening one closes the others in this group.</sub>
-
-<details name="core">
-<summary><b>🎮 The Game</b></summary>
-<br>
-
-A rectangular board is enclosed by walls. Some wall segments are **colored doors**. Blocks are polyominoes (1×1, bars, L, T…), one color each.
-
-- **Move:** drag a block. It slides through empty cells and stops at walls and other blocks. Blocks never overlap.
+- **Board:** a grid enclosed by walls; some wall segments are **colored doors**.
+- **Blocks:** polyominoes (1×1, bars, L, T…), one color each. Drag a block; it slides through empty cells and stops at walls and other blocks.
 - **Axis lock:** a block with an arrow on top moves along one axis only.
-- **Exit:** a block pushed into a door of **its own color**, where the door covers the block's full width, leaves the board.
-- **Win:** every block has exited.
-- **The puzzle:** move order. Blocks block each other; the player has to clear paths in the right sequence.
+- **Exit:** a block pushed into a door of **its own color**, wide enough for the block, leaves the board.
+- **Win:** every block has exited. The puzzle is the move order.
 
-</details>
+## ✅ What Was Built
 
-<details name="core" open>
-<summary><b>🧪 Prototype</b> — 10/11</summary>
-<br>
-
-**Goal:** answer one question as fast as possible — *can the existing model kit build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?*
-The output is **knowledge, not code**: no architecture, no tests, every feel value exposed in the Inspector.
-
-- [x] Grid renders
-- [x] 1×1 block
-- [x] Block autotile: convex shapes
-- [x] Block autotile: concave shapes (L, T, S/Z, +, U, ring)
-- [x] Board walls
-- [x] Doors
-- [x] Drag (free 2D)
-- [x] Grid collision
-- [x] Axis lock
-- [x] Exit through door
-- [ ] Win
-
-**Feel added on top**
-- Exit: the block snaps to the door, slides in and is **cut by a clip-plane shader** at the door line, with per-row particles.
-- Selection: **screen-space outline** around the held block (one clean silhouette for a multi-piece block).
-- SFX: select, drop and exit crunch.
-- Recording: a hand cursor that follows the mouse from the fingertip, toggled in the Inspector.
-
-**Questions it had to answer**
-
-| # | Question | Answer |
+| # | Phase | Result |
 |---|---|---|
-| 1 | Are L/T blocks in scope? | ✅ Yes — any polyomino, via a quadrant autotile rule |
-| 2 | How are levels authored? | ✅ Inspector field list on `Board` |
-| 3 | Which corner piece goes on the board corners? | ✅ One cleaned `Corner` mesh |
-| 4 | Where does the door arrow sit? | ✅ Centered on the door top |
-| 5 | Free 2D drag or one axis per step? | ✅ Free 2D, clamped to reachable space, snaps on release |
-| 6 | Which quadrant does a block piece cover at rotation 0? | ✅ Top-right; InnerCorner pivots on the vertex |
-| 7 | Does a block need a separate Visuals level for effects? | ✅ No — tweens move the root, the exit cut is a shader |
+| 1 | Grid | Ground tiles at a 2-unit cell pitch |
+| 2–4 | Block autotile | Any polyomino (L, T, S/Z, +, U, ring) dressed from 4 quadrant meshes |
+| 5–6 | Walls & doors | Border from an edge layer; same-color door edges merge into one door |
+| 7–8 | Drag & collision | Free 2D drag, cell-by-cell logic, snap on release |
+| 9 | Axis lock | Locked blocks move on one axis, with a fitted arrow on top |
+| 10 | Exit | A block pushed into a matching, wide-enough door leaves the board |
+| 11 | Win | ⏳ Next |
 
-Findings → [`FINDINGS.md`](docs/prototype/FINDINGS.md) · Plan → [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) · Algorithms → [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md)
+**Feel on top**
+- **Exit:** the block snaps to the door, slides in and is cut by a clip-plane shader at the door line, with per-row particles.
+- **Selection:** a gold screen-space outline around the held block.
+- **SFX:** select, drop and exit crunch.
+- **Recording:** a hand cursor that follows the mouse from the fingertip.
 
-</details>
+## 🧩 How It Works
 
-<details name="core">
-<summary><b>🧩 How It Works</b></summary>
-<br>
+Each topic has a full walkthrough with diagrams and a worked example in [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md).
 
-| Topic | Approach |
+| Topic | In one line |
 |---|---|
-| **Grid** | Cell = 2 units. Two layers: a cell layer (`int[,]`, block id) and an edge layer (`hEdges` / `vEdges`: Open, Wall or Door color). |
-| **Block visuals** | Each cell is split into 4 quadrants; each quadrant picks `OuterCorner`, `Edge`, `Center` or `InnerCorner` from its neighbors. A block is dressed once and only its root moves. |
-| **Movement** | Cell-by-cell steps toward the pointer, larger axis first. The visual leans up to half a cell, never into a refused cell. No physics colliders. |
-| **Exit rule** | A blocked step checks the border: every column / row the block covers must face a door of its color. |
-| **Exit visual** | Per-block world clip plane via `MaterialPropertyBlock`; back faces drawn flat so the cut looks solid. |
-| **Outline** | Camera `CommandBuffer`: draw the held block into a mask, blit the outline over the frame. |
+| [BlockDrawRule](docs/prototype/AlgorithmExplanation.md#blockdrawrule) | Each quadrant of a cell looks at 3 neighbors and picks `OuterCorner`, `Edge`, `Center` or `InnerCorner`. |
+| [Movement](docs/prototype/AlgorithmExplanation.md#movement) | One cell per step; every target cell must be inside, empty or the block's own, behind an open edge. |
+| [Exit](docs/prototype/AlgorithmExplanation.md#exit) | A blocked step checks the border: every column or row the block covers must face a door of its color. |
+| [Drag pipeline](docs/prototype/AlgorithmExplanation.md#drag-pipeline) | Logic walks toward the pointer cell by cell; the visual leans up to half a cell and never into a refused cell. |
+| [Exit visual](docs/prototype/AlgorithmExplanation.md#exit-visual) | A per-block world clip plane hides everything past the door; back faces are drawn flat so the cut looks solid. |
+| [Edge layer](docs/prototype/AlgorithmExplanation.md#edge-layer) | Walls and doors sit on the lines between cells, in two arrays: `hEdges[W, H+1]` and `vEdges[W+1, H]`. |
+| [Coordinates](docs/prototype/AlgorithmExplanation.md#coordinates) | Cell = 2 units, cell center = `(2x + 1, 0, 2y + 1)`; logic is always whole cells. |
+| [Border runs](docs/prototype/AlgorithmExplanation.md#border-runs) | Consecutive equal border edges become one stretched wall or door piece. |
+| [Arrow placement](docs/prototype/AlgorithmExplanation.md#arrow-placement) | The arrow sits on the straight run through the block's most central cell, sized `min(run, 3)`. |
 
-Full walkthroughs with diagrams and worked examples → [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md)
+## 📚 Prototype Docs
 
-</details>
-
-<details name="core">
-<summary><b>🌾 Harvest</b></summary>
-<br>
-
-**Goal:** turn prototype knowledge into a production spec.
-
-- [ ] Settled rules & tuning values from `FINDINGS.md`
-- [ ] Data shapes & rejected ideas
-- [ ] Retire prototype code — read as a spec, **never migrated**
-
-</details>
-
-<details name="core">
-<summary><b>🏗️ Production</b></summary>
-<br>
-
-**Goal:** rebuild the rules from scratch as a pure C# core with a thin Unity layer.
-
-- **No `UnityEngine` in the core** — enforced by assembly definitions, so rules are tested without opening Unity.
-- **Views are dumb** — they display state and forward input.
-- **Every phase ships with tests.**
-
-</details>
+- [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) — game summary, asset analysis, phase plan, open questions
+- [`FINDINGS.md`](docs/prototype/FINDINGS.md) — settled rules, tuning values, costs, rejected ideas, data shapes
+- [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md) — how the prototype's algorithms work
 
 ---
 
-## 🛠️ How I Work
+# 🏗️ Production
 
-<details name="work">
-<summary><b>🧪 Prototype vs 🏗️ Production</b></summary>
-<br>
-
-| | 🧪 Prototype | 🏗️ Production |
-|---|---|---|
-| **Purpose** | Answer one question | Build it to last |
-| **Output** | Knowledge | Shippable code |
-| **Folder** | `Assets/Prototype/` (Editor-only, excluded from builds) | `Assets/Scripts/` |
-| **Architecture** | None, speed first | Pure C# core + thin Unity layer |
-| **Tests** | None | Every phase |
-| **Progress** | One playable phase at a time | One tested phase at a time |
-
-</details>
-
-<details name="work">
-<summary><b>🤖 AI-Assisted Workflow</b></summary>
-<br>
-
-AI is used as a pair programmer under rules I designed — not as an autopilot.
-
-| Me | AI |
-|---|---|
-| Game analysis, phase plan, decisions | Implements one phase at a time |
-| Rules & constraints per mode | Follows the active mode's rules |
-| Playtesting in the Editor, tuning | Explains the approach before coding |
-| Deciding when a phase is done | Stops after every phase |
-
-- **Modes:** `PROTOTYPE` and `PRODUCTION` rule sets; only I switch between them.
-- **Folder-scoped rules:** prototype rules can't leak into production code.
-- **Findings first:** every settled rule, tuning value and rejected idea goes into `FINDINGS.md`.
-
-Rules → [`CLAUDE.md`](CLAUDE.md) · [`.claude/`](.claude/)
-
-</details>
-
-<details name="work">
-<summary><b>📁 Project Layout</b></summary>
-<br>
-
-```
-Assets/
-  Art/            models, textures, audio, UI sprites
-  Prefabs/        GroundTile, BlockPiece, ArrowPiece, WallPiece, DoorPiece, BlockExitParticles
-  Prototype/      disposable prototype code + shaders (Game.Prototype.asmdef, Editor-only)
-  Scenes/         Prototype.unity
-  Plugins/        DOTween
-docs/
-  prototype/      PrototypeV1.md, FINDINGS.md, AlgorithmExplanation.md, videos
-```
-
-</details>
+⏳ **Not started.** It begins after the prototype's last phase, from a harvest of `FINDINGS.md`. The prototype code is read as a spec and never migrated.
 
 ---
 
