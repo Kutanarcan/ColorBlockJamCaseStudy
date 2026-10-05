@@ -1,11 +1,40 @@
-# PrototypeV1 — ColorBlockJamCaseStudy
+<div align="center">
 
-## 1. Project
+# 🗺️ PrototypeV1
+
+**The prototype plan for the Color Block Jam case study**
+
+![Phases](https://img.shields.io/badge/Phases-10_done_·_1_skipped-2ea043)
+![Questions](https://img.shields.io/badge/Open_questions-7/7_answered-2ea043)
+![Mode](https://img.shields.io/badge/Mode-🧪_Prototype-d29922)
+
+<sub>[README](../../README.md) · [FINDINGS](FINDINGS.md) · [Algorithm Explanation](AlgorithmExplanation.md)</sub>
+
+</div>
+
+> [!IMPORTANT]
+> **Prototype question:** Can the existing model kit be used to build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
+
+| # | Section | What is in it |
+|---|---|---|
+| 1 | [📋 Project](#-1-project) | What V1 is and the question it answers |
+| 2 | [🎮 Core Logic](#-2-color-block-jam--core-logic) | The rules of the original game |
+| 3 | [🎯 V1 Scope](#-3-v1-scope) | What is in and what is deferred |
+| 4 | [🧰 Asset Analysis](#-4-asset-analysis) | Measured model data, prefabs, edge placement, autotile rule |
+| 5 | [🧬 Data Shape](#-5-data-shape-agreed) | The agreed runtime data |
+| 6 | [🪜 Phase Plan](#-6-phase-plan) | The 11 phases and their status |
+| 7 | [⏳ Deferred](#-7-deferred) | Out of V1 |
+| 8 | [❓ Open Questions](#-8-open-questions) | Q1–Q7 and their answers |
+| 9 | [🌱 FINDINGS Seed](#-9-findingsmd-seed) | The lines FINDINGS.md started with |
+
+---
+
+## 📋 1. Project
 - Unity case study that rebuilds the core loop of **Color Block Jam** (Rollic / Gybe Games, 2024, mobile puzzle).
 - V1 is a **prototype**: the output is knowledge, the code is disposable (see `.claude/modes/prototype.md`).
 - **Prototype question:** Can the existing model kit be used to build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
 
-## 2. Color Block Jam — Core Logic
+## 🎮 2. Color Block Jam — Core Logic
 - **Board:** a rectangular grid of cells, enclosed by walls. Some wall segments on the edges are **colored doors**.
 - **Blocks:** polyomino shapes (1×1, 1×N, N×M, L, T…). One color per block. A block always covers whole cells.
 - **Move:** the player drags a block. It slides through empty cells and stops at walls and other blocks. Blocks never overlap.
@@ -15,11 +44,13 @@
 - **The puzzle:** move order. Blocks block each other; the player must clear paths in the right sequence.
 - Mechanics of the original that are **out of V1 scope:** time limit, obstacles, gate traps with buttons, other special blocks.
 
-## 3. V1 Scope
+## 🎯 3. V1 Scope
 - **In:** grid, blocks of any polyomino shape (via `BlockDrawRule`, including L/T), board walls, doors, drag, grid collision, axis lock, exit, win.
 - **Deferred:** see section 7.
 
-## 4. Asset Analysis
+---
+
+## 🧰 4. Asset Analysis
 Source: `Models/` — `GroundGrid.fbx`, `BlockParts.fbx`, `WallAndDoor.fbx`, `Arrows.fbx`.
 Values below are measured from the mesh data and given in Unity import scale (meters).
 
@@ -186,7 +217,9 @@ The place where the autotile rule above lives: given a block's shape, it decides
 - **Prototype code:** a plain function, ugly is fine. Its value is in revealing which shapes break the rule.
 - **Test shapes:** 1×1, 1×3, 2×2, 2×3, L, T, S/Z, plus (+), U, 3×3 ring with a hole, two cells of the same block touching only diagonally.
 
-## 5. Data Shape (agreed)
+---
+
+## 🧬 5. Data Shape (agreed)
 ```
 int[,] cells            // W×H, value = blockId, -1 = empty
 Block { id, color, axisLock, List<Vector2Int> cells }
@@ -207,41 +240,52 @@ vEdges[W+1, H]          // vertical cell edges (left / right of a cell):  Open /
   - This is the "door ≥ block span" rule as a per-cell check: one `Wall` edge or a wrong color blocks the exit.
   - No `length` or span math is needed.
 
-## 6. Phase Plan
+---
+
+## 🪜 6. Phase Plan
 One phase per answer, following the prototype process. **Files touched** for each phase are decided when that phase starts.
 
 | # | Phase | Done when (visible in Editor) | Depends on | Status |
 |---|---|---|---|---|
-| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | Done |
-| 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | Done |
-| 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | Done |
-| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | Done |
-| 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | Done |
-| 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | Done |
-| 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | Done |
-| 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | Done |
-| 9 | Axis lock | A locked block moves on one axis only, with an `Arrow` on top | — | Done |
-| 10 | Exit through door | A block reaching a matching-color door that is wide enough disappears | — | Done |
-| 11 | Win | A win message appears when all blocks have exited | — | Skipped |
+| 1 | Grid renders | W×H `GroundGrid` tiles laid out at cell = 2 pitch | — | ✅ Done |
+| 2 | 1×1 block | A single-cell block (4 × `OuterCorner`) appears with correct orientation and height, colored | Q2, Q6 | ✅ Done |
+| 3 | BlockDrawRule: convex shapes | `BlockDrawRule` dresses 1×N and N×M blocks with `OuterCorner` / `Edge` / `Center` (pass 2 only) | Q6 | ✅ Done |
+| 4 | BlockDrawRule: concave shapes | L, T, S/Z, +, U and ring blocks render correctly with `InnerCorner` (pass 1 added) | Q6 | ✅ Done |
+| 5 | Board walls | All four edges of the board closed with `Wall`, `Corner` on each outer corner | — | ✅ Done |
+| 6 | Doors | Colored `DoorPiece`s replace wall segments on an edge, arrows pointing out; placed side by side they form an N-cell door | — | ✅ Done |
+| 7 | Drag | A block can be selected and dragged, following the finger freely (no collision yet) | — | ✅ Done |
+| 8 | Grid collision | The block moves cell by cell and stops at other blocks and walls | Q5 | ✅ Done |
+| 9 | Axis lock | A locked block moves on one axis only, with an `Arrow` on top | — | ✅ Done |
+| 10 | Exit through door | A block reaching a matching-color door that is wide enough disappears | — | ✅ Done |
+| 11 | Win | A win message appears when all blocks have exited | — | ⏭️ Skipped |
 
-## 7. Deferred
+## ⏳ 7. Deferred
 - Holed and irregular board shapes (board mask).
 - `WallNotch` and concave board edges.
 - Time limit and all special mechanics of the original.
 
-## 8. Open Questions
+---
+
+## ❓ 8. Open Questions
 
 | # | Question | Needed by | Answer |
 |---|---|---|---|
-| Q1 | Are L/T blocks (`InnerCorner`) in V1 scope? | Phase 4 | **Answered:** yes, via `BlockDrawRule` (Phases 3–4). |
-| Q2 | Level authoring format: inspector field list, ASCII text, or hand-placed in scene? (Fastest for a prototype: inspector field list.) | Phase 2 | **Answered:** inspector field list (`List<BlockData>` on `Board`). |
-| Q3 | Which piece goes on the outer corners: `Corner_1`, `corner_4` or `corner_5`? | Phase 5 | **Answered:** `corner_5`, kept as the only `Corner`. |
-| Q4 | Where should `Door_Arrow` be placed? | Phase 6 | **Answered:** on the door top, centered; shares the `Door` pivot. |
-| Q5 | Drag style: free 2D, or one axis per step? Settle by trying it. | Phases 7–8 | **Answered:** free 2D drag (as in the original), visual clamped to reachable space; snaps to the nearest reachable cell on release. |
-| Q6 | At root rotation 0, which Unity quadrant does a single `BlockPiece` cover, and which quadrant is `InnerCorner`'s empty one? Mesh data says they should be the same. Early screenshots showed top-right vs. bottom-right, possibly due to a Y rotation on the test object. | Phases 2–4 | **Answered:** at rotation 0 OuterCorner, Edge, Center all cover the pivot's top-right quadrant; Edge wall faces +Z. InnerCorner pivot = vertex, empty quadrant (+X, +Z) at rotation 0. |
-| Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | **Answered:** no; exit and drag tween the root, since logic never reads an exited block's root. The exit cut is a shader clip plane, not a Visuals effect. |
+| Q1 | Are L/T blocks (`InnerCorner`) in V1 scope? | Phase 4 | ✅ yes, via `BlockDrawRule` (Phases 3–4). |
+| Q2 | Level authoring format: inspector field list, ASCII text, or hand-placed in scene? (Fastest for a prototype: inspector field list.) | Phase 2 | ✅ inspector field list (`List<BlockData>` on `Board`). |
+| Q3 | Which piece goes on the outer corners: `Corner_1`, `corner_4` or `corner_5`? | Phase 5 | ✅ `corner_5`, kept as the only `Corner`. |
+| Q4 | Where should `Door_Arrow` be placed? | Phase 6 | ✅ on the door top, centered; shares the `Door` pivot. |
+| Q5 | Drag style: free 2D, or one axis per step? Settle by trying it. | Phases 7–8 | ✅ free 2D drag (as in the original), visual clamped to reachable space; snaps to the nearest reachable cell on release. |
+| Q6 | At root rotation 0, which Unity quadrant does a single `BlockPiece` cover, and which quadrant is `InnerCorner`'s empty one? Mesh data says they should be the same. Early screenshots showed top-right vs. bottom-right, possibly due to a Y rotation on the test object. | Phases 2–4 | ✅ at rotation 0 OuterCorner, Edge, Center all cover the pivot's top-right quadrant; Edge wall faces +Z. InnerCorner pivot = vertex, empty quadrant (+X, +Z) at rotation 0. |
+| Q7 | Does `Block_{id}` also follow the root → `Visuals` pattern, so block-wide effects (exit, selection) play on `Visuals` while the root keeps the logical position? | Phase 7 (drag) or Phase 10 (exit) | ✅ no; exit and drag tween the root, since logic never reads an exited block's root. The exit cut is a shader clip plane, not a Visuals effect. |
 
-## 9. FINDINGS.md Seed
+---
+
+## 🌱 9. FINDINGS.md Seed
+
+<details>
+<summary>The lines <code>FINDINGS.md</code> was opened with (kept for history)</summary>
+<br>
+
 When opening Phase 1, create `docs/prototype/FINDINGS.md` with the prototype question (section 1) and these lines:
 - `Rule: GroundGrid, BlockParts and Arrows FBX are not modified; their fixes live on the prefab's Mesh level. WallAndDoor.fbx was cleaned once and needs no fix.`
 - `Rule: Prefab = Root (grid position/rotation, gameplay) → Visuals (effects only) → Mesh (import fix; script swaps mesh/material only).`
@@ -262,3 +306,5 @@ When opening Phase 1, create `docs/prototype/FINDINGS.md` with the prototype que
 - `Rejected: One prefab per piece — repeats the same orientation fix ~10 times.`
 - `Rejected: Door inside WallPiece via mesh swap — DoorArrow had to be placed separately; DoorPiece places door + arrow in one step.`
 - `Rejected: Corner_1, corner_4, corner_3 — same function as corner_5 with worse topology (corner_4 had a triangle fan) or redundant (corner_3 = Corner + 2 Walls).`
+
+</details>
