@@ -1,3 +1,5 @@
+
+
 <div align="center">
 
 # 🧱 Color Block Jam — Case Study
@@ -29,12 +31,13 @@ from an existing 3D model kit — prototype first, production later.
 ### Gameplay
 <!-- Gameplay_1.mp4: drag the file into the GitHub editor and paste the generated user-attachments URL on the line below -->
 
-<sub>File: [`docs/prototype/Gameplay_1.mp4`](docs/prototype/Gameplay_1.mp4)</sub>
+https://github.com/user-attachments/assets/b0947644-7580-4f5f-8c1e-7055974298b3
+
 
 ### Marketing · Vol. 1
 <!-- Marketing_Vol1.mp4: drag the file into the GitHub editor and paste the generated user-attachments URL on the line below -->
 
-<sub>File: [`docs/prototype/Marketing_Vol1.mp4`](docs/prototype/Marketing_Vol1.mp4)</sub>
+https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080
 
 ## 🗺️ Roadmap
 
