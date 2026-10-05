@@ -3,7 +3,7 @@ namespace Game.Core
     /// <summary>
     /// Exit check for a blocked step: for every line the block covers along the direction, the first
     /// occupied cell ahead of the line's front cell must be a door of the block's (effective) color, facing
-    /// that direction, and accepting the block on that cell.
+    /// that direction.
     /// </summary>
     internal static class ExitRule
     {
@@ -44,8 +44,7 @@ namespace Game.Core
 
             return board.GetEntity(occupant) is Door door
                 && door.Direction == direction
-                && Colors.Of(door) == color
-                && Capabilities.CanAccept(door, cell, block);
+                && Colors.Of(door) == color;
         }
     }
 }

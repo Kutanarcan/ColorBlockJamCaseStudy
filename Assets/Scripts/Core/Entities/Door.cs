@@ -2,10 +2,7 @@ using System;
 
 namespace Game.Core
 {
-    /// <summary>
-    /// Accepts blocks of its color moving in <see cref="Direction"/>; a wall from any other side.
-    /// Modifiers can suspend or narrow what it accepts (<see cref="Capabilities.CanAccept"/>).
-    /// </summary>
+    /// <summary>Accepts blocks of its color moving in <see cref="Direction"/>; a wall from any other side.</summary>
     public sealed class Door : Entity
     {
         /// <summary>The color it was built with. Read the effective color through <see cref="Colors.Of"/>.</summary>

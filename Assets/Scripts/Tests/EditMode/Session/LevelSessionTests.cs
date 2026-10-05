@@ -31,7 +31,7 @@ namespace Game.Tests.EditMode
             session.TryMove(BlockAt(session, ACell), Direction.Down);
 
             Assert.That(session.State, Is.EqualTo(GameState.Playing));
-            Assert.That(session.Board.RemainingBlockCount, Is.EqualTo(1));
+            Assert.That(BlockAt(session, BCell).IsExited, Is.False);
         }
 
         [Test]
@@ -138,7 +138,6 @@ namespace Game.Tests.EditMode
             Assert.That(session.State, Is.EqualTo(GameState.Playing));
             Assert.That(session.RemainingTime, Is.EqualTo(10f));
             Assert.That(session.Board, Is.Not.SameAs(oldBoard));
-            Assert.That(session.Board.RemainingBlockCount, Is.EqualTo(2));
             Assert.That(session.MoveCount, Is.EqualTo(0));
             Assert.That(BlockAt(session, ACell).IsExited, Is.False);
             Assert.That(BlockAt(session, BCell).IsExited, Is.False);
