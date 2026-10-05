@@ -202,7 +202,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 > [!IMPORTANT]
 > **Goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Status:** 🧠 Design settled · 🪜 Phase 5 done (6/10) · ⏸️ Phase 6 next
+> **Status:** 🧠 Design settled · 🪜 Phase 5 done (6/14) · ⏸️ Phase 6 next
 > **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
 
 ## 🧬 Design at a Glance
@@ -213,8 +213,9 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 | **Entities** | Blocks, walls and doors share one base (shape + position + modifiers); walls and doors can sit anywhere. |
 | **Movement** | A step is valid when every target cell is empty or the block's own and no gate vetoes it. |
 | **Exit** | Each covered column scans forward; its first occupied cell must be a door of the block's color and direction. |
-| **Modifiers** | Gate (veto), Reactor (exit → counter), Board command (narrow API). Ice, Key/Lock, Rope/Scissors, Arrow and Tangled, all stackable. |
-| **Exit resolution** | Exit is the only trigger; a resolver walks the reactors in a fixed order, single pass. |
+| **Modifiers** | The base block always has `Move` and `Exit`; modifiers only declare parts (suspends, durability, move constraint) and central rules decide. V1 builds Ice and Arrow. |
+| **Events & commands** | Three events (exit, move committed, tick); listeners act only through command primitives. |
+| **Extensibility** | Any mechanic from the [Mechanics Reference](docs/ColorBlockJamMechanics.md) can be added without changing an existing file; a final phase proves it. |
 | **Game state** | Timer from level data, fail on timeout, continue adds time, restart rebuilds from level data. |
 | **Level data** | Polymorphic JSON in `Game.LevelIO` (Newtonsoft), `schemaVersion`, key-based loading ready for Addressables. |
 | **Level Editor** | Editor-only, data-oriented, refuses to save a level that breaks a validation rule. |
