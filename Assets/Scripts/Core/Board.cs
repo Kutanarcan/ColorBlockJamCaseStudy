@@ -14,7 +14,7 @@ namespace Game.Core
             Grid = new Grid(width, height);
             this.entities = entities;
             for (int i = 0; i < entities.Length; i++)
-                Write(entities[i]);
+                Fill(entities[i], entities[i].Id);
         }
 
         public Entity GetEntity(int id) => entities[id];
@@ -26,10 +26,21 @@ namespace Game.Core
             return id == Grid.Empty ? null : entities[id];
         }
 
-        private void Write(Entity entity)
+        /// <summary>
+        /// Clears every old cell first, then writes every new one. Clearing and writing cell by cell
+        /// would erase cells the entity still covers after the move.
+        /// </summary>
+        internal void MoveEntity(Entity entity, Cell offset)
+        {
+            Fill(entity, Grid.Empty);
+            entity.Position += offset;
+            Fill(entity, entity.Id);
+        }
+
+        private void Fill(Entity entity, int value)
         {
             for (int i = 0; i < entity.CellCount; i++)
-                Grid.Set(entity.GetCell(i), entity.Id);
+                Grid.Set(entity.GetCell(i), value);
         }
     }
 }
