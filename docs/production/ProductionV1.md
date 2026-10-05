@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-to_be_defined-6e7681)
+![Phases](https://img.shields.io/badge/Phases-0/10_done-6e7681)
 ![Decisions](https://img.shields.io/badge/Brainstorm-settled-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md)</sub>
@@ -31,7 +31,7 @@
 | 11 | [🛠️ Level Editor](#-11-level-editor) | Editor-only, data-oriented, validation |
 | 12 | [📦 Assemblies & Tests](#-12-assemblies--tests) | Assembly boundaries and test layout |
 | 13 | [🔬 From FINDINGS](#-13-from-findings) | How prototype costs are answered here |
-| 14 | [🪜 Phase Plan](#-14-phase-plan) | To be defined |
+| 14 | [🪜 Phase Plan](#-14-phase-plan) | Phases 0–9 with sub-steps and their tests |
 | 15 | [🧭 Ready For, Not Built](#-15-ready-for-not-built) | Extension points kept open on purpose |
 | 16 | [📝 Decision Log](#-16-decision-log) | Every brainstorm decision in one table |
 
@@ -301,8 +301,25 @@ How the prototype's costs and edge cases are answered by this design:
 ---
 
 ## 🪜 14. Phase Plan
-> [!NOTE]
-> To be defined together before Phase 1 starts. Logic phases come first and each ends with a green EditMode test.
+One phase per answer, following the production process. Every sub-step ends with a green EditMode test. **Files touched** for each phase are decided when that phase starts.
+
+**Order:** skeleton → grid → core game (move, exit, win/fail) → modifiers → data & tools (validation, IO, editor). Presentation comes after V1.
+
+| # | Phase | Sub-steps | Done when | Status |
+|---|---|---|---|---|
+| 0 | Skeleton | 0.1 `Game.Core` (no UnityEngine) + `Game.Tests.EditMode` asmdefs · 0.2 first test | `CoreAssembly_Compiles_WithoutUnityEngine` | ⏳ |
+| 1 | Grid & Entities | 1.1 `Direction` + cell ↔ index math · 1.2 entity base (shape + position; Block / Wall / Door) · 1.3 occupancy fill and cell query · 1.4 `LevelData` DTO + Core builder · 1.5 ASCII map → `LevelData` test helper | `Builder_PlacesEntities_IntoOccupancy` | ⏳ |
+| 2 | Movement | 2.1 step into empty cells · 2.2 blocked by wall / door / block, own cells free · 2.3 multi-cell shapes (bar, L, U) · 2.4 `TryMove` result `Moved / Blocked` | `TryMove_StopsAt_OccupiedCell` | ⏳ |
+| 3 | Exit | 3.1 straight door exit, batch clear · 3.2 rejects: wrong color, wrong direction, too wide · 3.3 recess: open U passes, U with a block inside fails · 3.4 several door entities, inner door direction | `UShape_WithBlockInRecess_DoesNotExit` | ⏳ |
+| 4 | Game State | 4.1 win · 4.2 timer (`ITimeProvider` fake) → fail · 4.3 continue `AddTime` · 4.4 restart from definition | `Restart_RestoresInitialState` | ⏳ |
+| 5 | Modifier Framework | 5.1 Gate contract + Arrow · 5.2 Reactor contract + `ExitResolver` + Ice · 5.3 amount filters + Key/Lock · 5.4 Rope/Scissors · 5.5 parallel stacking (Rope + Ice) | `RopeAndIce_BothMustResolve_BeforeMove` | ⏳ |
+| 6 | Tangled | 6.1 carried state + `Carried` gate, pair moves with the outer shape · 6.2 `ActivateBlock` board command, exit order · 6.3 ordered stacking (Ice on outer / inner), carried reactors count · 6.4 three-level chain | `OuterExit_ActivatesInner_AtLastPosition` | ⏳ |
+| 7 | Load-time Validation | 7.1 bounds and overlap · 7.2 carrier subset, no cycles · 7.3 unsupported `schemaVersion`, unknown modifier type | `Load_Rejects_CarrierCycle` | ⏳ |
+| 8 | LevelIO | 8.1 `Game.LevelIO` asmdef + tests · 8.2 discriminator registry, polymorphic modifiers · 8.3 round-trip, unknown type rejected · 8.4 `ILevelSource` contract (key-based) | `RoundTrip_PreservesAllModifiers` | ⏳ |
+| 9 | Level Editor | 9.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 9.2 validation rules · 9.3 window: painting, entity grouping · 9.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ⏳ |
+
+- **ASCII test helper (1.5) is test-only.** It lives in the test assembly and produces a plain `LevelData`. Core, LevelIO, the Editor and Runtime never see it. JSON stays the only level format.
+- **After V1 (headline only):** Presentation: `GameInstaller`, palette, `BlockDrawRule`, drag, exit visual, timer / continue UI.
 
 ---
 
@@ -347,3 +364,5 @@ How the prototype's costs and edge cases are answered by this design:
 | D24 | Validation | Load-time structural rules in Core; design and border rules in the Editor |
 | D25 | Direction | One shared `Direction` type |
 | D26 | Level Editor | Editor-only assembly, data-oriented, independent of Runtime |
+| D27 | Phase order | Validation before IO; Level Editor last |
+| D28 | ASCII test helper | Test-only; produces `LevelData`; never a level format |
