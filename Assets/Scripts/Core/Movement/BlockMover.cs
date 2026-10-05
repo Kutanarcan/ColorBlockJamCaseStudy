@@ -18,7 +18,7 @@ namespace Game.Core
 
             Cell offset = direction.ToOffset();
 
-            if (CanStep(block, offset))
+            if (board.CanPlace(block, offset))
             {
                 board.MoveEntity(block, offset);
 
@@ -33,21 +33,6 @@ namespace Game.Core
             }
 
             return MoveResult.Blocked;
-        }
-
-        private bool CanStep(Entity entity, Cell offset)
-        {
-            Grid grid = board.Grid;
-
-            for (int i = 0; i < entity.CellCount; i++)
-            {
-                int occupant = grid.Get(entity.GetCell(i) + offset);
-
-                if (occupant != Grid.Empty && occupant != entity.Id)
-                    return false;
-            }
-
-            return true;
         }
     }
 }

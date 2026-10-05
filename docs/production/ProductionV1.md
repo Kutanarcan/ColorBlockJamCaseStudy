@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-6/14_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-7/14_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](../ColorBlockJamMechanics.md)</sub>
@@ -355,7 +355,7 @@ One phase per answer, following the production process. Every sub-step ends with
 | 3 | Exit | 3.1 straight door exit, batch clear · 3.2 rejects: wrong color, wrong direction, too wide · 3.3 recess: open U passes, U with a block inside fails · 3.4 several door entities, inner door direction | `UShape_WithBlockInRecess_DoesNotExit` | ✅ |
 | 4 | Game State | 4.1 win · 4.2 timer driven by `Tick(dt)` → fail · 4.3 continue `AddTime` · 4.4 restart from definition | `Restart_RestoresInitialState` | ✅ |
 | 5 | Modifier Framework | 5.1 capabilities + `ISuspender` / `IDurable` / `IMoveConstraint` · 5.2 `Capabilities` + `ExitResolver` (depleted → removed) · 5.3 Ice, Arrow · 5.4 Key/Lock, Rope/Scissors (removed in Phase 6) · 5.5 parallel stacking | `RopeAndIce_BothMustResolve_BeforeMove` | ✅ |
-| 6 | Scope Trim | 6.1 remove Key/Lock and Rope/Scissors with their tests · 6.2 stacking proven with Ice + Arrow | `IceAndArrow_ArrowAppliesAfterThaw` | ⏳ |
+| 6 | Scope Trim | 6.1 remove Key/Lock and Rope/Scissors with their tests · 6.2 stacking proven with Ice + Arrow | `IceAndArrow_ArrowAppliesAfterThaw` | ✅ |
 | 7 | Events & Commands | 7.1 Exited / MoveCommitted / Ticked + listener interfaces + dispatcher · 7.2 command primitives; durability removal through `RemoveModifier` · 7.3 `CommitMove` + `MoveCount` · 7.4 `Fail` / `AddTime` from listeners | `Listener_CallingFail_FailsTheLevel` | ⏳ |
 | 8 | Rule Seams | 8.1 effective color (`IColorSource`) · 8.2 `Accept` capability + per-cell accept rules · 8.3 modifiers on walls and doors (DTO + builder) · 8.4 win exemption | `IceOnDoor_RejectsExit_UntilThawed` | ⏳ |
 | 9 | Dormant Entities | 9.1 stable ids in DTOs · 9.2 dormant state outside the occupancy · 9.3 `Activate` primitive · 9.4 activation into occupied cells: rule defined and tested | `DormantBlock_Activates_IntoFreeCells` | ⏳ |

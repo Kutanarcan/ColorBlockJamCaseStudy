@@ -35,6 +35,20 @@ namespace Game.Core
             return id == Grid.Empty ? null : entities[id];
         }
 
+        /// <summary>True when every cell the entity would cover after <paramref name="offset"/> is empty or its own.</summary>
+        public bool CanPlace(Entity entity, Cell offset)
+        {
+            for (int i = 0; i < entity.CellCount; i++)
+            {
+                int occupant = Grid.Get(entity.GetCell(i) + offset);
+
+                if (occupant != Grid.Empty && occupant != entity.Id)
+                    return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Clears every old cell first, then writes every new one. Clearing and writing cell by cell
         /// would erase cells the entity still covers after the move.

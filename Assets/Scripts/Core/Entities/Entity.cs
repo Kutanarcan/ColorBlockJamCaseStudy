@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Game.Core
 {
     /// <summary>
@@ -7,21 +9,19 @@ namespace Game.Core
     public abstract class Entity
     {
         private readonly Cell[] shape;
-        private readonly IModifier[] modifiers;
+        private readonly List<IModifier> modifiers;
 
         public int Id { get; }
         public Cell Position { get; internal set; }
         public int CellCount => shape.Length;
-        public int ModifierCount { get; private set; }
+        public int ModifierCount => modifiers.Count;
 
-        /// <param name="modifiers">Owned by the entity from here on; removal compacts it in place.</param>
         protected Entity(int id, Cell position, Cell[] shape, IModifier[] modifiers)
         {
             Id = id;
             Position = position;
             this.shape = shape;
-            this.modifiers = modifiers;
-            ModifierCount = modifiers.Length;
+            this.modifiers = new List<IModifier>(modifiers);
         }
 
         /// <summary>The absolute grid cell of shape cell <paramref name="index"/>.</summary>
@@ -29,15 +29,9 @@ namespace Game.Core
 
         public IModifier GetModifier(int index) => modifiers[index];
 
-        /// <summary>Removes one modifier and keeps the order of the rest. No allocation.</summary>
-        internal void RemoveModifierAt(int index)
-        {
-            ModifierCount--;
+        internal void AddModifier(IModifier modifier) => modifiers.Add(modifier);
 
-            for (int i = index; i < ModifierCount; i++)
-                modifiers[i] = modifiers[i + 1];
-
-            modifiers[ModifierCount] = null;
-        }
+        /// <summary>Keeps the order of the rest. Removing a modifier that is already gone does nothing.</summary>
+        internal void RemoveModifier(IModifier modifier) => modifiers.Remove(modifier);
     }
 }

@@ -99,6 +99,33 @@ namespace Game.Tests.EditMode
         }
 
         [Test]
+        public void CommitMove_CountsOnly_WhenABlockMoved()
+        {
+            LevelSession session = NewSession();
+
+            session.CommitMove();
+            Assert.That(session.MoveCount, Is.EqualTo(0));
+
+            session.TryMove(BlockAt(session, ACell), Direction.Right);
+            session.CommitMove();
+            Assert.That(session.MoveCount, Is.EqualTo(1));
+
+            session.CommitMove();
+            Assert.That(session.MoveCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Exit_EndsTheMove_SoACommitAfterItDoesNotCountTwice()
+        {
+            LevelSession session = NewSession();
+
+            session.TryMove(BlockAt(session, ACell), Direction.Down);
+            session.CommitMove();
+
+            Assert.That(session.MoveCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void Restart_RestoresInitialState()
         {
             LevelSession session = NewSession();
@@ -112,6 +139,7 @@ namespace Game.Tests.EditMode
             Assert.That(session.RemainingTime, Is.EqualTo(10f));
             Assert.That(session.Board, Is.Not.SameAs(oldBoard));
             Assert.That(session.Board.RemainingBlockCount, Is.EqualTo(2));
+            Assert.That(session.MoveCount, Is.EqualTo(0));
             Assert.That(BlockAt(session, ACell).IsExited, Is.False);
             Assert.That(BlockAt(session, BCell).IsExited, Is.False);
         }
