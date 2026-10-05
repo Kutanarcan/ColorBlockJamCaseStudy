@@ -1,0 +1,27 @@
+Production tarafı
+- İlk başta Logic tarafına odaklanarak başlayacağız
+- Logic tarafında testler ile oyun mantığını çalıştığından emin olacağız
+- 1D array kullanacağız ama block çeşitlilikleri değişkenlik gösterebildiği için burayı derinlemesine düşünmemiz gerekiyor
+- Sonuçta 1D Array Grid'i temsil edecek ama bizim Block'lara ve Blockları tanımlayacak Id'lere hangi cell'leri kapsadığına da bakmamız gerekiyor çünkü movement, yok olma sırasında batch olarak yok edebilmemiz gerekiyor
+- Bir de Ana Oyun mekaniği çoğunlukla aynı kalacak(Block'u denk gelen Door'dan geçir) ama ileride farklı özellikler sahip blocklar gelebilir
+    - Ice: Üzerinde sayı bulunan ve her bir block exit yaptığında sayısı azalan block
+    - Key-Lock: Bu 2 block bölümde aynı anda bulunmakta, Key'i içeren hareket ettirilebilir ama Key block parçalanmadan Lock block oynatılamaz
+    - Arrow: Sadece Arrow'un gösterdiği yöne gidilebilen blocklar
+    - Rope-Scissors: Bir obje üzerinde renkli ipler var ve diğer objelerin üstünde o renge karşılık gelen bir makas var. İpler olan block oynatılamaz ama makaslı objeler oynatılabilir. 
+    Her renk denk geldiği rengi söker. Bütün ipler kesinlince block serbest kalır ve oynatılabilir.
+    - TangledBlocks: İç içe girmiş 2 block var, dış block önce kendi renginde exit yapmalı, sonrasında diğer block serbest kalır ve artık o block'u oynayabilir duruma geliriz. 
+    - Son olarak önemli bir not şu: Blockların üstündeki özellikler stack yapılabilir. Örnek: İpli bir objenin üstüne Exit Sayacı eklenebilir. Böylece o objeyi oynatmak için 2'sinin de çözülmesi gereklidir.
+    - Aynı zamanda TangledBlocks üzerine Ice yerleştirilebilir, Ice açılmadan TangledBlocks aktif hale gelemez.
+    - Bu sonuçlara bakınca Level'leri oluştururken ve Runtime üzerinde çalıştırırken Interface(IMoveable, IDurabilty vs.) değerleri olan bir definition gerekecek.
+    - Aslında bir tane ana block yapımız var ve ana block yapımızın üstüne gelen ek özellikler gibi düşünebiliriz gibi geliyor ama bunu analiz etmeye devam edeceğiz.
+- Logic tarafını yazarken Blockların türlerini ve LevelData, LevelEditor Window gibi yapıları da hesaba katarak ilerleyeceğiz.
+- LevelData json'dan gelen bir değer olacak, LevelEditor'de jsonları görsel olarak görebilecek, o levelleri save, override edebilecek ve yeni leveller oluşturabileceğiz. Level Editor Validation Rules'da ekleyeceğiz.
+- Level editor'de performanstan ödün verilmeyecek, kullanının hızlı çalışabilmesi esas alınacak
+- LevelData'dan gelen bilgiler Grid üzerine Logic tarafında işlenebilecek şekilde ayarlanacak.
+- Görsel taraflara geçmeden önce Logic tarafının hepsini Testlerle doğrulamış olacağız
+- Grid üzerinde hareket edebilme özelliği, Wall durumları, içeride Wall olabilmesi, içeride Door olabilmesi, Findings kısmındaki edge case'ler
+
+
+Toplamak gerekirse: Elimizde 1D bir array var, bunların üstünde farklı şekillerde giydirilmiş blocklar var, bu blocklar empty olan her yere ilerleyebiliyorlar, wall ve kapının block özellikleri ortak,
+exit aynı zamanda uygunları Exit yapabiliyor. Birbirini etkileyen mantıklar var, her bir exit'ın sonucunu dinleyen ve onu işleyen de bir sistem olması lazım çünkü bazı blocklar buna bağlı olacak. 
+Yukarıda tanımladıklarıma göre ve atladığım bir şey varsa bunları konuşacağız ama presentation'a geçmeden önce 2 şeyi tamamiyle Logic katmanında oynayabileceğimizden emin olacağız. 
