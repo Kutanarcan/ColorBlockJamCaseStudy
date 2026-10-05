@@ -47,6 +47,70 @@ flowchart LR
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
 - Prototype code is a reference only. If a piece is worth keeping, it is refactored and refined to production standards first; nothing is copied over as is.
 
+<details>
+<summary><b>🤖 AI-Assisted Workflow</b></summary>
+<br>
+
+AI is used as a pair programmer under rules I designed — not as an autopilot. I don't just read and approve: I split the work into small phases, go through every step in detail, correct what is off and learn the code as it grows. The AI implements, explains and documents within the limits I set.
+
+**Who does what**
+
+| Me | AI |
+|---|---|
+| Analyze the game and the model kit, write the phase plan | Implements one phase at a time |
+| Write the rules and constraints for each mode | Follows the active mode's rules |
+| Correct phase definitions: split them, narrow them, ask for a plan first | Explains the approach before writing code |
+| Choose between approaches when there is a real trade-off | Lays out the options with a recommendation |
+| Review every phase line by line until I understand how it works | Answers questions and documents the algorithms |
+| Playtest and tune every phase in the Editor | Exposes every feel value in the Inspector |
+| Decide when a phase is done | Stops after every phase and waits for an explicit go |
+
+**How the rules are layered**
+
+| Layer | File | What it controls |
+|---|---|---|
+| Project | [`CLAUDE.md`](CLAUDE.md) | Communication style, folder layout, which mode is active, which plan is loaded |
+| Mode | [`.claude/modes/`](.claude/modes/) | The process: how phases are sliced, what "done" means, the answer format |
+| Folder | [`.claude/rules/`](.claude/rules/) | Code rules that load only for matching folders: `prototype.md` for `Assets/Prototype/`, `production/*` for `Assets/Scripts/` |
+| Plan | [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) | Game summary, asset analysis, phase list and open questions |
+
+The mode line in `CLAUDE.md` is changed only by me. The AI never infers the mode from the code, and stops to ask if the mode and its rules disagree.
+
+**One phase, start to finish**
+1. **Plan:** the AI states the goal, the files it will touch and what will be visible in the Editor when it is done. If the phase is too big or aimed wrong, I correct it before any code is written.
+2. **Decide:** if there is more than one sensible approach, it lists them with trade-offs and a recommendation; I pick.
+3. **Build:** the smallest change that makes the phase playable, with every feel value as a serialized field.
+4. **Review:** I read the change, question anything unclear and make sure I understand it before moving on.
+5. **Try:** I play it in the Editor, report what feels wrong and tune the values.
+6. **Record:** settled rules, tuning values, costs and rejected ideas go into [`FINDINGS.md`](docs/prototype/FINDINGS.md); answered questions are marked in the plan.
+7. **Stop:** the next phase starts only when I say so. A remark like "it works" is not a go.
+
+**Review depth per mode**
+
+| | 🧪 Prototype | 🏗️ Production |
+|---|---|---|
+| **Correctness & feel** | ✅ Every phase | ✅ Every phase |
+| **Understanding the code** | ✅ Every phase | ✅ Every phase |
+| **Readability, naming, comment cleanup** | ⏭️ Skipped on purpose — the code is a disposable reference | ✅ Every phase, by hand |
+| **Tests** | ⏭️ None | ✅ Every phase |
+
+**Keeping the rhythm**
+The phase rhythm is the rule I watch most closely. Once, the AI treated a "drag works" remark as approval and continued from Phase 7 into Phase 8 in the same answer. Two phases landed at once and the step-by-step review broke. I stopped it, and "no next phase without an explicit go" became a permanent rule in its memory. It has held since.
+
+**Examples from this prototype**
+- **Drag:** started as one axis per step; switched to free 2D drag after comparing it with the original game. Before the drag code was split into `Drag`, `DragCollision` and `Placement`, I asked for the plan first.
+- **Exit animation:** five options were compared (row-by-row hiding, depth mask, stencil, squash, clip plane). I chose the clip-plane shader because it handles every block shape, including `InnerCorner`. The work was then split into five small steps.
+- **Selection outline:** a screen-space outline was chosen over an inverted hull, because a multi-piece block would otherwise show seams between its pieces.
+- **Documentation:** the first algorithm write-up was too dense; I had it rewritten in a step-by-step style with terms, diagrams and worked examples.
+- **Known gaps:** edge cases found while documenting were logged as costs instead of being fixed on sight, so the prototype stayed fast.
+
+**What the AI does not do**
+- Switch modes, start the next phase or change the plan on its own.
+- Carry prototype code into production.
+- Make performance claims without a measurement.
+
+</details>
+
 ---
 
 # 🧪 Prototype
