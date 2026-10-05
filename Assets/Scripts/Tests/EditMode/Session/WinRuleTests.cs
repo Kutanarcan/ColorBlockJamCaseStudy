@@ -8,14 +8,14 @@ namespace Game.Tests.EditMode
         [Test]
         public void ExemptBlock_DoesNotHoldBackTheWin()
         {
-            var session = new LevelSession(AsciiLevel.Parse(
+            var session = LevelSession.TryCreate(AsciiLevel.Parse(
                     "######",
                     "#A..T#",
                     "#1####")
                 .Block('A', 0)
                 .Block('T', 1, new FakeModifierData(() => new FakeWinExempt()))
                 .Door('1', 0, Direction.Down)
-                .Build());
+                .Build()).Value;
 
             session.TryMove((Block)session.Board.EntityAt(new Cell(1, 1)), Direction.Down);
 
@@ -25,12 +25,12 @@ namespace Game.Tests.EditMode
         [Test]
         public void ExemptionAddedByACommand_WinsWithoutAnExit()
         {
-            var session = new LevelSession(AsciiLevel.Parse(
+            var session = LevelSession.TryCreate(AsciiLevel.Parse(
                     "#####",
                     "#T..#",
                     "#####")
                 .Block('T', 0, new FakeModifierData(() => new FakeBecomeExemptOnMove()))
-                .Build());
+                .Build()).Value;
             var t = (Block)session.Board.EntityAt(new Cell(1, 1));
 
             session.TryMove(t, Direction.Right);

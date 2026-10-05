@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Game.Core
 {
     public sealed class LevelSession : ITickable
@@ -17,10 +19,21 @@ namespace Game.Core
         /// <summary>Player moves that moved a block or ended in an exit.</summary>
         public int MoveCount { get; private set; }
 
-        public LevelSession(LevelData level)
+        private LevelSession(LevelData level)
         {
             this.level = level;
             Restart();
+        }
+
+        /// <summary>The only way in: an invalid level comes back as a failure listing every error.</summary>
+        public static Result<LevelSession> TryCreate(LevelData level)
+        {
+            IReadOnlyList<LevelError> errors = LevelValidator.Validate(level);
+
+            if (errors.Count > 0)
+                return Result<LevelSession>.Failure(string.Join("\n", errors));
+
+            return Result<LevelSession>.Success(new LevelSession(level));
         }
 
         public MoveResult TryMove(Block block, Direction direction)

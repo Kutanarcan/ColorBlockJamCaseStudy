@@ -52,7 +52,13 @@ namespace Game.Tests.EditMode
         public LevelData Build()
         {
             Dictionary<char, List<Cell>> cellsBySymbol = CollectCells(out int width);
-            var level = new LevelData { Width = width, Height = rows.Length, TimeLimit = timeLimit };
+            var level = new LevelData
+            {
+                SchemaVersion = LevelValidator.SupportedSchemaVersion,
+                Width = width,
+                Height = rows.Length,
+                TimeLimit = timeLimit
+            };
 
             if (cellsBySymbol.TryGetValue(WallSymbol, out List<Cell> wallCells))
                 level.Walls = new[] { new WallData { Cells = wallCells.ToArray() } };

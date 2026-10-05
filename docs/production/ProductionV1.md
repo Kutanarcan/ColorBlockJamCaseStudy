@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-9/13_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-10/13_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md)</sub>
@@ -364,7 +364,7 @@ One phase per answer, following the production process. Every sub-step ends with
 | 7 | Events & Commands | 7.1 Exited / MoveCommitted / Ticked + listener interfaces + dispatcher · 7.2 command primitives; durability removal through `RemoveModifier` · 7.3 `CommitMove` + `MoveCount` · 7.4 `Fail` / `AddTime` from listeners | `Listener_CallingFail_FailsTheLevel` | ✅ |
 | 8 | Rule Seams | 8.1 effective color (`IColorSource`) · 8.2 ~~`Accept` capability + per-cell accept rules~~ moved to an edit point (D43) · 8.3 ~~modifiers on walls and doors (DTO + builder)~~ moved to an edit point (D41) · 8.4 win exemption | `ColorSource_DecidesWhichDoorTheBlockExitsThrough` | ✅ |
 | 9 | ~~Dormant Entities~~ | Dropped from V1: dormant entities became a documented edit point (D42) | — | ➖ |
-| 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 unsupported `schemaVersion`, unknown modifier type · 10.3 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ⏳ |
+| 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 unsupported `schemaVersion`, unknown modifier type · 10.3 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ✅ |
 | 11 | LevelIO | 11.1 `Game.LevelIO` asmdef + tests · 11.2 discovered type registry, polymorphic modifiers · 11.3 round-trip, unknown type rejected · 11.4 `ILevelSource` contract (key-based) | `RoundTrip_PreservesAllModifiers` (incl. a test-assembly fake) | ⏳ |
 | 12 | Level Editor | 12.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 12.2 validation rules (discovered) · 12.3 window: painting, entity grouping, modifier editing (discovered) · 12.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ⏳ |
 | 13 | Additivity Proof | 13.1 one mechanic from the reference added end to end in the test assembly (data, IO, logic), zero `Game.Core` changes · 13.2 `docs/production/Extending.md`: recipe + edit points | `TurnBasedArrow_AddedWithoutCoreChanges` | ⏳ |
@@ -417,7 +417,7 @@ One phase per answer, following the production process. Every sub-step ends with
 | D28 | ASCII test helper | Test-only; produces `LevelData`; never a level format |
 | D29 | Timer input | Time enters Core only through `ITickable.Tick(dt)`; no `ITimeProvider`, tests pass `dt` directly |
 | D30 | Modifier model | Base block always has `Move` and `Exit`; modifiers only declare parts (`ISuspender`, `IMoveConstraint`, passive data). Central rules decide capabilities; a depleted modifier is removed. ~~`IDurable` part~~ — superseded by D45 |
-| D31 | Folder layout | One folder per mechanic under `Modifiers/` (runtime + DTO together); only the modifier framework (`IModifier`, `Durability`) at `Modifiers/` root. Rules that read modifier parts live with their domain: capabilities in `Movement/`, effective color in `Color/`, win exemption in `Session/`. Tests mirror only the first level |
+| D31 | Folder layout | One folder per mechanic under `Modifiers/` (runtime + DTO together); only the modifier framework (`IModifier`, `Durability`) at `Modifiers/` root. Rules that read modifier parts live with their domain: capabilities in `Movement/`, effective color in `Color/`, win exemption in `Session/`. A crowded domain folder splits into concept subfolders (`Level/Data`, `Level/Validation`); the folder root keeps its central types. Tests mirror only the first level |
 | D32 | Events & commands | Three events (Exited, MoveCommitted, Ticked), one-method listener interfaces, explicit dispatch; listeners act only through command primitives |
 | D33 | V1 mechanics | Normal block, Arrow, Ice. Key/Lock and Rope/Scissors are removed; Tangled is out of scope |
 | D34 | Additive criterion | Adding a mechanic from the reference must change no existing file; exceptions are documented edit points |
@@ -432,3 +432,4 @@ One phase per answer, following the production process. Every sub-step ends with
 | D43 | Door acceptance | `Accept` capability and per-cell accept rules (`IExitAcceptRule`) removed: nothing in V1 uses them once door modifiers are out of data (D41). They return with the wall / door edit point. `Board.RemainingBlockCount` removed too; `WinRule` alone decides the win |
 | D44 | Occupancy | An occupied cell always blocks; no passability check in `CanPlace`. Mechanics that open cells (Barrier, Ivy) take entities out of the occupancy (dormant edit point). Listener inputs (board view, exited-through doors) are a documented edit point, added as parameters when first needed |
 | D45 | Exit reactions | One way to react to an exit: `IExitListener`. `IDurable` and the dispatcher's built-in wear-down are removed; `Durability` is a component with `WearDown(owner, carrier, amount, commands)` that a listener calls. The dispatcher only dispatches. Filtering (which exits count) lives in the modifier's own listener |
+| D46 | Errors & acceptance | Authored data that is wrong returns a `Result` / `Result<T>`; wiring bugs throw. `LevelSession.TryCreate(level)` is the only way to start a session: it runs `LevelValidator` and returns a failure listing every error. `ModifierData.Validate()` returns `Result`. `LevelValidator` keeps returning the full `LevelError` list (Editor use) |

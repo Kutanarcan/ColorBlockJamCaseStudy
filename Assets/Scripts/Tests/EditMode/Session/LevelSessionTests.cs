@@ -10,7 +10,7 @@ namespace Game.Tests.EditMode
 
         // A and B each sit right above a door of their color: one push down exits.
         private static LevelSession NewSession() =>
-            new LevelSession(AsciiLevel.Parse(
+            LevelSession.TryCreate(AsciiLevel.Parse(
                     "######",
                     "#A..B#",
                     "#11#2#")
@@ -19,9 +19,40 @@ namespace Game.Tests.EditMode
                 .Door('1', 0, Direction.Down)
                 .Door('2', 1, Direction.Down)
                 .TimeLimit(10f)
-                .Build());
+                .Build()).Value;
 
         private static Block BlockAt(LevelSession session, Cell cell) => (Block)session.Board.EntityAt(cell);
+
+        [Test]
+        public void TryCreate_Fails_ForInvalidLevel()
+        {
+            LevelData level = AsciiLevel.Parse(
+                    "###",
+                    "#A#",
+                    "###")
+                .Block('A', 0)
+                .Build();
+            level.SchemaVersion = 0;
+
+            Result<LevelSession> result = LevelSession.TryCreate(level);
+
+            Assert.That(result.IsFailure, Is.True);
+            Assert.That(result.Error, Does.Contain(nameof(LevelErrorKind.UnsupportedSchemaVersion)));
+        }
+
+        [Test]
+        public void TryCreate_Succeeds_ForValidLevel()
+        {
+            Result<LevelSession> result = LevelSession.TryCreate(AsciiLevel.Parse(
+                    "###",
+                    "#A#",
+                    "###")
+                .Block('A', 0)
+                .Build());
+
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.Value.State, Is.EqualTo(GameState.Playing));
+        }
 
         [Test]
         public void ExitWithBlocksLeft_KeepsPlaying()

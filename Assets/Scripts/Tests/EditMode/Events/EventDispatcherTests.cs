@@ -11,7 +11,7 @@ namespace Game.Tests.EditMode
 
         // T has free cells to its right. A and B each sit above a door of their color: two exits available.
         private static LevelSession NewSession(ModifierData[] t, ModifierData[] a = null) =>
-            new LevelSession(AsciiLevel.Parse(
+            LevelSession.TryCreate(AsciiLevel.Parse(
                     "#######",
                     "#T..AB#",
                     "####12#")
@@ -21,7 +21,7 @@ namespace Game.Tests.EditMode
                 .Door('1', 0, Direction.Down)
                 .Door('2', 1, Direction.Down)
                 .TimeLimit(10f)
-                .Build());
+                .Build()).Value;
 
         private static ModifierData[] Mods(params ModifierData[] modifiers) => modifiers;
 

@@ -4,6 +4,7 @@ namespace Game.Core
 {
     public sealed class LevelData
     {
+        public int SchemaVersion;
         public int Width;
         public int Height;
         public float TimeLimit;

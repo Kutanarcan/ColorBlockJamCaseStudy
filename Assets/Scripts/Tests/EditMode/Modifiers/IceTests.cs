@@ -11,7 +11,7 @@ namespace Game.Tests.EditMode
 
         // T is frozen for 2 exits. A and B each sit above a door of their color.
         private static LevelSession NewSession() =>
-            new LevelSession(AsciiLevel.Parse(
+            LevelSession.TryCreate(AsciiLevel.Parse(
                     "#######",
                     "#T.AB.#",
                     "###12##")
@@ -20,7 +20,7 @@ namespace Game.Tests.EditMode
                 .Block('B', 1)
                 .Door('1', 0, Direction.Down)
                 .Door('2', 1, Direction.Down)
-                .Build());
+                .Build()).Value;
 
         private static Block BlockAt(LevelSession session, Cell cell) => (Block)session.Board.EntityAt(cell);
 

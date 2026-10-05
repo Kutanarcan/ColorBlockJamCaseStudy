@@ -11,7 +11,7 @@ namespace Game.Tests.EditMode
 
         // R has free cells on both sides. A and B each sit above a door of their color: two exits available.
         private static LevelSession NewSession(params ModifierData[] rModifiers) =>
-            new LevelSession(AsciiLevel.Parse(
+            LevelSession.TryCreate(AsciiLevel.Parse(
                     "########",
                     "#.R..AB#",
                     "#####12#")
@@ -20,7 +20,7 @@ namespace Game.Tests.EditMode
                 .Block('B', 1)
                 .Door('1', 0, Direction.Down)
                 .Door('2', 1, Direction.Down)
-                .Build());
+                .Build()).Value;
 
         private static Block BlockAt(LevelSession session, Cell cell) => (Block)session.Board.EntityAt(cell);
 
