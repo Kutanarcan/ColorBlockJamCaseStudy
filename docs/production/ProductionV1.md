@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-5/10_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-6/10_done-1f6feb)
 ![Decisions](https://img.shields.io/badge/Brainstorm-settled-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md)</sub>
@@ -312,7 +312,7 @@ One phase per answer, following the production process. Every sub-step ends with
 | 2 | Movement | 2.1 step into empty cells · 2.2 blocked by wall / door / block, own cells free · 2.3 multi-cell shapes (bar, L, U) · 2.4 `TryMove` result `Moved / Blocked` | `TryMove_StopsAt_OccupiedCell` | ✅ |
 | 3 | Exit | 3.1 straight door exit, batch clear · 3.2 rejects: wrong color, wrong direction, too wide · 3.3 recess: open U passes, U with a block inside fails · 3.4 several door entities, inner door direction | `UShape_WithBlockInRecess_DoesNotExit` | ✅ |
 | 4 | Game State | 4.1 win · 4.2 timer driven by `Tick(dt)` → fail · 4.3 continue `AddTime` · 4.4 restart from definition | `Restart_RestoresInitialState` | ✅ |
-| 5 | Modifier Framework | 5.1 Gate contract + Arrow · 5.2 Reactor contract + `ExitResolver` + Ice · 5.3 amount filters + Key/Lock · 5.4 Rope/Scissors · 5.5 parallel stacking (Rope + Ice) | `RopeAndIce_BothMustResolve_BeforeMove` | ⏳ |
+| 5 | Modifier Framework | 5.1 Gate contract + Arrow · 5.2 Reactor contract + `ExitResolver` + Ice · 5.3 amount filters + Key/Lock · 5.4 Rope/Scissors · 5.5 parallel stacking (Rope + Ice) | `RopeAndIce_BothMustResolve_BeforeMove` | ✅ |
 | 6 | Tangled | 6.1 carried state + `Carried` gate, pair moves with the outer shape · 6.2 `ActivateBlock` board command, exit order · 6.3 ordered stacking (Ice on outer / inner), carried reactors count · 6.4 three-level chain | `OuterExit_ActivatesInner_AtLastPosition` | ⏳ |
 | 7 | Load-time Validation | 7.1 bounds and overlap · 7.2 carrier subset, no cycles · 7.3 unsupported `schemaVersion`, unknown modifier type | `Load_Rejects_CarrierCycle` | ⏳ |
 | 8 | LevelIO | 8.1 `Game.LevelIO` asmdef + tests · 8.2 discriminator registry, polymorphic modifiers · 8.3 round-trip, unknown type rejected · 8.4 `ILevelSource` contract (key-based) | `RoundTrip_PreservesAllModifiers` | ⏳ |
@@ -368,3 +368,4 @@ One phase per answer, following the production process. Every sub-step ends with
 | D28 | ASCII test helper | Test-only; produces `LevelData`; never a level format |
 | D29 | Timer input | Time enters Core only through `ITickable.Tick(dt)`; no `ITimeProvider`, tests pass `dt` directly |
 | D30 | Modifier model | Base block always has `Move` and `Exit`; modifiers only declare parts (`ISuspender`, `IDurable`, `IMoveConstraint`, passive data). Central rules live in `Capabilities` and `ExitResolver`; a depleted modifier is removed. Replaces Gate / Reactor (D9, §6) |
+| D31 | Folder layout | One folder per mechanic under `Modifiers/` (runtime + DTO together: `Freeze`, `KeyLock`, `RopeScissors`, `OneWay`); modifier framework at `Modifiers/` root. Tests mirror only the first level |
