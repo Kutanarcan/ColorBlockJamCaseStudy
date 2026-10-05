@@ -2,13 +2,15 @@ namespace Game.Core
 {
     public sealed class Block : Entity
     {
-        public int ColorId { get; }
+        /// <summary>The color it was built with. Read the effective color through <see cref="Colors.Of"/>.</summary>
+        public int BaseColorId { get; }
+
         public bool IsExited { get; internal set; }
 
-        public Block(int id, Cell position, Cell[] shape, int colorId, IModifier[] modifiers)
+        public Block(int id, Cell position, Cell[] shape, int baseColorId, IModifier[] modifiers)
             : base(id, position, shape, modifiers)
         {
-            ColorId = colorId;
+            BaseColorId = baseColorId;
         }
     }
 }

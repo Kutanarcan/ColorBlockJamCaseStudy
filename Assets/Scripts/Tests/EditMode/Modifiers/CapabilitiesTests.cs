@@ -38,5 +38,40 @@ namespace Game.Tests.EditMode
             Assert.That(a.IsExited, Is.False);
             Assert.That(mover.TryMove(a, Direction.Right), Is.EqualTo(MoveResult.Moved));
         }
+
+        // Door modifiers do not come from level data in V1; they are added directly,
+        // the same way a listener would through the AddModifier command.
+        [Test]
+        public void LockedDoor_RejectsExit_UntilUnlocked()
+        {
+            Board board = NewBoard();
+            var a = (Block)board.EntityAt(ACell);
+            var door = (Door)board.EntityAt(new Cell(1, 0));
+            var doorLock = new FakeDoorLock();
+            var mover = new BlockMover(board);
+
+            door.AddModifier(doorLock);
+            Assert.That(mover.TryMove(a, Direction.Down), Is.EqualTo(MoveResult.Blocked));
+
+            door.RemoveModifier(doorLock);
+            Assert.That(mover.TryMove(a, Direction.Down), Is.EqualTo(MoveResult.Exited));
+        }
+
+        [TestCase("#AA.#", MoveResult.Blocked)] // bar needs both cells, one is closed
+        [TestCase("#A..#", MoveResult.Exited)]  // single cell uses only the open one
+        public void AcceptRule_CanCloseOneCellOfADoor(string blockRow, MoveResult expected)
+        {
+            Board board = BoardBuilder.Build(AsciiLevel.Parse(
+                    "#####",
+                    blockRow,
+                    "#11##")
+                .Block('A', 0)
+                .Door('1', 0, Direction.Down)
+                .Build());
+            var a = (Block)board.EntityAt(ACell);
+            board.EntityAt(new Cell(1, 0)).AddModifier(new FakeClosedDoorCell(new Cell(2, 0)));
+
+            Assert.That(new BlockMover(board).TryMove(a, Direction.Down), Is.EqualTo(expected));
+        }
     }
 }

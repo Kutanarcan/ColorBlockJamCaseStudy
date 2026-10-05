@@ -1,5 +1,8 @@
 Planlama geçen süre: 2 saat
 Plan V1 süresi: 
+Session-1 -> 4 saat
+Session-2 -> ? saat
+Session-3 -> ? saat
 
 Production tarafı
 - İlk başta Logic tarafına odaklanarak başlayacağız

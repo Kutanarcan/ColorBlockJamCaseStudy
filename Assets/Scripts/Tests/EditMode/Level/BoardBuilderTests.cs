@@ -26,11 +26,11 @@ namespace Game.Tests.EditMode
             Assert.That(board.EntityAt(new Cell(3, 2)), Is.Null);
 
             var a = (Block)board.EntityAt(new Cell(1, 2));
-            Assert.That(a.ColorId, Is.EqualTo(0));
+            Assert.That(a.BaseColorId, Is.EqualTo(0));
             Assert.That(board.EntityAt(new Cell(2, 2)), Is.SameAs(a));
 
             var b = (Block)board.EntityAt(new Cell(2, 1));
-            Assert.That(b.ColorId, Is.EqualTo(1));
+            Assert.That(b.BaseColorId, Is.EqualTo(1));
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace Game.Tests.EditMode
             Board board = BoardBuilder.Build(SampleLevel());
             var door = (Door)board.EntityAt(new Cell(2, 0));
 
-            Assert.That(door.ColorId, Is.EqualTo(0));
+            Assert.That(door.BaseColorId, Is.EqualTo(0));
             Assert.That(door.Direction, Is.EqualTo(Direction.Down));
         }
 

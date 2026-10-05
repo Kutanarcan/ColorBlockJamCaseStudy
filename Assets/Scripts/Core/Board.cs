@@ -8,7 +8,7 @@ namespace Game.Core
         public Grid Grid { get; }
         public int EntityCount => entities.Length;
 
-        /// <summary>Blocks that have not exited yet. The level is won when this reaches zero.</summary>
+        /// <summary>Blocks that have not exited yet. Winning is decided by <see cref="WinRule"/>.</summary>
         public int RemainingBlockCount { get; private set; }
 
         /// <param name="entities">Indexed by id: <c>entities[i].Id == i</c>.</param>

@@ -2,17 +2,19 @@ namespace Game.Core
 {
     /// <summary>
     /// Exit check for a blocked step: for every line the block covers along the direction, the first
-    /// occupied cell ahead of the line's front cell must be a door of the block's color facing that direction.
+    /// occupied cell ahead of the line's front cell must be a door of the block's (effective) color, facing
+    /// that direction, and accepting the block on that cell.
     /// </summary>
     internal static class ExitRule
     {
         public static bool CanExit(Board board, Block block, Direction direction)
         {
             Cell offset = direction.ToOffset();
+            int color = Colors.Of(block);
 
             for (int i = 0; i < block.CellCount; i++)
             {
-                if (!LineAllowsExit(board, block, block.GetCell(i), offset, direction))
+                if (!LineAllowsExit(board, block, color, block.GetCell(i), offset, direction))
                     return false;
             }
 
@@ -24,7 +26,8 @@ namespace Game.Core
         /// cell means <paramref name="from"/> is not the front of its line; the front cell's scan decides.
         /// Terminates because the grid's outer ring is walls and doors.
         /// </summary>
-        private static bool LineAllowsExit(Board board, Block block, Cell from, Cell offset, Direction direction)
+        private static bool LineAllowsExit(Board board, Block block, int color, Cell from, Cell offset,
+            Direction direction)
         {
             Grid grid = board.Grid;
             Cell cell = from + offset;
@@ -41,7 +44,8 @@ namespace Game.Core
 
             return board.GetEntity(occupant) is Door door
                 && door.Direction == direction
-                && door.ColorId == block.ColorId;
+                && Colors.Of(door) == color
+                && Capabilities.CanAccept(door, cell, block);
         }
     }
 }

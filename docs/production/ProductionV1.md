@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-7/14_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-8/14_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](../ColorBlockJamMechanics.md)</sub>
@@ -75,8 +75,8 @@ Every occupant of the grid is an entity with the same base:
 | Kind | Shape + position | Moves | Extra data | Modifiers |
 |---|---|---|---|---|
 | **Block** | ✔ | ✔ | `colorId` | ✔ |
-| **Wall** | ✔ | ✘ | — | ✔ (from Phase 8) |
-| **Door** | ✔ | ✘ | `colorId`, `direction` | ✔ (from Phase 8) |
+| **Wall** | ✔ | ✘ | — | Runtime only (edit point, §8) |
+| **Door** | ✔ | ✘ | `colorId`, `direction` | Runtime only (edit point, §8) |
 
 - **Shape** = cells relative to an anchor, immutable. **Position** = the anchor's cell.
 - A move changes only the position: clear the old cells, write the new ones.
@@ -150,7 +150,7 @@ y0   D D D          column 3: front (3,1) → (3,0) is a blue Down door ✔
 
 | Modifier | Parts | Meaning |
 |---|---|---|
-| **Ice** `{ count }` | `Suspends = Move \| Exit` · `Durability = count` · `AmountFor = 1` | Frozen until `count` blocks have exited, then removed |
+| **Ice** `{ count }` | `Suspends = Move \| Exit` · `Durability = count` · `AmountFor = 1` | Frozen: cannot move or exit until `count` blocks have exited, then removed |
 | **Arrow** `{ direction }` | `IMoveConstraint` | Moves, and therefore exits, in one direction only |
 
 ### Stacking
@@ -204,7 +204,7 @@ Listeners never touch the board or the session directly. They get a narrow comma
 | **Command primitives** | Effects composed from primitives | 7 | Fake listener calling `Fail` |
 | **Move boundary** | `CommitMove` + `MoveCount` | 7 | Test |
 | **Effective color** | `IColorSource` can change a color; one read point | 8 | Fake color modifier |
-| **Exit acceptance** | `Accept` capability + per-cell accept rules; modifiers on walls and doors | 8 | **Real:** Ice on a door works unchanged (Iced Door) |
+| **Exit acceptance** | `Accept` capability + per-cell accept rules on doors | 8 | Fake door lock, fake closed door cell |
 | **Win exemption** | A modifier can declare that its block does not count toward win | 8 | Fake never-exiting block |
 | **Dormant entities** | Stable ids, start outside the occupancy, `Activate` | 9 | Fake hidden block |
 | **Discovery** | JSON type names, editor drawing and validation rules found by attribute | 10–12 | Fake modifier round-trip and editor display |
@@ -217,6 +217,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 | **Floor layer** (non-blocking cell features) | Colorful Path, Button, Laser receiver | `Grid`, `Board`, builder, `CanStep` |
 | **Movement groups** | Combined, Magnet | `CanStep`, `MoveEntity` |
 | **A new primitive** | A fourth event type or a new command primitive | Dispatcher / command API |
+| **Wall / door modifiers in data** | Iced Door, Locked Door, Laser | `WallData`, `DoorData`, builder (the runtime already accepts them) |
 
 ### Research → seam map (examples)
 
@@ -225,7 +226,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 | Turn Based Arrow | `IMoveConstraint` + `IDurable` |
 | Moving Blocks | `ISuspender(Exit)` + win exemption |
 | Curtain, Barrier | Exited listener + `AddModifier` / `RemoveModifier` |
-| Iced Door, Locked Door | Ice / a lock on a door (`Accept`) |
+| Iced Door, Locked Door | A door modifier suspending `Accept` (after the wall / door data edit point) |
 | Color-Switching Block | Exited listener + color modifier |
 | Dynamite | MoveCommitted listener + `Fail` |
 | Time Capsule | Own-exit listener + `AddTime` |
@@ -356,8 +357,8 @@ One phase per answer, following the production process. Every sub-step ends with
 | 4 | Game State | 4.1 win · 4.2 timer driven by `Tick(dt)` → fail · 4.3 continue `AddTime` · 4.4 restart from definition | `Restart_RestoresInitialState` | ✅ |
 | 5 | Modifier Framework | 5.1 capabilities + `ISuspender` / `IDurable` / `IMoveConstraint` · 5.2 `Capabilities` + `ExitResolver` (depleted → removed) · 5.3 Ice, Arrow · 5.4 Key/Lock, Rope/Scissors (removed in Phase 6) · 5.5 parallel stacking | `RopeAndIce_BothMustResolve_BeforeMove` | ✅ |
 | 6 | Scope Trim | 6.1 remove Key/Lock and Rope/Scissors with their tests · 6.2 stacking proven with Ice + Arrow | `IceAndArrow_ArrowAppliesAfterThaw` | ✅ |
-| 7 | Events & Commands | 7.1 Exited / MoveCommitted / Ticked + listener interfaces + dispatcher · 7.2 command primitives; durability removal through `RemoveModifier` · 7.3 `CommitMove` + `MoveCount` · 7.4 `Fail` / `AddTime` from listeners | `Listener_CallingFail_FailsTheLevel` | ⏳ |
-| 8 | Rule Seams | 8.1 effective color (`IColorSource`) · 8.2 `Accept` capability + per-cell accept rules · 8.3 modifiers on walls and doors (DTO + builder) · 8.4 win exemption | `IceOnDoor_RejectsExit_UntilThawed` | ⏳ |
+| 7 | Events & Commands | 7.1 Exited / MoveCommitted / Ticked + listener interfaces + dispatcher · 7.2 command primitives; durability removal through `RemoveModifier` · 7.3 `CommitMove` + `MoveCount` · 7.4 `Fail` / `AddTime` from listeners | `Listener_CallingFail_FailsTheLevel` | ✅ |
+| 8 | Rule Seams | 8.1 effective color (`IColorSource`) · 8.2 `Accept` capability + per-cell accept rules · 8.3 ~~modifiers on walls and doors (DTO + builder)~~ moved to an edit point (D41) · 8.4 win exemption | `LockedDoor_RejectsExit_UntilUnlocked` | ⏳ |
 | 9 | Dormant Entities | 9.1 stable ids in DTOs · 9.2 dormant state outside the occupancy · 9.3 `Activate` primitive · 9.4 activation into occupied cells: rule defined and tested | `DormantBlock_Activates_IntoFreeCells` | ⏳ |
 | 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 id references · 10.3 unsupported `schemaVersion`, unknown modifier type · 10.4 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ⏳ |
 | 11 | LevelIO | 11.1 `Game.LevelIO` asmdef + tests · 11.2 discovered type registry, polymorphic modifiers · 11.3 round-trip, unknown type rejected · 11.4 `ILevelSource` contract (key-based) | `RoundTrip_PreservesAllModifiers` (incl. a test-assembly fake) | ⏳ |
@@ -421,3 +422,5 @@ One phase per answer, following the production process. Every sub-step ends with
 | D37 | Board seams | Only dormant entities are built; floor layer and movement groups stay documented edit points |
 | D38 | Entity kinds | Closed at Block / Wall / Door; variation only through modifiers; shapes never change |
 | D39 | Additivity proof | A final phase adds one reference mechanic in the test assembly with zero Core changes, plus `Extending.md` |
+| D40 | Explicit suspension | No `Capability.All`: every modifier lists the capabilities it suspends, so a capability added later is never suspended by accident. Ice suspends `Move \| Exit`. Base colors renamed `BaseColorId`; effective color only via `Colors.Of` |
+| D41 | Wall / door modifiers | Out of V1 scope in data: `WallData` / `DoorData` and the builder carry no modifiers. The runtime (`Accept`, accept rules, entity modifier list) is ready; adding them to data is a documented edit point |

@@ -1,7 +1,7 @@
 namespace Game.Core
 {
     /// <summary>
-    /// Runs one level: Playing → Won when the last block exits, Playing → Failed when time runs out or a
+    /// Runs one level: Playing → Won when no block that must exit is left (<see cref="WinRule"/>), Playing → Failed when time runs out or a
     /// listener fails it, Failed → Playing on <see cref="AddTime"/>. Raises the three events and flushes
     /// their commands. <see cref="Restart"/> rebuilds everything from the definition.
     /// </summary>
@@ -44,10 +44,7 @@ namespace Game.Core
 
             events.RaiseExited(block);
             commands.Flush();
-
-            if (State == GameState.Playing && Board.RemainingBlockCount == 0)
-                State = GameState.Won;
-
+            CheckWin();
             EndMove();
 
             return result;
@@ -72,7 +69,9 @@ namespace Game.Core
 
             timer.Tick(deltaTime);
             events.RaiseTicked(deltaTime);
-            commands.Flush();
+
+            if (commands.Flush())
+                CheckWin();
 
             if (State == GameState.Playing && timer.IsExpired)
                 State = GameState.Failed;
@@ -118,7 +117,19 @@ namespace Game.Core
                 return;
 
             events.RaiseMoveCommitted();
-            commands.Flush();
+
+            if (commands.Flush())
+                CheckWin();
+        }
+
+        /// <summary>
+        /// Called after every exit and after any flush that applied a command, since a command can make
+        /// a block exempt. Never per frame without a change.
+        /// </summary>
+        private void CheckWin()
+        {
+            if (State == GameState.Playing && WinRule.IsWon(Board))
+                State = GameState.Won;
         }
     }
 }

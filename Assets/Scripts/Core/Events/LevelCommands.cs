@@ -28,12 +28,17 @@ namespace Game.Core
 
         public void AddTime(float seconds) => pending.Add(new PendingCommand(CommandKind.AddTime, seconds: seconds));
 
-        public void Flush()
+        /// <returns>True when at least one command was applied, so the level may have changed.</returns>
+        public bool Flush()
         {
-            for (int i = 0; i < pending.Count; i++)
+            int count = pending.Count;
+
+            for (int i = 0; i < count; i++)
                 Apply(pending[i]);
 
             pending.Clear();
+
+            return count > 0;
         }
 
         private void Apply(in PendingCommand command)

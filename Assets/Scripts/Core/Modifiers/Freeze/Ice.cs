@@ -1,6 +1,6 @@
 namespace Game.Core
 {
-    /// <summary>Holds the block in place until <c>count</c> exits of any block have happened.</summary>
+    /// <summary>Freezes its block: no move, no exit, until <c>count</c> exits of any block have happened.</summary>
     public sealed class Ice : ISuspender, IDurable
     {
         public Capability Suspends => Capability.Move | Capability.Exit;
