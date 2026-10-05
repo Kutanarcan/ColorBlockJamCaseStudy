@@ -38,14 +38,14 @@ namespace Game.Tests.EditMode
         {
             LevelSession session = NewSession(
                 new IceData { Count = 1 },
-                new RopeData { ColorId = 3 },
+                new ArrowData { Direction = Direction.Right },
                 new IceData { Count = 5 });
             Block t = BlockAt(session, TCell);
 
             session.TryMove(BlockAt(session, ACell), Direction.Down);
 
             Assert.That(t.ModifierCount, Is.EqualTo(2));
-            Assert.That(t.GetModifier(0), Is.InstanceOf<Rope>());
+            Assert.That(t.GetModifier(0), Is.InstanceOf<Arrow>());
             Assert.That(((Ice)t.GetModifier(1)).Durability.Remaining, Is.EqualTo(4));
         }
     }
