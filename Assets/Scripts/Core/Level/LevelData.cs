@@ -7,6 +7,10 @@ namespace Game.Core
     {
         public int Width;
         public int Height;
+
+        /// <summary>Initial time in seconds.</summary>
+        public float TimeLimit;
+
         public WallData[] Walls = Array.Empty<WallData>();
         public DoorData[] Doors = Array.Empty<DoorData>();
         public BlockData[] Blocks = Array.Empty<BlockData>();

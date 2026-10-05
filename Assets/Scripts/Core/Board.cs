@@ -8,13 +8,22 @@ namespace Game.Core
         public Grid Grid { get; }
         public int EntityCount => entities.Length;
 
+        /// <summary>Blocks that have not exited yet. The level is won when this reaches zero.</summary>
+        public int RemainingBlockCount { get; private set; }
+
         /// <param name="entities">Indexed by id: <c>entities[i].Id == i</c>.</param>
         public Board(int width, int height, Entity[] entities)
         {
             Grid = new Grid(width, height);
             this.entities = entities;
+
             for (int i = 0; i < entities.Length; i++)
+            {
                 Fill(entities[i], entities[i].Id);
+
+                if (entities[i] is Block)
+                    RemainingBlockCount++;
+            }
         }
 
         public Entity GetEntity(int id) => entities[id];
@@ -42,6 +51,7 @@ namespace Game.Core
         {
             Fill(block, Grid.Empty);
             block.IsExited = true;
+            RemainingBlockCount--;
         }
 
         private void Fill(Entity entity, int value)

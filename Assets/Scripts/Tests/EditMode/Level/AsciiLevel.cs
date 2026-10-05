@@ -20,8 +20,15 @@ namespace Game.Tests.EditMode
         private readonly List<char> doorSymbols = new List<char>();
         private readonly Dictionary<char, int> colors = new Dictionary<char, int>();
         private readonly Dictionary<char, Direction> doorDirections = new Dictionary<char, Direction>();
+        private float timeLimit;
 
         private AsciiLevel(string[] rows) => this.rows = rows;
+
+        public AsciiLevel TimeLimit(float seconds)
+        {
+            timeLimit = seconds;
+            return this;
+        }
 
         public static AsciiLevel Parse(params string[] rows) => new AsciiLevel(rows);
 
@@ -43,7 +50,7 @@ namespace Game.Tests.EditMode
         public LevelData Build()
         {
             Dictionary<char, List<Cell>> cellsBySymbol = CollectCells(out int width);
-            var level = new LevelData { Width = width, Height = rows.Length };
+            var level = new LevelData { Width = width, Height = rows.Length, TimeLimit = timeLimit };
 
             if (cellsBySymbol.TryGetValue(WallSymbol, out List<Cell> wallCells))
                 level.Walls = new[] { new WallData { Cells = wallCells.ToArray() } };
