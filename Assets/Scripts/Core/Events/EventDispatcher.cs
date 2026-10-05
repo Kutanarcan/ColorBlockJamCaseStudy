@@ -1,10 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// Hands the three events to the listeners of every entity still on the board, in id order, one pass each.
-    /// Also applies the central durability rule on every exit: reduce, and remove when depleted.
-    /// Effects go through <see cref="ILevelCommands"/>; the caller flushes them after the pass.
-    /// </summary>
     public sealed class EventDispatcher
     {
         private readonly Board board;
@@ -16,7 +11,6 @@ namespace Game.Core
             this.commands = commands;
         }
 
-        /// <summary>The exiting block hears its own exit first, then every entity still on the board.</summary>
         public void RaiseExited(Block exited)
         {
             DispatchExited(exited, exited);
@@ -68,22 +62,9 @@ namespace Game.Core
         {
             for (int i = 0; i < entity.ModifierCount; i++)
             {
-                IModifier modifier = entity.GetModifier(i);
-
-                if (modifier is IDurable durable)
-                    WearDown(entity, durable, exited);
-
-                if (modifier is IExitListener listener)
+                if (entity.GetModifier(i) is IExitListener listener)
                     listener.OnExited(entity, exited, commands);
             }
-        }
-
-        private void WearDown(Entity entity, IDurable durable, Block exited)
-        {
-            durable.Durability.Reduce(durable.AmountFor(exited));
-
-            if (durable.Durability.IsDepleted)
-                commands.RemoveModifier(entity, durable);
         }
 
         private static bool IsOnBoard(Entity entity) => !(entity is Block block && block.IsExited);

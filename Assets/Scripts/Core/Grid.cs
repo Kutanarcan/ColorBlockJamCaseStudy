@@ -1,9 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// The occupancy layer: one entity id per cell, <see cref="Empty"/> when free.
-    /// No bounds check: the Level Editor guarantees the outer ring is walls and doors.
-    /// </summary>
     public sealed class Grid
     {
         public const int Empty = -1;

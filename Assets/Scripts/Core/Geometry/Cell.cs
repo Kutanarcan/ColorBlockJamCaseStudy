@@ -2,7 +2,6 @@ using System;
 
 namespace Game.Core
 {
-    /// <summary>A grid coordinate in whole cells. Y grows upward.</summary>
     public readonly struct Cell : IEquatable<Cell>
     {
         public int X { get; }

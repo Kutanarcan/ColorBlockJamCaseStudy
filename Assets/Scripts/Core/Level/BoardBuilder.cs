@@ -1,10 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// Turns a <see cref="LevelData"/> into a fresh <see cref="Board"/>.
-    /// Ids are assigned in order walls, doors, blocks. Cells are copied and modifiers are created fresh,
-    /// so the definition stays untouched and every build starts with full counters.
-    /// </summary>
     public static class BoardBuilder
     {
         public static Board Build(LevelData level)
@@ -41,27 +36,37 @@ namespace Game.Core
         {
             int minX = cells[0].X;
             int minY = cells[0].Y;
+
             for (int i = 1; i < cells.Length; i++)
             {
                 if (cells[i].X < minX) minX = cells[i].X;
                 if (cells[i].Y < minY) minY = cells[i].Y;
             }
+
             return new Cell(minX, minY);
         }
 
         private static Cell[] ToShape(Cell[] cells, Cell origin)
         {
             var shape = new Cell[cells.Length];
+
             for (int i = 0; i < cells.Length; i++)
+            {
                 shape[i] = cells[i] - origin;
+            }
+
             return shape;
         }
 
         private static IModifier[] ToModifiers(ModifierData[] data)
         {
             var modifiers = new IModifier[data.Length];
+
             for (int i = 0; i < data.Length; i++)
+            {
                 modifiers[i] = data[i].ToModifier();
+            }
+
             return modifiers;
         }
     }

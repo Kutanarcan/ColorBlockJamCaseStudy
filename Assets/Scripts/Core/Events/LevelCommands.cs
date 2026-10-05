@@ -2,7 +2,6 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
-    /// <summary>Records commands during an event pass; <see cref="Flush"/> applies them in recording order.</summary>
     internal sealed class LevelCommands : ILevelCommands
     {
         private readonly List<PendingCommand> pending = new List<PendingCommand>(16);
@@ -28,7 +27,6 @@ namespace Game.Core
 
         public void AddTime(float seconds) => pending.Add(new PendingCommand(CommandKind.AddTime, seconds: seconds));
 
-        /// <returns>True when at least one command was applied, so the level may have changed.</returns>
         public bool Flush()
         {
             int count = pending.Count;

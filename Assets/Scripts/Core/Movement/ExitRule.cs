@@ -1,10 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// Exit check for a blocked step: for every line the block covers along the direction, the first
-    /// occupied cell ahead of the line's front cell must be a door of the block's (effective) color, facing
-    /// that direction.
-    /// </summary>
     internal static class ExitRule
     {
         public static bool CanExit(Board board, Block block, Direction direction)
@@ -21,11 +16,6 @@ namespace Game.Core
             return true;
         }
 
-        /// <summary>
-        /// Scans forward from one block cell, skipping empty cells (recesses). Reaching the block's own
-        /// cell means <paramref name="from"/> is not the front of its line; the front cell's scan decides.
-        /// Terminates because the grid's outer ring is walls and doors.
-        /// </summary>
         private static bool LineAllowsExit(Board board, Block block, int color, Cell from, Cell offset,
             Direction direction)
         {

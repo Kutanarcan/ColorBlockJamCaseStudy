@@ -30,7 +30,7 @@ namespace Game.Tests.EditMode
         [Test]
         public void ExitOnlySuspender_AllowsMove_ButBlocksExit()
         {
-            Board board = NewBoard(new FakeExitBlockerData());
+            Board board = NewBoard(new FakeModifierData(() => new FakeExitBlocker()));
             var a = (Block)board.EntityAt(ACell);
             var mover = new BlockMover(board);
 

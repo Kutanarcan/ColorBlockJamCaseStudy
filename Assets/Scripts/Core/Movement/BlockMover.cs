@@ -1,10 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// Moves a block one cell. A step is valid when every target cell is empty or the block's own;
-    /// walls, doors and other blocks are all just occupied. The block must still have the capability
-    /// (<see cref="Capabilities"/>). A blocked step checks <see cref="ExitRule"/>.
-    /// </summary>
     public sealed class BlockMover
     {
         private readonly Board board;

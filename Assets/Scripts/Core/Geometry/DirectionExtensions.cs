@@ -4,7 +4,6 @@ namespace Game.Core
 {
     public static class DirectionExtensions
     {
-        /// <summary>One-cell offset for a step in this direction.</summary>
         public static Cell ToOffset(this Direction direction)
         {
             switch (direction)

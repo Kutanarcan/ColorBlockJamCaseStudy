@@ -9,13 +9,13 @@
 ![Phases](https://img.shields.io/badge/Phases-9/13_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
-<sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](../ColorBlockJamMechanics.md)</sub>
+<sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md)</sub>
 
 </div>
 
 > [!IMPORTANT]
 > **Production V1 goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Architecture goal:** Any mechanic from the [Mechanics Reference](../ColorBlockJamMechanics.md) can be added later **without changing an existing file**, only by adding new ones.
+> **Architecture goal:** Any mechanic from the [Mechanics Reference](ColorBlockJamMechanics.md) can be added later **without changing an existing file**, only by adding new ones.
 
 | # | Section | What is in it |
 |---|---|---|
@@ -40,7 +40,7 @@
 
 ## 📋 1. Scope
 - **Mechanics built in V1:** the normal block, the **Arrow** modifier and the **Ice** modifier. Nothing else is implemented.
-- **Mechanics prepared for:** everything in the [Mechanics Reference](../ColorBlockJamMechanics.md). The architecture opens the seams those mechanics need (§8); each seam is proven by a hand-written fake in the test assembly, never by a speculative real mechanic.
+- **Mechanics prepared for:** everything in the [Mechanics Reference](ColorBlockJamMechanics.md). The architecture opens the seams those mechanics need (§8); each seam is proven by a hand-written fake in the test assembly, never by a speculative real mechanic.
 - **Logic first.** Every rule is implemented in `Game.Core` and proven by EditMode tests.
 - **Presentation comes after.** Visuals, `BlockDrawRule`, drag feel, exit animation and audio are not part of V1's logic work.
 - **Level pipeline is part of V1.** `LevelData` (JSON), `Game.LevelIO` and the Level Editor are designed together with the logic, so the logic loads exactly what the editor saves.
@@ -132,27 +132,27 @@ y0   D D D          column 3: front (3,1) → (3,0) is a blue Down door ✔
 ### The model
 - A **base entity always exists.** A block has the capabilities `Move` and `Exit` by default.
 - **Modifiers only declare.** A modifier is built from small parts; none of them decides anything on its own.
-- **Central rules decide.** `Capabilities` and the event dispatch (§7) apply the rules. When every modifier is gone, what is left is a plain block.
+- **Central rules decide.** `Capabilities` applies the capability rules; the event dispatch (§7) only delivers events. When every modifier is gone, what is left is a plain block.
 
 ### Parts
 
 | Part | Says | Interface |
 |---|---|---|
 | **Suspends** | "While I am here, these capabilities are off" | `ISuspender { Capability Suspends }` |
-| **Durability** | Only a number, plus how much one exit counts | `IDurable { Durability, AmountFor(exited) }` |
+| **Durability** | A count the modifier wears down from its own listener; removes the modifier when used up | `Durability` component (`WearDown`) |
 | **Move constraint** | "Only these directions" | `IMoveConstraint { Allows(direction) }` |
 | **Passive data** | Information other modifiers read | `IModifier` only |
 
 ### Central rules
 1. **Move:** no modifier suspends `Move`, and every constraint allows the direction.
 2. **Exit:** no modifier suspends `Exit`, then the column scan (§5).
-3. **On every exit:** each durability drops by its `AmountFor(exited)`; a modifier that reaches zero is **removed**.
+3. **Reacting to an exit:** only through `IExitListener` (§7). A modifier with a count calls `Durability.WearDown` from its listener; when the count is used up, the modifier is **removed**.
 
 ### V1 modifiers
 
 | Modifier | Parts | Meaning |
 |---|---|---|
-| **Ice** `{ count }` | `Suspends = Move \| Exit` · `Durability = count` · `AmountFor = 1` | Frozen: cannot move or exit until `count` blocks have exited, then removed |
+| **Ice** `{ count }` | `Suspends = Move \| Exit` · `IExitListener`: wears its `Durability (count)` down by 1 on every exit | Frozen: cannot move or exit until `count` blocks have exited, then removed |
 | **Arrow** `{ direction }` | `IMoveConstraint` | Moves, and therefore exits, in one direction only |
 
 ### Stacking
@@ -165,7 +165,7 @@ y0   D D D          column 3: front (3,1) → (3,0) is a blue Down door ✔
 *Built in Phase 7.*
 
 ### Three events
-The [Mechanics Reference](../ColorBlockJamMechanics.md) trigger taxonomy reduces to three events:
+The [Mechanics Reference](ColorBlockJamMechanics.md) trigger taxonomy reduces to three events:
 
 | Event | Raised when | Covers triggers |
 |---|---|---|
@@ -175,7 +175,7 @@ The [Mechanics Reference](../ColorBlockJamMechanics.md) trigger taxonomy reduces
 
 - Each event has its own small listener interface (one method). A modifier implements only the ones it needs.
 - **Dispatch:** one pass per event, over every entity still on the board, in id order. No reaction raises another event in the same pass.
-- The durability rule (§6) is the central listener for **Exited**.
+- **One way to react.** Anything that reacts to an exit is an `IExitListener`; the dispatcher knows no rule of its own. Durability is a component a listener uses (§6).
 
 ### Command primitives
 Listeners never touch the board or the session directly. They get a narrow command API:
@@ -216,7 +216,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 | **Floor layer** (non-blocking cell features) | Colorful Path, Button, Laser receiver | `Grid`, `Board`, builder, `Board.CanPlace` |
 | **Movement groups** | Combined, Magnet | `BlockMover`, `Board.CanPlace`, `Board.MoveEntity` |
 | **A new primitive** | A fourth event type or a new command primitive | Dispatcher / command API |
-| **Wall / door modifiers** | Door toggle, Iced Door, Locked Door, Colorful Door, Size-Changing Door, Jumping Single Door | `WallData`, `DoorData`, builder; an `Accept` capability checked in `ExitRule`; per-cell accept rules for partly closed doors |
+| **Wall / door modifiers** | Door toggle, Iced Door, Locked Door, Colorful Door, Size-Changing Door, Jumping Single Door, Star | `WallData`, `DoorData`, builder; an `Accept` capability checked in `ExitRule`; per-cell accept rules for partly closed doors; a block-side exit rule checked in `ExitRule`, so a block can refuse a door (Star exits only through star doors) |
 | **Dormant entities** | Crate, Hidden, Tangled, Barrier, Ivy, ordered stacking | `Entity` / `Board` (state outside the occupancy), `BlockData` + builder (flag, stable ids), command API (`Activate` / `Deactivate`) |
 | **Listener inputs** | Color Swapping Block, Colorful Crate, Moving Door Lock, Laser Door (read the board) · Colorful Door, Locked Door (which door the block exited through) | Listener signatures gain a read-only board view or the exited-through doors; `ExitRule` collects the doors it matched |
 
@@ -226,7 +226,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 
 | Mechanic | Built from |
 |---|---|
-| Turn Based Arrow | `IMoveConstraint` + `IDurable` |
+| Turn Based Arrow | `IMoveConstraint` + `IExitListener` with a `Durability` |
 | Moving Blocks | `ISuspender(Exit)` + win exemption |
 | Curtain | Exited listener + `AddModifier` / `RemoveModifier` |
 | Color-Switching Block | Exited listener + color modifier |
@@ -375,7 +375,7 @@ One phase per answer, following the production process. Every sub-step ends with
 ---
 
 ## 🧭 15. Ready For, Not Built
-- **Every mechanic in the [Mechanics Reference](../ColorBlockJamMechanics.md)** that maps to a seam in §8, without changing existing files.
+- **Every mechanic in the [Mechanics Reference](ColorBlockJamMechanics.md)** that maps to a seam in §8, without changing existing files.
 - **Floor layer and movement groups:** documented edit points (§8).
 - **Addressables / downloadable levels:** `ILevelSource`, keys, `schemaVersion`.
 - **Remote palette:** colors live outside data and Core.
@@ -416,8 +416,8 @@ One phase per answer, following the production process. Every sub-step ends with
 | D27 | Phase order | Validation before IO; Level Editor before the additivity proof |
 | D28 | ASCII test helper | Test-only; produces `LevelData`; never a level format |
 | D29 | Timer input | Time enters Core only through `ITickable.Tick(dt)`; no `ITimeProvider`, tests pass `dt` directly |
-| D30 | Modifier model | Base block always has `Move` and `Exit`; modifiers only declare parts (`ISuspender`, `IDurable`, `IMoveConstraint`, passive data). Central rules decide; a depleted modifier is removed |
-| D31 | Folder layout | One folder per mechanic under `Modifiers/` (runtime + DTO together); modifier framework at `Modifiers/` root. Tests mirror only the first level |
+| D30 | Modifier model | Base block always has `Move` and `Exit`; modifiers only declare parts (`ISuspender`, `IMoveConstraint`, passive data). Central rules decide capabilities; a depleted modifier is removed. ~~`IDurable` part~~ — superseded by D45 |
+| D31 | Folder layout | One folder per mechanic under `Modifiers/` (runtime + DTO together); only the modifier framework (`IModifier`, `Durability`) at `Modifiers/` root. Rules that read modifier parts live with their domain: capabilities in `Movement/`, effective color in `Color/`, win exemption in `Session/`. Tests mirror only the first level |
 | D32 | Events & commands | Three events (Exited, MoveCommitted, Ticked), one-method listener interfaces, explicit dispatch; listeners act only through command primitives |
 | D33 | V1 mechanics | Normal block, Arrow, Ice. Key/Lock and Rope/Scissors are removed; Tangled is out of scope |
 | D34 | Additive criterion | Adding a mechanic from the reference must change no existing file; exceptions are documented edit points |
@@ -431,3 +431,4 @@ One phase per answer, following the production process. Every sub-step ends with
 | D42 | Dormant entities | Out of V1 scope, Phase 9 dropped. No stable ids in DTOs (builder assigns them), no `Activate` primitive. Dormant entities are a documented edit point; Crate, Hidden, Tangled and ordered stacking open it |
 | D43 | Door acceptance | `Accept` capability and per-cell accept rules (`IExitAcceptRule`) removed: nothing in V1 uses them once door modifiers are out of data (D41). They return with the wall / door edit point. `Board.RemainingBlockCount` removed too; `WinRule` alone decides the win |
 | D44 | Occupancy | An occupied cell always blocks; no passability check in `CanPlace`. Mechanics that open cells (Barrier, Ivy) take entities out of the occupancy (dormant edit point). Listener inputs (board view, exited-through doors) are a documented edit point, added as parameters when first needed |
+| D45 | Exit reactions | One way to react to an exit: `IExitListener`. `IDurable` and the dispatcher's built-in wear-down are removed; `Durability` is a component with `WearDown(owner, carrier, amount, commands)` that a listener calls. The dispatcher only dispatches. Filtering (which exits count) lives in the modifier's own listener |

@@ -2,13 +2,10 @@ using System;
 
 namespace Game.Core
 {
-    /// <summary>Immutable level definition. Cells are absolute grid coordinates.</summary>
     public sealed class LevelData
     {
         public int Width;
         public int Height;
-
-        /// <summary>Initial time in seconds.</summary>
         public float TimeLimit;
 
         public WallData[] Walls = Array.Empty<WallData>();

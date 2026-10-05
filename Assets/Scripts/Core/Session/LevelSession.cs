@@ -1,10 +1,5 @@
 namespace Game.Core
 {
-    /// <summary>
-    /// Runs one level: Playing → Won when no block that must exit is left (<see cref="WinRule"/>), Playing → Failed when time runs out or a
-    /// listener fails it, Failed → Playing on <see cref="AddTime"/>. Raises the three events and flushes
-    /// their commands. <see cref="Restart"/> rebuilds everything from the definition.
-    /// </summary>
     public sealed class LevelSession : ITickable
     {
         private readonly LevelData level;
@@ -14,7 +9,6 @@ namespace Game.Core
         private EventDispatcher events;
         private bool moveInProgress;
 
-        /// <summary>Replaced on <see cref="Restart"/>; entity references from the old board are stale.</summary>
         public Board Board { get; private set; }
 
         public GameState State { get; private set; }
@@ -122,10 +116,6 @@ namespace Game.Core
                 CheckWin();
         }
 
-        /// <summary>
-        /// Called after every exit and after any flush that applied a command, since a command can make
-        /// a block exempt. Never per frame without a change.
-        /// </summary>
         private void CheckWin()
         {
             if (State == GameState.Playing && WinRule.IsWon(Board))
