@@ -1,3 +1,6 @@
+Planlama geçen süre: 2 saat
+Plan V1 süresi: 
+
 Production tarafı
 - İlk başta Logic tarafına odaklanarak başlayacağız
 - Logic tarafında testler ile oyun mantığını çalıştığından emin olacağız
