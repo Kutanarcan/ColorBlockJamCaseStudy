@@ -6,16 +6,16 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-10/13_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-11/13_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
-<sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md)</sub>
+<sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md) · [Level Format](LevelFormat.md)</sub>
 
 </div>
 
 > [!IMPORTANT]
 > **Production V1 goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Architecture goal:** Any mechanic from the [Mechanics Reference](ColorBlockJamMechanics.md) can be added later **without changing an existing file**, only by adding new ones.
+> **Architecture goal:** Any mechanic from the [Mechanics Reference](ColorBlockJamMechanics.md) can be added later **by adding new files**; the only growth in an existing file is one line in `ModifierCatalog.Default()` (D48) or a documented edit point (§8).
 
 | # | Section | What is in it |
 |---|---|---|
@@ -29,7 +29,7 @@
 | 8 | [🔌 Extensibility](#-8-extensibility) | The additive criterion, the seams and the documented edit points |
 | 9 | [⏱️ Game State](#-9-game-state) | Timer, moves, win, fail, continue, restart |
 | 10 | [💾 Level Data & IO](#-10-level-data--io) | DTO, polymorphic JSON, Addressables readiness, palette |
-| 11 | [🛠️ Level Editor](#-11-level-editor) | Editor-only, data-oriented, validation, discovery |
+| 11 | [🛠️ Level Editor](#-11-level-editor) | Editor-only, data-oriented, validation, modifier catalog |
 | 12 | [📦 Assemblies & Tests](#-12-assemblies--tests) | Assembly boundaries and test layout |
 | 13 | [🔬 From FINDINGS](#-13-from-findings) | How prototype costs are answered here |
 | 14 | [🪜 Phase Plan](#-14-phase-plan) | Phases 0–13 with sub-steps and their tests |
@@ -194,19 +194,19 @@ Listeners never touch the board or the session directly. They get a narrow comma
 ## 🔌 8. Extensibility
 
 ### The criterion
-> **"Which existing file must change to add mechanic X?"** The answer must be **none**.
+> **"Which existing file must change to add mechanic X?"** The answer must be **none**, except accepted growth: one line in `ModifierCatalog.Default()` per modifier (D48), or a documented edit point below.
 
 ### Seams
 
 | Seam | What it opens | Phase | Proven by |
 |---|---|---|---|
-| **New modifier** | Data + runtime type, no builder change (`ModifierData.ToModifier`) | ✅ 5 | Ice, Arrow |
+| **New modifier** | Data + runtime type, no builder change (`ModifierData.ToModifier`); one line in `ModifierCatalog.Default()` | ✅ 5 | Ice, Arrow |
 | **Events & listeners** | Exited · MoveCommitted · Ticked | 7 | Fake toggle, fake move counter |
 | **Command primitives** | Effects composed from primitives | 7 | Fake listener calling `Fail` |
 | **Move boundary** | `CommitMove` + `MoveCount` | 7 | Test |
 | **Effective color** | `IColorSource` can change a color; one read point | 8 | Fake color modifier |
 | **Win exemption** | A modifier can declare that its block does not count toward win | 8 | Fake never-exiting block |
-| **Discovery** | JSON type names, editor drawing and validation rules found by attribute | 10–12 | Fake modifier round-trip and editor display |
+| **Modifier catalog** | Saved type names and field IO declared by each DTO (`TypeName`, `Write` / `Read`); an explicit catalog instead of reflection, IL2CPP safe | ✅ 11 | `FakeTimedData` round-trip from the test assembly |
 
 ### Documented edit points
 These are **not** opened in V1. Each needs a change in a known place, written down so it is a choice, not a surprise:
@@ -252,9 +252,12 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 ---
 
 ## 💾 10. Level Data & IO
+> [!IMPORTANT]
+> The exact format and the mandatory checklists for changing it live in [LevelFormat.md](LevelFormat.md).
+
 - **`LevelData` DTOs live in `Game.Core`**, plain C#, no serializer attribute dependencies.
 - **JSON lives in `Game.LevelIO`** (Core + Newtonsoft), shared by Runtime and the Level Editor.
-- **Polymorphic modifiers:** a `type` discriminator per modifier. Each DTO declares its own type name, and the registry discovers them, so a new modifier needs no registry edit. **No `TypeNameHandling`**: it is unsafe and breaks when a class is renamed.
+- **Polymorphic modifiers:** a `type` discriminator per modifier. Each DTO declares its own `TypeName` and writes / reads its own fields through `IModifierWriter` / `IModifierReader`; `ModifierCatalog` lists the known types explicitly. **No runtime reflection** (IL2CPP stripping): LevelIO maps `LevelData` by hand over `JObject`, never `Deserialize` / `ToObject`. **No `TypeNameHandling`**: it is unsafe and breaks when a class is renamed.
 - **Doors** are stored as entities with their own cells, color and direction.
 - **Shape only, not final:**
 
@@ -274,15 +277,15 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 
 ### Ready for Addressables (not built now)
 - Levels are reached by **key** (address), never by path.
-- Loading sits behind `ILevelSource`: a `TextAsset` today, Addressables or a download later.
-- `schemaVersion` on every file. An **unknown modifier type rejects the level**, so an old client that downloads a newer level fails cleanly.
+- Loading sits behind `ILevelSource.LoadAsync(key)` → `Task<Result<LevelData>>` (Core): a `TextAsset` today, Addressables or a download later.
+- `schemaVersion` on every file. An **unknown modifier type rejects the level** while parsing (LevelIO, D47), so an old client that downloads a newer level fails cleanly.
 
 ### Palette
 - Data and Core see only `colorId` (int) and only compare for equality.
 - Real colors live in a palette asset in Runtime, and can move to remote config later without a build.
 
-### Load-time validation (Core)
-- Supported `schemaVersion`, no unknown modifier types.
+### Load-time validation (Core, `LevelSession.TryCreate`)
+- Supported `schemaVersion`, grid size above zero. Unknown modifier types never reach Core: LevelIO rejects them (D47).
 - Every entity cell is inside the grid; no two entities overlap.
 - Each modifier DTO can validate its own values (e.g. Ice count > 0), so a new modifier brings its own checks.
 - **The border rule is not checked here.** It lives only in the Editor, which refuses to save a level that breaks it.
@@ -293,7 +296,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 - **Editor-only**, under an `Editor/` folder, in its own assembly. It does not depend on Runtime.
 - **Visual JSON editing:** open, create, save and overwrite levels.
 - **Fast to use is the priority.** Its working model is **data-oriented**: flat arrays, id → cell indices and lookups by type or color, so queries stay fast. It converts to and from `LevelData` only on load and save.
-- **Additive:** modifier editing and validation rules are discovered, so a new modifier shows up in the editor without editor changes.
+- **Additive:** the modifier list comes from `ModifierCatalog`, and each DTO's fields from its own `Write` / `Read`, so a new modifier shows up in the editor without editor changes. How editor validation rules are found is decided when Phase 12 starts.
 - **Nothing leaks into Core.** Editor code and editor tests stay in their own assemblies.
 
 ### Validation rules
@@ -364,9 +367,9 @@ One phase per answer, following the production process. Every sub-step ends with
 | 7 | Events & Commands | 7.1 Exited / MoveCommitted / Ticked + listener interfaces + dispatcher · 7.2 command primitives; durability removal through `RemoveModifier` · 7.3 `CommitMove` + `MoveCount` · 7.4 `Fail` / `AddTime` from listeners | `Listener_CallingFail_FailsTheLevel` | ✅ |
 | 8 | Rule Seams | 8.1 effective color (`IColorSource`) · 8.2 ~~`Accept` capability + per-cell accept rules~~ moved to an edit point (D43) · 8.3 ~~modifiers on walls and doors (DTO + builder)~~ moved to an edit point (D41) · 8.4 win exemption | `ColorSource_DecidesWhichDoorTheBlockExitsThrough` | ✅ |
 | 9 | ~~Dormant Entities~~ | Dropped from V1: dormant entities became a documented edit point (D42) | — | ➖ |
-| 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 unsupported `schemaVersion`, unknown modifier type · 10.3 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ✅ |
-| 11 | LevelIO | 11.1 `Game.LevelIO` asmdef + tests · 11.2 discovered type registry, polymorphic modifiers · 11.3 round-trip, unknown type rejected · 11.4 `ILevelSource` contract (key-based) | `RoundTrip_PreservesAllModifiers` (incl. a test-assembly fake) | ⏳ |
-| 12 | Level Editor | 12.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 12.2 validation rules (discovered) · 12.3 window: painting, entity grouping, modifier editing (discovered) · 12.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ⏳ |
+| 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 unsupported `schemaVersion` (~~unknown modifier type~~ moved to LevelIO, D47) · 10.3 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ✅ |
+| 11 | LevelIO | 11.1 `Game.LevelIO` asmdef + tests · 11.2 explicit `ModifierCatalog`, DTO field IO, polymorphic modifiers, no reflection · 11.3 round-trip, unknown type rejected · 11.4 `ILevelSource` contract (key-based, async) | `RoundTrip_PreservesAllModifiers` (incl. a test-assembly fake) | ✅ |
+| 12 | Level Editor | 12.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 12.2 validation rules · 12.3 window: painting, entity grouping, modifier editing (from `ModifierCatalog`) · 12.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ⏳ |
 | 13 | Additivity Proof | 13.1 one mechanic from the reference added end to end in the test assembly (data, IO, logic), zero `Game.Core` changes · 13.2 `docs/production/Extending.md`: recipe + edit points | `TurnBasedArrow_AddedWithoutCoreChanges` | ⏳ |
 
 - **ASCII test helper (1.5) is test-only.** It lives in the test assembly and produces a plain `LevelData`. Core, LevelIO, the Editor and Runtime never see it. JSON stays the only level format.
@@ -433,3 +436,7 @@ One phase per answer, following the production process. Every sub-step ends with
 | D44 | Occupancy | An occupied cell always blocks; no passability check in `CanPlace`. Mechanics that open cells (Barrier, Ivy) take entities out of the occupancy (dormant edit point). Listener inputs (board view, exited-through doors) are a documented edit point, added as parameters when first needed |
 | D45 | Exit reactions | One way to react to an exit: `IExitListener`. `IDurable` and the dispatcher's built-in wear-down are removed; `Durability` is a component with `WearDown(owner, carrier, amount, commands)` that a listener calls. The dispatcher only dispatches. Filtering (which exits count) lives in the modifier's own listener |
 | D46 | Errors & acceptance | Authored data that is wrong returns a `Result` / `Result<T>`; wiring bugs throw. `LevelSession.TryCreate(level)` is the only way to start a session: it runs `LevelValidator` and returns a failure listing every error. `ModifierData.Validate()` returns `Result`. `LevelValidator` keeps returning the full `LevelError` list (Editor use) |
+| D47 | Unknown modifier type | Rejected by LevelIO while parsing. Core DTOs are typed, so Core never sees an unknown type |
+| D48 | LevelIO without reflection | No runtime reflection (IL2CPP stripping). Each DTO declares `TypeName` and saves / loads its own fields through `IModifierWriter` / `IModifierReader` (Core, format-neutral; a new field kind adds a method). `ModifierCatalog` (Core) is an explicit list: a new modifier adds one line to `Default()`. LevelIO maps `LevelData` by hand over Newtonsoft `JObject` (no `Deserialize` / `ToObject`); directions by an explicit name table. JSON: camelCase, directions as strings, cells `[x, y]`; scalar fields required, lists optional; errors name their path. `LevelJson.Parse` returns `Result<LevelData>` and does no structural checks (`LevelSession.TryCreate` does). Writing a modifier missing from the catalog throws |
+| D49 | Level source | `ILevelSource.LoadAsync(key)` returns `Task<Result<LevelData>>` and lives in Core. Async from the start for Addressables or downloads; the Runtime implementation comes with presentation |
+| D50 | Level format rules | `docs/production/LevelFormat.md` is the mandatory reference for the level format: frozen names, change checklists, guarding tests and a review checklist. `.claude/rules/production/level-format.md` loads it for every change under `Core/Level`, `Core/Modifiers` and `LevelIO` |

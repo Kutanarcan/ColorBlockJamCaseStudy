@@ -202,7 +202,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 > [!IMPORTANT]
 > **Goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Status:** 🧠 Design settled · 🪜 Phase 10 done (10/13, Phase 9 dropped) · ▶️ Phase 11 next
+> **Status:** 🧠 Design settled · 🪜 Phase 11 done (11/13, Phase 9 dropped) · ▶️ Phase 12 next
 > **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
 
 ## 🧬 Design at a Glance
@@ -215,7 +215,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 | **Exit** | Each covered column scans forward; its first occupied cell must be a door of the block's color and direction. |
 | **Modifiers** | The base block always has `Move` and `Exit`; modifiers only declare parts (suspends, move constraint) and react to events through listeners; durability is a component a listener uses. V1 builds Ice and Arrow. |
 | **Events & commands** | Three events (exit, move committed, tick); listeners act only through command primitives. |
-| **Extensibility** | Any mechanic from the [Mechanics Reference](docs/production/ColorBlockJamMechanics.md) can be added without changing an existing file; a final phase proves it. |
+| **Extensibility** | Any mechanic from the [Mechanics Reference](docs/production/ColorBlockJamMechanics.md) can be added with new files only, plus one line in `ModifierCatalog` or a documented edit point; a final phase proves it. Level IO uses no runtime reflection (IL2CPP safe). |
 | **Game state** | Timer from level data, fail on timeout, continue adds time, restart rebuilds from level data. |
 | **Level data** | Polymorphic JSON in `Game.LevelIO` (Newtonsoft), `schemaVersion`, key-based loading ready for Addressables. |
 | **Level Editor** | Editor-only, data-oriented, refuses to save a level that breaks a validation rule. |
@@ -232,6 +232,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 ## 📚 Production Docs
 
 - [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, decision log
+- [`LevelFormat.md`](docs/production/LevelFormat.md) — level JSON format and the **mandatory** checklists for changing level data, modifiers or LevelIO
 
 ---
 
