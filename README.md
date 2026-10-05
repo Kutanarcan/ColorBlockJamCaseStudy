@@ -12,13 +12,40 @@ from an existing 3D model kit — prototype first, production later.
 ![Render](https://img.shields.io/badge/Render-Built--in_RP-lightgrey)
 ![Tween](https://img.shields.io/badge/Tween-DOTween-6e7681)
 ![Platform](https://img.shields.io/badge/Mobile-Portrait-lightgrey)
-![Phase](https://img.shields.io/badge/Phase-🧪_Prototyping-d29922)
+![Prototype](https://img.shields.io/badge/Prototype-✅_Done-2ea043)
+![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
+![Production](https://img.shields.io/badge/Production-⏳_Next-6e7681)
 
 </div>
 
 > [!NOTE]
 > **A case study assigned by Rollic.** Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
 > This repository rebuilds its core mechanic as part of that case study.
+
+## 🛠️ Workflow
+
+The project follows a studio-style pipeline: **validate the mechanic first, show it, then build it properly.**
+
+```mermaid
+flowchart LR
+    P["🧪 Prototype"] --> L["✨ Light Polish"] --> M["🎬 Marketing Video"] --> R["🏗️ Production"]
+
+    classDef done fill:#2ea043,color:#fff,stroke:#2ea043
+    classDef todo fill:#6e7681,color:#fff,stroke:#6e7681
+    class P,L,M done
+    class R todo
+```
+
+| Stage | Purpose | Status |
+|---|---|---|
+| 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
+| ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
+| 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ⏳ Next |
+
+**From prototype to production**
+- Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
+- Prototype code is a reference only. If a piece is worth keeping, it is refactored and refined to production standards first; nothing is copied over as is.
 
 ---
 
@@ -28,7 +55,7 @@ from an existing 3D model kit — prototype first, production later.
 > **Question:** Can the existing model kit build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
 > **Status:** Phases 1–10 done · Phase 11 (Win) skipped
 
-The prototype's output is **knowledge, not code**. No architecture, no tests; every feel value is exposed in the Inspector. The code lives in `Assets/Prototype/`, is Editor-only and will be deleted after the harvest.
+The prototype's output is **knowledge, not code**. No architecture, no tests; every feel value is exposed in the Inspector. The code lives in `Assets/Prototype/`, is Editor-only and is not carried into production as is.
 
 ## 🎬 Videos
 
@@ -63,7 +90,7 @@ The prototype's output is **knowledge, not code**. No architecture, no tests; ev
 | 10 | Exit | A block pushed into a matching, wide-enough door leaves the board |
 | 11 | Win | ⏭️ Skipped |
 
-**Feel on top**
+**Light polish**
 - **Exit:** the block snaps to the door, slides in and is cut by a clip-plane shader at the door line, with per-row particles.
 - **Selection:** a gold screen-space outline around the held block.
 - **SFX:** select, drop and exit crunch.
@@ -95,7 +122,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 # 🏗️ Production
 
-⏳ **Not started.** It begins from a harvest of `FINDINGS.md`. The prototype code is read as a spec and never migrated.
+⏳ **Next.** Starts from the prototype's findings in `FINDINGS.md`, not from its code (see **Workflow** at the top).
 
 ---
 
