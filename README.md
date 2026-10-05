@@ -65,8 +65,8 @@ The prototype's output is **knowledge, not code**. No architecture, no tests; ev
     <th>Marketing · Vol. 1</th>
   </tr>
   <tr>
-    <td><video src="https://github.com/user-attachments/assets/b0947644-7580-4f5f-8c1e-7055974298b3" width="300" controls muted></video></td>
-    <td><video src="https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080" width="300" controls muted></video></td>
+    <td><video src="https://github.com/user-attachments/assets/b70f40cb-7e7c-474b-8a10-92ef0715b7d5" width="300" controls muted></video></td>
+    <td><video src="https://github.com/user-attachments/assets/39c8f7a1-a1f1-45dc-81fd-15d65a67241f" width="300" controls muted></video></td>
   </tr>
 </table>
 
