@@ -17,8 +17,8 @@ from an existing 3D model kit — prototype first, production later.
 </div>
 
 > [!NOTE]
-> **Fan-made study, not affiliated with the original game.** Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
-> This repository only rebuilds its core mechanic for learning and portfolio purposes.
+> **A case study assigned by Rollic.** Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
+> This repository rebuilds its core mechanic as part of that case study.
 
 ---
 
@@ -26,19 +26,22 @@ from an existing 3D model kit — prototype first, production later.
 
 > [!IMPORTANT]
 > **Question:** Can the existing model kit build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
-> **Status:** Phases 1–10 done · Next: Phase 11 · Win
+> **Status:** Phases 1–10 done · Phase 11 (Win) skipped
 
 The prototype's output is **knowledge, not code**. No architecture, no tests; every feel value is exposed in the Inspector. The code lives in `Assets/Prototype/`, is Editor-only and will be deleted after the harvest.
 
 ## 🎬 Videos
 
-**Gameplay**
-
-https://github.com/user-attachments/assets/b0947644-7580-4f5f-8c1e-7055974298b3
-
-**Marketing · Vol. 1**
-
-https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080
+<table>
+  <tr>
+    <th>Gameplay</th>
+    <th>Marketing · Vol. 1</th>
+  </tr>
+  <tr>
+    <td><video src="https://github.com/user-attachments/assets/b0947644-7580-4f5f-8c1e-7055974298b3" width="300" controls muted></video></td>
+    <td><video src="https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080" width="300" controls muted></video></td>
+  </tr>
+</table>
 
 ## 🎮 The Game
 
@@ -58,7 +61,7 @@ https://github.com/user-attachments/assets/790ba8f5-b63e-40f3-bb16-6daa3c05b080
 | 7–8 | Drag & collision | Free 2D drag, cell-by-cell logic, snap on release |
 | 9 | Axis lock | Locked blocks move on one axis, with a fitted arrow on top |
 | 10 | Exit | A block pushed into a matching, wide-enough door leaves the board |
-| 11 | Win | ⏳ Next |
+| 11 | Win | ⏭️ Skipped |
 
 **Feel on top**
 - **Exit:** the block snaps to the door, slides in and is cut by a clip-plane shader at the door line, with per-row particles.
@@ -92,7 +95,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 # 🏗️ Production
 
-⏳ **Not started.** It begins after the prototype's last phase, from a harvest of `FINDINGS.md`. The prototype code is read as a spec and never migrated.
+⏳ **Not started.** It begins from a harvest of `FINDINGS.md`. The prototype code is read as a spec and never migrated.
 
 ---
 
