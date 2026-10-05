@@ -12,7 +12,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Render](https://img.shields.io/badge/Render-Built--in_RP-lightgrey)
 ![Tween](https://img.shields.io/badge/Tween-DOTween-6e7681)
 ![Platform](https://img.shields.io/badge/Mobile-Portrait-lightgrey)
-![Prototype](https://img.shields.io/badge/Prototype-✅_Done-2ea043)
+![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
 ![Production](https://img.shields.io/badge/Production-⏳_Next-6e7681)
 
@@ -118,8 +118,22 @@ The phase rhythm is the rule I watch most closely. Once, the AI treated a "drag 
 > [!IMPORTANT]
 > **Question:** Can the existing model kit build a level grid with blocks and doors, then move blocks and exit them through matching-color doors?
 > **Status:** Phases 1–10 done · Phase 11 (Win) skipped
+> **Time:** ⏱️ 10 hours over 3 sessions
 
 The prototype's output is **knowledge, not code**. No architecture, no tests; every feel value is exposed in the Inspector. The code lives in `Assets/Prototype/`, is Editor-only and is not carried into production as is.
+
+## ⏱️ Time Spent
+
+The whole prototype was built in **10 hours of hands-on work**, from an empty project to a playable level, split across **3 working sessions**:
+
+| Session | Duration |
+|---|:---:|
+| Session 1 | 4 h |
+| Session 2 | 3 h |
+| Session 3 | 3 h |
+| **Total** | **10 h** |
+
+Speed is the point of a prototype: answer the question with the least time invested, before committing to production. Ten hours was enough to prove the core loop with the existing model kit.
 
 ## 🎬 Videos
 
