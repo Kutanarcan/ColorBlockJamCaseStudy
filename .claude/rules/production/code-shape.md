@@ -6,7 +6,7 @@ paths:
 # Code Shape
 
 ## Size & layout
-- If a class exceeds 150 lines, split it and state why.
+- If a class exceeds 150-200 lines, split it and state why.
 - If a method exceeds 30 lines or 3 levels of nesting, extract.
 - One public type per file; the file is named after the type.
 - Folders group by domain concept, never by technical kind. `Enums/`, `Interfaces/`, `Structs/`, `Managers/`, `Helpers/`, `Misc/` are not concepts.

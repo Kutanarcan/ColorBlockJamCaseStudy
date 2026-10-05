@@ -14,7 +14,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Platform](https://img.shields.io/badge/Mobile-Portrait-lightgrey)
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
-![Production](https://img.shields.io/badge/Production-⏳_Next-6e7681)
+![Production](https://img.shields.io/badge/Production-🚧_In_Progress-1f6feb)
 
 </div>
 
@@ -31,9 +31,9 @@ flowchart LR
     P["🧪 Prototype"] --> L["✨ Light Polish"] --> M["🎬 Marketing Video"] --> R["🏗️ Production"]
 
     classDef done fill:#2ea043,color:#fff,stroke:#2ea043
-    classDef todo fill:#6e7681,color:#fff,stroke:#6e7681
+    classDef active fill:#1f6feb,color:#fff,stroke:#1f6feb
     class P,L,M done
-    class R todo
+    class R active
 ```
 
 | Stage | Purpose | Status |
@@ -41,7 +41,7 @@ flowchart LR
 | 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
 | ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
 | 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
-| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ⏳ Next |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | 🚧 In progress |
 
 **From prototype to production**
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
@@ -72,7 +72,7 @@ AI is used as a pair programmer under rules I designed — not as an autopilot. 
 | Project | [`CLAUDE.md`](CLAUDE.md) | Communication style, folder layout, which mode is active, which plan is loaded |
 | Mode | [`.claude/modes/`](.claude/modes/) | The process: how phases are sliced, what "done" means, the answer format |
 | Folder | [`.claude/rules/`](.claude/rules/) | Code rules that load only for matching folders: `prototype.md` for `Assets/Prototype/`, `production/*` for `Assets/Scripts/` |
-| Plan | [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) | Game summary, asset analysis, phase list and open questions |
+| Plan | [`ProductionV1.md`](docs/production/ProductionV1.md) (active) · [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) | Scope, rules, data model, phase list and decisions for the active mode |
 
 The mode line in `CLAUDE.md` is changed only by me. The AI never infers the mode from the code, and stops to ask if the mode and its rules disagree.
 
@@ -200,7 +200,37 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 # 🏗️ Production
 
-⏳ **Next.** Starts from the prototype's findings in `FINDINGS.md`, not from its code (see **Workflow** at the top).
+> [!IMPORTANT]
+> **Goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
+> **Status:** 🧠 Design settled · 🪜 Phase plan next
+> **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
+
+## 🧬 Design at a Glance
+
+| Topic | In one line |
+|---|---|
+| **Grid** | One 1D occupancy array of entity ids; no edge layer, no border ring. |
+| **Entities** | Blocks, walls and doors share one base (shape + position + modifiers); walls and doors can sit anywhere. |
+| **Movement** | A step is valid when every target cell is empty or the block's own and no gate vetoes it. |
+| **Exit** | Each covered column scans forward; its first occupied cell must be a door of the block's color and direction. |
+| **Modifiers** | Gate (veto), Reactor (exit → counter), Board command (narrow API). Ice, Key/Lock, Rope/Scissors, Arrow and Tangled, all stackable. |
+| **Exit resolution** | Exit is the only trigger; a resolver walks the reactors in a fixed order, single pass. |
+| **Game state** | Timer from level data, fail on timeout, continue adds time, restart rebuilds from level data. |
+| **Level data** | Polymorphic JSON in `Game.LevelIO` (Newtonsoft), `schemaVersion`, key-based loading ready for Addressables. |
+| **Level Editor** | Editor-only, data-oriented, refuses to save a level that breaks a validation rule. |
+
+## 📦 Assemblies
+
+| Assembly | Role |
+|---|---|
+| `Game.Core` | Logic and level data model, no `UnityEngine` |
+| `Game.LevelIO` | JSON serialization, shared by Runtime and the Editor |
+| `Game.Runtime` | Presentation, after the logic is verified |
+| `Game.LevelEditor` | Editor-only level editor |
+
+## 📚 Production Docs
+
+- [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, decision log
 
 ---
 
