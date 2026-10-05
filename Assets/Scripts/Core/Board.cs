@@ -37,6 +37,13 @@ namespace Game.Core
             Fill(entity, entity.Id);
         }
 
+        /// <summary>Clears all of the block's cells at once. Its position keeps the last cell it stood on.</summary>
+        internal void RemoveBlock(Block block)
+        {
+            Fill(block, Grid.Empty);
+            block.IsExited = true;
+        }
+
         private void Fill(Entity entity, int value)
         {
             for (int i = 0; i < entity.CellCount; i++)

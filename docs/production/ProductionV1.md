@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-2/10_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-3/10_done-1f6feb)
 ![Decisions](https://img.shields.io/badge/Brainstorm-settled-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md)</sub>
@@ -309,7 +309,7 @@ One phase per answer, following the production process. Every sub-step ends with
 |---|---|---|---|---|
 | 0 | Skeleton | 0.1 `Game.Core` (no UnityEngine) + `Game.Tests.EditMode` asmdefs · 0.2 first test | `CoreAssembly_Compiles_WithoutUnityEngine` | ✅ |
 | 1 | Grid & Entities | 1.1 `Direction` + cell ↔ index math · 1.2 entity base (shape + position; Block / Wall / Door) · 1.3 occupancy fill and cell query · 1.4 `LevelData` DTO + Core builder · 1.5 ASCII map → `LevelData` test helper | `Builder_PlacesEntities_IntoOccupancy` | ✅ |
-| 2 | Movement | 2.1 step into empty cells · 2.2 blocked by wall / door / block, own cells free · 2.3 multi-cell shapes (bar, L, U) · 2.4 `TryMove` result `Moved / Blocked` | `TryMove_StopsAt_OccupiedCell` | ⏳ |
+| 2 | Movement | 2.1 step into empty cells · 2.2 blocked by wall / door / block, own cells free · 2.3 multi-cell shapes (bar, L, U) · 2.4 `TryMove` result `Moved / Blocked` | `TryMove_StopsAt_OccupiedCell` | ✅ |
 | 3 | Exit | 3.1 straight door exit, batch clear · 3.2 rejects: wrong color, wrong direction, too wide · 3.3 recess: open U passes, U with a block inside fails · 3.4 several door entities, inner door direction | `UShape_WithBlockInRecess_DoesNotExit` | ⏳ |
 | 4 | Game State | 4.1 win · 4.2 timer (`ITimeProvider` fake) → fail · 4.3 continue `AddTime` · 4.4 restart from definition | `Restart_RestoresInitialState` | ⏳ |
 | 5 | Modifier Framework | 5.1 Gate contract + Arrow · 5.2 Reactor contract + `ExitResolver` + Ice · 5.3 amount filters + Key/Lock · 5.4 Rope/Scissors · 5.5 parallel stacking (Rope + Ice) | `RopeAndIce_BothMustResolve_BeforeMove` | ⏳ |
