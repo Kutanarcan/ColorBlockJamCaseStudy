@@ -202,7 +202,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 > [!IMPORTANT]
 > **Goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Status:** 🧠 Design settled · 🪜 Phase 11 done (11/13, Phase 9 dropped) · ▶️ Phase 12 next
+> **Status:** 🧠 Design settled · 🪜 Phase 12 done (12/13, Phase 9 dropped) · ▶️ Phase 13 next
 > **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
 
 ## 🧬 Design at a Glance

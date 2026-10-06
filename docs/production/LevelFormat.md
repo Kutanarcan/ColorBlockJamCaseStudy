@@ -110,8 +110,9 @@ Every key and every `TypeName` is part of the save format. **Renaming a C# class
 ### 4.2 Adding a field kind (float, bool, cell, list…)
 1. Add one method each to `IModifierWriter` and `IModifierReader` (Core).
 2. Implement it in `JsonModifierWriter` / `JsonModifierReader`, with a typed read in `JsonRead`. The read must reject a wrong type with a path.
-3. Add a rejection test for the wrong type in `LevelJsonTests`.
-4. List the new value type in §2 (Values).
+3. Make the Level Editor draw it: a `FieldKind` value, storage in `ModifierFields` (both interfaces), and a case in `SelectionPanel.DrawField`.
+4. Add a rejection test for the wrong type in `LevelJsonTests`.
+5. List the new value type in §2 (Values).
 
 ### 4.3 Adding a `LevelData` or entity field
 1. Write it in `LevelJsonWriter` and read it in `LevelJsonReader`, with the same key.
@@ -172,4 +173,5 @@ For every pull request that touches `Core/Level/`, `Core/Modifiers/` or `LevelIO
 | Reading | `LevelIO/Reading/` (`LevelJsonReader`, `JsonModifierReader`, `JsonRead`) |
 | Writing | `LevelIO/Writing/` (`LevelJsonWriter`, `JsonModifierWriter`) |
 | Direction names | `LevelIO/DirectionNames.cs` |
+| Editor field editing | `Editor/Model/ModifierFields.cs`, `FieldKind.cs`, `Editor/Inspector/SelectionPanel.cs` |
 | Tests | `Tests/LevelIO/`, `Tests/EditMode/Level/LevelValidatorTests.cs`, `Tests/EditMode/Modifiers/ModifierCatalogTests.cs` |

@@ -1,0 +1,26 @@
+{
+    "name": "Game.Tests.LevelEditor",
+    "rootNamespace": "Game.Tests.LevelEditor",
+    "references": [
+        "Game.Core",
+        "Game.LevelIO",
+        "Game.LevelEditor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

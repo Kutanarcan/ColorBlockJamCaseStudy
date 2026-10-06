@@ -10,6 +10,7 @@ namespace Game.Core
     public sealed class ModifierCatalog
     {
         private readonly Dictionary<string, Func<ModifierData>> factories = new Dictionary<string, Func<ModifierData>>();
+        private readonly List<string> names = new List<string>();
 
         // A new modifier adds one line here.
         public static ModifierCatalog Default() =>
@@ -28,9 +29,13 @@ namespace Game.Core
                 throw new InvalidOperationException($"Modifier type '{name}' is added twice.");
 
             factories.Add(name, factory);
+            names.Add(name);
 
             return this;
         }
+
+        /// <summary>Saved names in the order they were added (the editor's "add modifier" list).</summary>
+        public IReadOnlyList<string> Names => names;
 
         public bool Contains(string name) => factories.ContainsKey(name);
 

@@ -18,6 +18,12 @@ namespace Game.Tests.EditMode
         }
 
         [Test]
+        public void Names_AreListedInTheOrderTheyWereAdded()
+        {
+            Assert.That(ModifierCatalog.Default().Names, Is.EqualTo(new[] { "ice", "arrow" }));
+        }
+
+        [Test]
         public void TryCreate_UnknownName_Fails()
         {
             Assert.That(ModifierCatalog.Default().TryCreate("laser", out ModifierData data), Is.False);

@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Logic_+_Level_Data-8250df)
-![Phases](https://img.shields.io/badge/Phases-11/13_done-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-12/13_done-1f6feb)
 ![Mechanics](https://img.shields.io/badge/Mechanics-Block_·_Arrow_·_Ice-2ea043)
 
 <sub>[README](../../README.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [PrototypeV1](../prototype/PrototypeV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md) · [Level Format](LevelFormat.md)</sub>
@@ -296,7 +296,7 @@ These are **not** opened in V1. Each needs a change in a known place, written do
 - **Editor-only**, under an `Editor/` folder, in its own assembly. It does not depend on Runtime.
 - **Visual JSON editing:** open, create, save and overwrite levels.
 - **Fast to use is the priority.** Its working model is **data-oriented**: flat arrays, id → cell indices and lookups by type or color, so queries stay fast. It converts to and from `LevelData` only on load and save.
-- **Additive:** the modifier list comes from `ModifierCatalog`, and each DTO's fields from its own `Write` / `Read`, so a new modifier shows up in the editor without editor changes. How editor validation rules are found is decided when Phase 12 starts.
+- **Additive:** the modifier list comes from `ModifierCatalog`, and each DTO's fields from its own `Write` / `Read`, so a new modifier shows up in the editor without editor changes. Editor-only code may use reflection (D51), e.g. to discover validation rules and modifier drawers.
 - **Nothing leaks into Core.** Editor code and editor tests stay in their own assemblies.
 
 ### Validation rules
@@ -307,7 +307,7 @@ Saving is blocked when a rule fails.
 | Edge cells of the grid are only `Wall` or `Door` (never empty, never a block) | Editor |
 | A door on the edge points outward; a **corner cell cannot be a door** | Editor |
 | A door entity is a straight line perpendicular to its direction | Editor |
-| Every `colorId` exists in the palette | Editor |
+| Every `colorId` exists in the palette | Editor, deferred until the palette exists (D52) |
 | Every block shape is connected | Editor |
 | Every block color has a door wide enough | Editor |
 | Modifier values are valid (each DTO's own checks) | Editor + Core (load time) |
@@ -369,7 +369,8 @@ One phase per answer, following the production process. Every sub-step ends with
 | 9 | ~~Dormant Entities~~ | Dropped from V1: dormant entities became a documented edit point (D42) | — | ➖ |
 | 10 | Load-time Validation | 10.1 bounds and overlap · 10.2 unsupported `schemaVersion` (~~unknown modifier type~~ moved to LevelIO, D47) · 10.3 per-DTO value checks | `Load_Rejects_OverlappingEntities` | ✅ |
 | 11 | LevelIO | 11.1 `Game.LevelIO` asmdef + tests · 11.2 explicit `ModifierCatalog`, DTO field IO, polymorphic modifiers, no reflection · 11.3 round-trip, unknown type rejected · 11.4 `ILevelSource` contract (key-based, async) | `RoundTrip_PreservesAllModifiers` (incl. a test-assembly fake) | ✅ |
-| 12 | Level Editor | 12.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 12.2 validation rules · 12.3 window: painting, entity grouping, modifier editing (from `ModifierCatalog`) · 12.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ⏳ |
+| 12 | Level Editor | 12.1 `Game.LevelEditor` asmdef + DOD model, `LevelData` ↔ model · 12.2 validation rules · 12.3 window: painting, entity grouping, modifier editing (from `ModifierCatalog`) · 12.4 save / load / overwrite | `EditorModel_RoundTrip_EqualsLevelData` + rule tests | ✅ |
+| 12b | Editor Usability | 12b.1 brush + stroke: an entity is created by its first painted cell, a stroke extends a matching entity, paint overrides, a fast drag paints a side-connected line, rules run once per stroke · 12b.2 undo / redo · 12b.3 resize by side (+/-), structure kept, confirm before cutting content · 12b.4 quick fixes: edge door direction, color swatches, right-click erase, shortcuts, entity list, overwrite / close prompts, time limit rule | `ChoosingABrush_CreatesNoEntity_UntilACellIsPainted` · `Undo_RestoresTheLevelBeforeTheStroke_AndRedoReappliesIt` · `GrowTop_MovesTheTopFrame_AndKeepsTheInside` | ✅ |
 | 13 | Additivity Proof | 13.1 one mechanic from the reference added end to end in the test assembly (data, IO, logic), zero `Game.Core` changes · 13.2 `docs/production/Extending.md`: recipe + edit points | `TurnBasedArrow_AddedWithoutCoreChanges` | ⏳ |
 
 - **ASCII test helper (1.5) is test-only.** It lives in the test assembly and produces a plain `LevelData`. Core, LevelIO, the Editor and Runtime never see it. JSON stays the only level format.
@@ -440,3 +441,12 @@ One phase per answer, following the production process. Every sub-step ends with
 | D48 | LevelIO without reflection | No runtime reflection (IL2CPP stripping). Each DTO declares `TypeName` and saves / loads its own fields through `IModifierWriter` / `IModifierReader` (Core, format-neutral; a new field kind adds a method). `ModifierCatalog` (Core) is an explicit list: a new modifier adds one line to `Default()`. LevelIO maps `LevelData` by hand over Newtonsoft `JObject` (no `Deserialize` / `ToObject`); directions by an explicit name table. JSON: camelCase, directions as strings, cells `[x, y]`; scalar fields required, lists optional; errors name their path. `LevelJson.Parse` returns `Result<LevelData>` and does no structural checks (`LevelSession.TryCreate` does). Writing a modifier missing from the catalog throws |
 | D49 | Level source | `ILevelSource.LoadAsync(key)` returns `Task<Result<LevelData>>` and lives in Core. Async from the start for Addressables or downloads; the Runtime implementation comes with presentation |
 | D50 | Level format rules | `docs/production/LevelFormat.md` is the mandatory reference for the level format: frozen names, change checklists, guarding tests and a review checklist. `.claude/rules/production/level-format.md` loads it for every change under `Core/Level`, `Core/Modifiers` and `LevelIO` |
+| D51 | Reflection boundary | Runtime code (Core, LevelIO, Runtime) never uses reflection (IL2CPP). Editor-only code may: the Level Editor assembly is Editor-only, so it never reaches a player build. It may discover validation rules and modifier drawers by reflection, but reads and writes levels only through `LevelJson` and the modifier list only from `ModifierCatalog` |
+| D52 | Level Editor | IMGUI `EditorWindow` under **Tools → Color Block Jam → Level Editor**, in the Editor-only `Game.LevelEditor` assembly (`Assets/Scripts/Editor`). Behaviour lives in a testable `LevelEditorSession`; the window only draws and forwards input. Levels are saved as `Assets/Levels/<key>.json`, the key being the file name and address. Modifier fields are edited generically through `ModifierFields` (the DTO's own `Write` / `Read`), no per-modifier drawers. Colors are previewed from a temporary list; the palette rule waits for the palette |
+| D53 | Editor painting | Brush + stroke. A brush is an entity kind with its color and direction; an entity is created when its first cell is painted, never by a button. A stroke that starts on an entity matching the brush extends it; anywhere else it paints a new entity over whatever is there (override; undo makes it safe). A fast drag paints a side-connected line. Rules run once per stroke. The window shows per-kind ordinals, never internal ids |
+| D54 | Grid resize | +/- per side. That side's edge walls and doors move with the frame; the interior stays. A shrink that would cut content asks for confirmation |
+| D55 | Editor usability | Phase 12b (brush & stroke, undo / redo, resize, quick fixes) runs before Phase 13. How undo is built is decided when 12b.2 starts |
+| D56 | Editor undo | An own snapshot history (`EditHistory`), not Unity's `Undo`. Each edit records the level before it (`LevelModel.Clone`, ids kept) with the selection; a stroke is one step, and typing into one field of one entity merges into one step. Modifiers are replaced, never changed in place, so snapshots share them. 100 steps; cleared on open / new; not kept across a domain reload. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y are shortcuts bound to the window, so they win over Unity's global Undo there |
+| D57 | Editor quick fixes | A door started on the edge points outward; the brush's direction is for inner doors. Right-drag erases with any tool. Saving asks before overwriting only when the file belongs to another key. Closing with unsaved changes asks to save. `TimeLimitRule` (editor) requires a time limit above zero |
+| D58 | Editor frame | Edge cells are walls by default and hold only walls and doors (`LevelFrame`). A block brush skips them; erasing a frame door, deleting a frame door entity or resizing turns an emptied frame cell back into a frame wall. The editor rules still report a frame broken in an opened file |
+| D59 | Editor selection | No tool buttons or tool keys: a left-drag paints, a right-drag erases, and the panel only lists the controls. Ctrl/Cmd + click selects the entity under the cursor and takes up its brush; Esc or a brush change drops the selection. A Paint stroke that starts next to the selected entity, with a matching brush, extends it, so shapes like a T are drawn as one entity |
