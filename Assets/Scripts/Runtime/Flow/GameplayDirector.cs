@@ -9,16 +9,16 @@ namespace Game.Runtime
     /// </summary>
     public sealed class GameplayDirector : ISessionObserver
     {
-        private readonly BlocksView blocks;
+        private readonly ExitSteps exitSteps;
         private readonly InputLock input;
         private readonly Sequencer exits;
         private readonly Sequencer flow;
         private readonly float winPopupDelay;
 
-        public GameplayDirector(BlocksView blocks, InputLock input, Sequencer exits, Sequencer flow,
+        public GameplayDirector(ExitSteps exitSteps, InputLock input, Sequencer exits, Sequencer flow,
             float winPopupDelay)
         {
-            this.blocks = blocks;
+            this.exitSteps = exitSteps;
             this.input = input;
             this.exits = exits;
             this.flow = flow;
@@ -36,8 +36,7 @@ namespace Game.Runtime
         // The drag moves the dragged block's view itself; no mechanic moves entities from a listener yet.
         public void OnEntityMoved(Entity entity, Cell offset) { }
 
-        public void OnBlockExited(Block block, Direction direction) =>
-            exits.Run(new HideBlockStep(blocks.ViewOf(block)));
+        public void OnBlockExited(Block block, Direction direction) => exits.Run(exitSteps.For(block, direction));
 
         // Ice's melt and count updates are P2.4 follow-ups; nothing adds or removes a look here yet.
         public void OnModifierAdded(Entity entity, IModifier modifier) { }

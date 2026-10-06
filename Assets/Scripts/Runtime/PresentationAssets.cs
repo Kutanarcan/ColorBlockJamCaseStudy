@@ -30,6 +30,12 @@ namespace Game.Runtime
         [SerializeField] private Mesh innerCornerMesh;
         [SerializeField] private ModifierViews modifierViews;
 
+        [Header("Feedback")]
+        [SerializeField] private ExitParticles exitParticles;
+        [SerializeField] private AudioClip selectSound;
+        [SerializeField] private AudioClip dropSound;
+        [SerializeField] private AudioClip crunchSound;
+
         public Palette Palette => palette;
         public Material BlockTemplate => blockTemplate;
         public Material DoorTemplate => doorTemplate;
@@ -42,6 +48,18 @@ namespace Game.Runtime
 
         public PieceView BlockPiece => blockPiece;
         public ModifierViews ModifierViews => modifierViews;
+
+        public ExitParticles ExitParticles => exitParticles;
+
+        public AudioClip Sound(SoundEffect effect)
+        {
+            switch (effect)
+            {
+                case SoundEffect.Select: return selectSound;
+                case SoundEffect.Drop: return dropSound;
+                default: return crunchSound;
+            }
+        }
 
         public Mesh BlockMesh(BlockPartKind kind)
         {

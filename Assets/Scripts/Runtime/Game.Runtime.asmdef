@@ -5,6 +5,7 @@
         "Game.Core",
         "Game.LevelIO",
         "UniTask",
+        "UniTask.DOTween",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

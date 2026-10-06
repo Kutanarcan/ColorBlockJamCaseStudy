@@ -17,13 +17,14 @@ namespace Game.Runtime
         private readonly InputLock inputLock;
         private readonly DragResolver resolver;
         private readonly DragSettings settings;
+        private readonly ISfxPlayer sfx;
 
         private Block draggedBlock;
         private Vector2 dragStartPointer;
         private Vector2 dragStartPosition;
 
         public DragController(LevelSession session, BlocksView blocks, IPointerInput pointer, InputLock inputLock,
-            DragResolver resolver, DragSettings settings)
+            DragResolver resolver, DragSettings settings, ISfxPlayer sfx)
         {
             this.session = session;
             this.blocks = blocks;
@@ -31,6 +32,7 @@ namespace Game.Runtime
             this.inputLock = inputLock;
             this.resolver = resolver;
             this.settings = settings;
+            this.sfx = sfx;
         }
 
         public void Tick(float deltaTime)
@@ -62,6 +64,7 @@ namespace Game.Runtime
             dragStartPointer = cellPoint;
             dragStartPosition = PositionOf(block);
             blocks.ViewOf(block).SetPosition(BoardLayout.ToBoard(dragStartPosition, settings.LiftHeight));
+            sfx.Play(SoundEffect.Select);
         }
 
         private void UpdateDrag()
@@ -85,6 +88,7 @@ namespace Game.Runtime
         private void EndDrag()
         {
             session.CommitMove();
+            sfx.Play(SoundEffect.Drop);
             blocks.ViewOf(draggedBlock).SnapTo(BoardLayout.ToBoard(PositionOf(draggedBlock), 0f), settings.SnapDuration);
             draggedBlock = null;
         }

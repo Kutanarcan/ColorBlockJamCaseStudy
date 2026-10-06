@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Core;
@@ -16,6 +17,7 @@ namespace Game.Runtime
         [SerializeField] private PresentationAssets assets;
         [SerializeField] private CameraRig cameraRig;
         [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f);
+        [SerializeField] private ExitSettings exitSettings = new ExitSettings(0.08f, 10f, 0.5f);
         [Tooltip("Seconds between the last exit finishing and the win popup (D89). Moves to GameConfig in I4.")]
         [SerializeField, Min(0f)] private float winPopupDelay = 0.5f;
         [SerializeField] private TextAsset[] levels;
@@ -56,21 +58,41 @@ namespace Game.Runtime
             }
 
             materials = new PaletteMaterials(assets.Palette, assets.BlockTemplate, assets.DoorTemplate);
-            var layout = new BoardLayout(level.Value);
+            BuildBoard(level.Value);
+            BlocksView blocks = BuildBlocks(session.Value);
+            WirePlay(session.Value, blocks);
+        }
+
+        private void BuildBoard(LevelData level)
+        {
+            var layout = new BoardLayout(level);
             var board = new BoardView(new GameObject("Board").transform, assets, materials);
             board.Build(new BoardDressing(layout));
             cameraRig.Fit(layout.Extent(assets.WallMesh.bounds.max.y));
+        }
 
+        private BlocksView BuildBlocks(LevelSession session)
+        {
             var blockParts = new PiecePool(assets.BlockPiece, NewInactiveRoot("Pool_BlockParts"));
             var blocks = new BlocksView(new GameObject("Blocks").transform, assets, materials, blockParts,
                 ModifierPresenters.Default(assets.ModifierViews));
-            blocks.Build(session.Value.Board);
+            blocks.Build(session.Board);
+
+            return blocks;
+        }
+
+        private void WirePlay(LevelSession session, BlocksView blocks)
+        {
+            var sfx = new AudioSfxPlayer(gameObject.AddComponent<AudioSource>(), assets);
+            var burst = new ExitBurst(assets.ExitParticles, materials, assets.Palette.Count,
+                new GameObject("ExitParticles").transform, Environment.TickCount);
+            var exitSteps = new ExitSteps(blocks, burst, sfx, exitSettings);
 
             var inputLock = new InputLock();
-            session.Value.Observer = new GameplayDirector(blocks, inputLock, exits, flow, winPopupDelay);
+            session.Observer = new GameplayDirector(exitSteps, inputLock, exits, flow, winPopupDelay);
 
-            var drag = new DragController(session.Value, blocks, new MousePointerInput(cameraRig.SceneCamera),
-                inputLock, new DragResolver(session.Value), dragSettings);
+            var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
+                new DragResolver(session), dragSettings, sfx);
             gameObject.AddComponent<FrameTicker>().Initialize(drag);
         }
 

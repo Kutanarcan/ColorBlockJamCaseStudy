@@ -11,6 +11,8 @@ namespace Game.Runtime
         [SerializeField] private MeshFilter meshFilter;
         [SerializeField] private MeshRenderer meshRenderer;
 
+        public Renderer Renderer => meshRenderer;
+
         public void SetMesh(Mesh mesh) => meshFilter.sharedMesh = mesh;
 
         public void SetMaterial(Material material) => meshRenderer.sharedMaterial = material;

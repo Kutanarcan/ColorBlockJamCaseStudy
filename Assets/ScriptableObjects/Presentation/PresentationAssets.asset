@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PresentationAssets
   m_EditorClassIdentifier: 
   palette: {fileID: 11400000, guid: 523f6e9e8ac9f5f2cdb667c321ad5215, type: 2}
-  blockTemplate: {fileID: -4085299679613993177, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  blockTemplate: {fileID: 2100000, guid: e781f59b396240ada640df4ebc4fc10c, type: 2}
   doorTemplate: {fileID: -8804305400588020115, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
   groundTile: {fileID: 7134076508084118058, guid: e26f966ed5f6d234d9b94b7a7284e35a, type: 3}
   wallPiece: {fileID: 7410000000000000001, guid: a63af7ae1f345c849ae80cf0fccee3e7, type: 3}
@@ -26,3 +26,7 @@ MonoBehaviour:
   centerMesh: {fileID: -3289860805121049569, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   innerCornerMesh: {fileID: 3222031244701842341, guid: da198a95277791b4a865d07db6b524d4, type: 3}
   modifierViews: {fileID: 11400000, guid: 02c8272e21fe875ccaa3541fba56f7ee, type: 2}
+  exitParticles: {fileID: 5739049615336135332, guid: 608e75a0cdf04c1c8121c669ccd9f559, type: 3}
+  selectSound: {fileID: 8300000, guid: 2cca23a32f6cd6c49be7010ccdbde3ba, type: 3}
+  dropSound: {fileID: 8300000, guid: 195da8d85d7d51740ae9bafd390ea2c4, type: 3}
+  crunchSound: {fileID: 8300000, guid: 0e98272349e997d4082b088526692bac, type: 3}
