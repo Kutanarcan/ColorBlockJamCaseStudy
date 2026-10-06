@@ -212,7 +212,7 @@ V1 is built on three pillars: **logic** that runs and is tested without Unity, a
 
 <!-- Level Editor video (OBS, landscape): replace LEVEL_EDITOR_VIDEO_URL with the uploaded asset link. -->
 <div align="center">
-  <video src="LEVEL_EDITOR_VIDEO_URL" width="100%" controls muted></video>
+  <video src="https://github.com/user-attachments/assets/8a9dca3f-37b8-452a-8c32-e50bf642923f" width="100%" controls muted></video>
 </div>
 
 ## 🧱 The Three Pillars
