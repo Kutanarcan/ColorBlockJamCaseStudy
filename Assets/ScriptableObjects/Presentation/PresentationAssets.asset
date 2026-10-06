@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 053db2dbfda27f99158bf8225a1e0a6a, type: 3}
+  m_Name: PresentationAssets
+  m_EditorClassIdentifier: 
+  palette: {fileID: 11400000, guid: 523f6e9e8ac9f5f2cdb667c321ad5215, type: 2}
+  blockTemplate: {fileID: -4085299679613993177, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  doorTemplate: {fileID: -8804305400588020115, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
+  groundTile: {fileID: 7134076508084118058, guid: e26f966ed5f6d234d9b94b7a7284e35a, type: 3}
+  wallPiece: {fileID: 7410000000000000001, guid: a63af7ae1f345c849ae80cf0fccee3e7, type: 3}
+  doorPiece: {fileID: 7410000000000000002, guid: 3957e5a286d9a33429081e8a850e0b6b, type: 3}
+  wallMesh: {fileID: 8733429697405204941, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
+  cornerMesh: {fileID: -5221963080773851136, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}

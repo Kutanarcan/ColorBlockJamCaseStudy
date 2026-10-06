@@ -34,7 +34,7 @@ The required input for the first production phase.
 
 ### Assets & prefabs
 - GroundGrid, BlockParts and Arrows FBX are not modified; their fixes live on the prefab's Mesh level. WallAndDoor.fbx was cleaned once and needs no fix.
-- Prefab = Root (grid position/rotation, gameplay) → Visuals (effects only) → Mesh (import fix; script swaps mesh/material only).
+- Prefab = Root (grid position/rotation, gameplay) → Visuals (effects only) → Mesh (import fix; script swaps mesh/material and stretches runs, reaching the Mesh through a View component, never by path).
 - Wall family shares one profile (1 wide, top +0.611, 12-segment bevel); Wall and Door run along X at rotation 0.
 - Block and wall pivots sit at ground level; meshes extend below the ground. BlockPiece offset 0, ArrowPiece +0.656.
 - Prototype colors are runtime materials — `new Material(template)` per color, cached, shared by blocks and doors. Authored `.mat` assets are a production concern.
@@ -94,7 +94,7 @@ The required input for the first production phase.
 | Exit | Only the border edge is checked, not the cells between a column and the border: a U exits through a block sitting in its recess. | Must check those cells |
 | Movement | The `CanPlace` edge check is dormant (border is caught by bounds, inner edges all Open). | Kept on purpose: walls inside the board are planned |
 | Movement | Diagonal `CanPlace` (only `Lean` uses it) skips the edge check, so with inner walls the visual could lean past a wall corner. | Grid logic must not allow it |
-| Visuals | Run stretching and `doorHeightScale` write Mesh-level scale/position (the prefab rule says the Mesh transform is fixed). | Needs another approach |
+| Visuals | Mesh children are found by path in code (`transform.Find("Visuals/Mesh_Door")`); a hierarchy change breaks it silently. Mesh swap and run scaling themselves work fine. | A View component on the prefab root with serialized references |
 | Rendering | Exit needs a custom block shader (BlockClip) instead of the FBX's Standard material; the per-block `MaterialPropertyBlock` breaks batching for that block while it exits. | Accepted in the prototype |
 | Allocation | Exit allocates per call (`MaterialPropertyBlock`, row lists, tween closures, particle instance). | Pooled particles, cached property blocks, reused row buffers |
 

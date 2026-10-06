@@ -7,15 +7,21 @@ using UnityEngine;
 namespace Game.Runtime
 {
     /// <summary>
-    /// Composition root of the Gameplay scene until Infrastructure (D62, D64): wires the level source and
-    /// starts the session. I4 replaces it with <c>GameplayLifetimeScope</c>; nothing it creates knows that.
+    /// Composition root of the Gameplay scene until Infrastructure (D62, D64): wires the level source,
+    /// starts the session and builds the board. I4 replaces it with <c>GameplayLifetimeScope</c>; nothing it
+    /// creates knows that.
     /// </summary>
     public sealed class GameplayInstaller : MonoBehaviour
     {
+        [SerializeField] private PresentationAssets assets;
         [SerializeField] private TextAsset[] levels;
         [SerializeField] private string levelKey;
 
+        private PaletteMaterials materials;
+
         private void Start() => InstallAsync(destroyCancellationToken).Forget();
+
+        private void OnDestroy() => materials?.Dispose();
 
         private async UniTaskVoid InstallAsync(CancellationToken cancellation)
         {
@@ -38,7 +44,9 @@ namespace Game.Runtime
                 return;
             }
 
-            Debug.Log($"Level '{levelKey}' started: {level.Value.Width}x{level.Value.Height}", this);
+            materials = new PaletteMaterials(assets.Palette, assets.BlockTemplate, assets.DoorTemplate);
+            var board = new BoardView(new GameObject("Board").transform, assets, materials);
+            board.Build(new BoardDressing(new BoardLayout(level.Value)));
         }
     }
 }

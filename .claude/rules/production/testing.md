@@ -9,5 +9,5 @@ paths:
 - Put everything non-deterministic behind an interface: `ITimeProvider`, `IRandomSource`, `IInputSource`, `IClock`.
 - EditMode tests by default. PlayMode tests only when the Unity runtime is genuinely required.
 - Prefer hand-written fakes over mocks — the fake is also documentation.
-- Tests mirror the source layout one to one.
+- Tests mirror the source layout (folder rules: `code-shape.md` § Folders).
 - Every phase ends by naming which test turns green.

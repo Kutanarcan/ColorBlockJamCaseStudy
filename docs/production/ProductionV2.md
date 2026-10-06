@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-0/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-1/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -130,8 +130,11 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ### Board view
 - **Ground:** one GroundGrid tile per playable cell, cell pitch 2 units (FINDINGS).
-- **Frame and doors:** production walls and doors are **cells**; the art's walls sit on **cell edges**. How frame cells are drawn is settled by D86: the frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line render as one door run; inner wall cells use full wall pieces.
-- **Palette:** a palette asset maps `colorId` → material (one shared material per color, D74); the editor's preview colors and the "colorId exists in the palette" rule (V1 D52) switch to it.
+- **Frame and doors:** production walls and doors are **cells**; the art's walls sit on **cell edges**. Settled by D93, D98 and D99:
+  - **Walls (quadrant rule):** every wall or door cell is split into four 1×1 quadrants, and each quadrant looks at its two side neighbors and its diagonal: both sides open → outer `Corner`, one side open → `Wall` facing it, only the diagonal open → inner `Corner`, nothing open → empty. Frame, inner walls and notches follow from the one rule; a lone inner wall becomes a round pillar of 4 corners. Every piece is one `WallPiece` with its mesh swapped to `Wall` or `Corner`.
+  - **Doors:** one `DoorPiece` per run of same-color, same-direction door cells, on the approach side, stretched to the run's length; its arrow stays at the run's center (D98).
+- **Prefabs (D99):** the kit's prefabs only (`GroundTile`, `BlockPiece`, `ArrowPiece`, `WallPiece`, `DoorPiece`). Variety comes from mesh / material swap and run length, always through a View component on the prefab root with serialized references; code never finds a child by path.
+- **Palette:** a palette asset holds the colors; one shared block and one shared door material per color are made from them at load (D74, D95). The editor's preview colors and the "colorId exists in the palette" rule (V1 D52) switch to it.
 
 ### Block view
 - **BlockDrawRule** (FINDINGS shape): block cells → list of (piece, local position, rotation). Pure C#, rewritten from the prototype's knowledge, tested on L, T, U, ring and plus shapes.
@@ -294,9 +297,9 @@ One phase per answer, following the production process. **Files touched** are de
 ### 🎨 Stage A: Presentation
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| P0 | Runtime Skeleton | P0.1 UniTask package · P0.2 `Game.Runtime` + `Game.Tests.Runtime` asmdefs · P0.3 `ISessionObserver` in Core, called by the session · P0.4 Gameplay scene + manual `GameplayInstaller` + `TextAsset` level source | `Session_TellsTheObserver_MovesExitsRemovalsAndState` | ⏳ |
-| P1 | Board View | P1.1 palette asset + one material per color · P1.2 ground tiles for playable cells · P1.3 frame and doors (Q1) · P1.4 inner walls | `FrameRuns_GroupDoorsAndWalls_ByEdge` + level visible in the Editor | ⏳ |
-| P2 | Block View | P2.1 `BlockDrawRule` (pure) · P2.2 pooled pieces · P2.3 Arrow view · P2.4 Ice view with count · P2.5 modifier → view asset mapping | `BlockDrawRule_DressesLTURingAndPlus` | ⏳ |
+| P0 | Runtime Skeleton | P0.1 UniTask package · P0.2 `Game.Runtime` + `Game.Tests.Runtime` asmdefs · P0.3 `ISessionObserver` in Core, called by the session · P0.4 Gameplay scene + manual `GameplayInstaller` + `TextAsset` level source | `Session_TellsTheObserver_MovesExitsRemovalsAndState` | ✅ |
+| P1 | Board View | P1.1 palette asset + one material per color · P1.2 ground tiles for playable cells · P1.3 frame and doors (D93, D98, D99) · P1.4 inner walls | `WallDrawRule_DressesFrameInnerWallsAndDoors` + level visible in the Editor | ⏳ |
+| P2 | Block View | P2.1 `BlockDrawRule` (pure) · P2.2 pooled pieces (`BlockPiece` / `ArrowPiece` + `PieceView` mesh swap, D99) · P2.3 Arrow view · P2.4 Ice view with count · P2.5 modifier → view asset mapping | `BlockDrawRule_DressesLTURingAndPlus` | ⏳ |
 | P3 | Camera Fit | P3.1 fit function (bounds, HUD margins, safe area, aspect) · P3.2 camera applies it on level load | `CameraFit_KeepsTheBoardInside_From16x9To20x9` | ⏳ |
 | P4 | Input & Drag | P4.1 pointer → cell · P4.2 drag planner (walk toward pointer) · P4.3 lean, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragPlanner_WalksTowardThePointer_LargerAxisFirst` | ⏳ |
 | P5 | Director & Sequencer | P5.1 step contract + sequencer (order, parallel, cancel) · P5.2 director: exit steps non-blocking · P5.3 input lock · P5.4 win / fail sequences (popup placeholder step) | `Sequencer_PlaysInOrder_GroupsInParallel_AndCancels` | ⏳ |
@@ -409,10 +412,18 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D83 | Deliverables | Both an APK and a video; the Android build is tried in I6, before the last day |
 | D84 | Tweens | DOTween stays for production tweens, awaited through UniTask's DOTween support |
 | D85 | Observer call points | `ISessionObserver` also hears modifier added and entity moved (not only blocks). Calls come from `LevelSession` (moves, exits, one `SetState` for every state change incl. continue and restart) and `LevelCommands` (command moves, modifier add / remove). The exit is reported before its event is dispatched |
-| D86 | Frame drawing (Q1) | The frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line become one door run; inner wall cells use full wall pieces |
+| D86 | Frame drawing (Q1) | ~~The frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line become one door run; inner wall cells use full wall pieces~~ — superseded by D93 and D94 |
 | D87 | Board view source (Q2) | Views read `Board` read-only for positions; static layout (frame, ground) is built once from `LevelData` |
 | D88 | Ice view (Q3) | Remaining count as text; crack stages only if time |
 | D89 | Win popup timing (Q4) | After the last exit step finishes, plus a delay from config |
 | D90 | Runtime assembly (Q5) | `Game.Runtime` is one assembly with UI inside; split only when a folder would pass depth 2 |
 | D91 | `Resources` exception | `Assets/Resources/DOTweenSettings.asset` stays: DOTween requires it. It is the only `Resources` use; game content never goes there (D65) |
 | D92 | Case brief | `docs/Game Developer Case 2026.pdf` is kept locally and ignored by git |
+| D93 | Wall drawing | Quadrant rule over solid cells (walls and doors): both sides open → outer `Corner`, one side open → `Wall` facing it, only the diagonal open → inner `Corner`, else nothing. One rule for frame, inner walls and notches; each piece is a 1×1 `WallPiece` with the `Wall` or `Corner` mesh. Known gap: the middle of a 2×2 or larger inner wall block stays empty, the kit has no fill piece |
+| D94 | Door drawing | ~~One door piece per door cell on its approach side, no stretching; one arrow per run of door cells with the same color and direction, across door entities. The kit's `DoorPiece` is split into `DoorCell` and `DoorArrow` prefabs~~ — superseded by D98 |
+| D95 | Palette materials | The palette asset holds colors only. `PaletteMaterials` makes one block and one door material per color from the kit's template materials at load, shares them, and destroys them when its owner closes |
+| D96 | P1 test | `WallDrawRule_DressesFrameInnerWallsAndDoors` replaces `FrameRuns_GroupDoorsAndWalls_ByEdge` |
+| D97 | Asset folders | Materials live under `Assets/Art/Materials/`. ScriptableObject assets live under `Assets/ScriptableObjects/`, grouped in concept subfolders (`Presentation/`: palette, presentation assets) |
+| D98 | Door drawing | One `DoorPiece` per run of door cells with the same color and direction (across door entities), on the run's approach side; the door mesh is stretched to the run's length, the arrow stays unscaled at the center (prototype method) |
+| D99 | Prefabs & views | Only the kit's prefabs (`GroundTile`, `BlockPiece`, `ArrowPiece`, `WallPiece`, `DoorPiece`); no prefab per piece kind. Variety comes from mesh / material swap and run length, through a View component on the prefab root (`PieceView`, `DoorPieceView`) whose references are serialized; code never finds a child by path. Meshes are referenced from `PresentationAssets` |
+| D100 | Folder size | A code folder holds at most 6 files; the change that adds the 7th splits it into concept subfolders, the root keeping the central types. Checked at the end of every phase (`code-shape.md` § Folders). Applied in P1 to `Runtime/Board` (`Drawing/`), `Core/Session` (`Win/`) and its tests |
