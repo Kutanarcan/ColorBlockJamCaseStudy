@@ -14,7 +14,8 @@ from an existing 3D model kit — prototype first, production later.
 ![Platform](https://img.shields.io/badge/Mobile-Portrait-lightgrey)
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
-![Production](https://img.shields.io/badge/Production-🚧_In_Progress-1f6feb)
+![Production V1](https://img.shields.io/badge/Production_V1-✅_Logic_·_Levels_·_Additive-2ea043)
+![Presentation](https://img.shields.io/badge/Presentation-🚧_Next-1f6feb)
 
 </div>
 
@@ -41,7 +42,7 @@ flowchart LR
 | 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
 | ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
 | 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
-| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | 🚧 In progress |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 Presentation next |
 
 **From prototype to production**
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
@@ -201,24 +202,68 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 # 🏗️ Production
 
 > [!IMPORTANT]
-> **Goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Status:** 🧠 Design settled · 🪜 Phase 12 done (12/13, Phase 9 dropped) · ▶️ Phase 13 next
+> **V1 goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
+> **Status:** ✅ V1 done (Phases 0–13, Phase 9 dropped) · ▶️ Presentation next
 > **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
 
-## 🧬 Design at a Glance
+V1 is built on three pillars: **logic** that runs and is tested without Unity, a **level pipeline** that saves exactly what the logic loads, and an architecture where a new mechanic is **added, not edited in**. Presentation (visuals, drag feel, exit animation, audio) comes after, on top of a verified core.
 
-| Topic | In one line |
+## 🎬 Level Editor
+
+<!-- Level Editor video (OBS, landscape): replace LEVEL_EDITOR_VIDEO_URL with the uploaded asset link. -->
+<div align="center">
+  <video src="LEVEL_EDITOR_VIDEO_URL" width="100%" controls muted></video>
+</div>
+
+## 🧱 The Three Pillars
+
+### 🧠 Logic
+- **Pure C#.** `Game.Core` has no `UnityEngine` reference; calling a Unity API there is a compile error.
+- **One occupancy array.** Walls, doors and blocks are all entities in one 1D grid of entity ids. No edge layer, no border ring, no bounds checks.
+- **Movement:** one cell per step; every target cell must be empty or the block's own.
+- **Exit:** each column the block covers scans forward; its first occupied cell must be a door of the block's color and direction. This closes the prototype's U-recess bug.
+- **Game state:** timer driven by `Tick(dt)`, win, fail on timeout or by a listener, continue with added time, restart from level data. No undo in the game.
+- **Modifiers:** Ice (frozen until N exits) and Arrow (one direction), stackable.
+
+### 💾 Level Pipeline
+- **Level data** (`LevelData`) is plain C# in Core; **JSON** lives in `Game.LevelIO` and is mapped by hand: no runtime reflection, IL2CPP safe.
+- **Validation in two places:** structural checks when a level loads (`LevelSession.TryCreate`), design rules in the editor, which refuses to save a level that breaks them.
+- **Ready for remote levels:** levels are reached by key through `ILevelSource` (async), every file carries a `schemaVersion`, and an unknown modifier type rejects the level cleanly.
+- **Level Editor** (`Tools → Color Block Jam → Level Editor`): an Editor-only window on a data-oriented model, with all its behaviour in a testable session class.
+
+| Level Editor | |
 |---|---|
-| **Grid** | One 1D occupancy array of entity ids; no edge layer, no border ring. |
-| **Entities** | Blocks, walls and doors share one base (shape + position + modifiers); walls and doors can sit anywhere. |
-| **Movement** | A step is valid when every target cell is empty or the block's own and no gate vetoes it. |
-| **Exit** | Each covered column scans forward; its first occupied cell must be a door of the block's color and direction. |
-| **Modifiers** | The base block always has `Move` and `Exit`; modifiers only declare parts (suspends, move constraint) and react to events through listeners; durability is a component a listener uses. V1 builds Ice and Arrow. |
-| **Events & commands** | Three events (exit, move committed, tick); listeners act only through command primitives. |
-| **Extensibility** | Any mechanic from the [Mechanics Reference](docs/production/ColorBlockJamMechanics.md) can be added with new files only, plus one line in `ModifierCatalog` or a documented edit point; a final phase proves it. Level IO uses no runtime reflection (IL2CPP safe). |
-| **Game state** | Timer from level data, fail on timeout, continue adds time, restart rebuilds from level data. |
-| **Level data** | Polymorphic JSON in `Game.LevelIO` (Newtonsoft), `schemaVersion`, key-based loading ready for Addressables. |
-| **Level Editor** | Editor-only, data-oriented, refuses to save a level that breaks a validation rule. |
+| **Painting** | Wall / Door / Block brush; left-drag paints, right-drag erases; fast drags stay connected |
+| **Selection** | Ctrl/Cmd + click selects and takes up the entity's brush; a stroke next to the selection extends it |
+| **Frame** | Edge cells are walls by default and hold only walls and doors; edge doors point outward |
+| **Undo / Redo** | Snapshot history, one step per stroke or edit |
+| **Resize** | Grow or shrink each side; the frame moves, the inside stays, a cut asks first |
+| **Modifiers** | Listed from the catalog, fields edited generically: a new modifier needs no editor change |
+| **Rules** | Edge cells, edge doors, straight doors, connected blocks, door width, time limit, Core validation; broken cells are outlined |
+
+### 🔌 Additive
+- **Modifiers only declare** (suspends a capability, constrains a direction, listens to an event); central rules decide.
+- **Three events** (exited, move committed, ticked) and a small set of **command primitives**; new effects are combinations, not new commands.
+- **The criterion:** adding a mechanic changes no existing file, except one line in `ModifierCatalog.Default()` or a documented edit point.
+- **Proven:** Turn Based Arrow was added end to end (data, JSON, logic) from a separate test assembly that sees only the public API, with **zero changes** to Core, LevelIO or the editor. The recipe is in [`Extending.md`](docs/production/Extending.md).
+
+## ✅ What Was Built
+
+| # | Phase | Result |
+|---|---|---|
+| 0 | Skeleton | `Game.Core` without UnityEngine, first EditMode test |
+| 1 | Grid & Entities | Occupancy array, Block / Wall / Door entities, level data and builder |
+| 2–3 | Movement & Exit | Step rule and the column-scan exit, U-recess bug closed |
+| 4 | Game State | Win, timer, fail, continue, restart |
+| 5–6 | Modifiers | Capability model, Ice and Arrow, parallel stacking |
+| 7–8 | Seams | Events, listeners, command primitives, move count, effective color, win exemption |
+| 9 | Dormant Entities | ➖ Dropped from V1, kept as a documented edit point |
+| 10–11 | Validation & LevelIO | Load-time validation, hand-mapped JSON, explicit modifier catalog |
+| 12 | Level Editor | Data-oriented model, validation rules, window, save / load |
+| 12b | Editor Usability | Brush & stroke, undo / redo, resize, frame, selection, styling |
+| 13 | Additivity Proof | Turn Based Arrow with zero Core changes, `Extending.md` |
+
+**Tests:** 195 EditMode test methods (more with `TestCase` rows) across `Game.Tests.EditMode`, `Game.Tests.LevelIO`, `Game.Tests.LevelEditor` and `Game.Tests.Additivity`.
 
 ## 📦 Assemblies
 
@@ -226,13 +271,18 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 |---|---|
 | `Game.Core` | Logic and level data model, no `UnityEngine` |
 | `Game.LevelIO` | JSON serialization, shared by Runtime and the Editor |
-| `Game.Runtime` | Presentation, after the logic is verified |
 | `Game.LevelEditor` | Editor-only level editor |
+| `Game.Runtime` | Presentation, next |
+
+## ▶️ Next: Presentation
+`GameInstaller` composition root, color palette, modifier views, block drawing, drag, exit visual, timer and continue UI.
 
 ## 📚 Production Docs
 
-- [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, decision log
+- [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, phase plan, decision log
 - [`LevelFormat.md`](docs/production/LevelFormat.md) — level JSON format and the **mandatory** checklists for changing level data, modifiers or LevelIO
+- [`Extending.md`](docs/production/Extending.md) — how to add a mechanic, the Turn Based Arrow example, edit points
+- [`ColorBlockJamMechanics.md`](docs/production/ColorBlockJamMechanics.md) — the mechanics reference the architecture is built for
 
 ---
 
