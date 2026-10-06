@@ -12,6 +12,13 @@ namespace Game.LevelEditor
         private const float CellSize = 30f;
         private const float Border = 2f;
 
+        /// <summary>
+        /// Matches the grid to its control id by this hint, not by how many controls came before it. The panels are
+        /// drawn first and change size when the selection changes (a first click selects what it paints), which would
+        /// otherwise shift the id between mouse down and drag, and the drag would be lost.
+        /// </summary>
+        private static readonly int ControlHint = "Game.LevelEditor.GridView".GetHashCode();
+
         private readonly LevelEditorSession session;
         private readonly StringBuilder label = new StringBuilder();
 
@@ -112,7 +119,7 @@ namespace Game.LevelEditor
         /// </summary>
         private bool HandleMouse(LevelModel model, Rect area)
         {
-            int control = GUIUtility.GetControlID(FocusType.Passive);
+            int control = GUIUtility.GetControlID(ControlHint, FocusType.Passive);
             Event e = Event.current;
 
             switch (e.GetTypeForControl(control))
