@@ -4,6 +4,7 @@ namespace Game.LevelEditor
     public enum FieldKind
     {
         Int,
-        Direction
+        Direction,
+        Axis
     }
 }

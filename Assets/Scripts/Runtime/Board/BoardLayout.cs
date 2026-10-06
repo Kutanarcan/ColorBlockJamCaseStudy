@@ -49,6 +49,10 @@ namespace Game.Runtime
         public static Vector3 CellCenter(Cell cell) =>
             new Vector3((cell.X + 0.5f) * CellSize, 0f, (cell.Y + 0.5f) * CellSize);
 
+        /// <summary>A position in cells (fractions kept) in board space, <paramref name="height"/> above the ground.</summary>
+        public static Vector3 ToBoard(Vector2 cells, float height) =>
+            new Vector3(cells.x * CellSize, height, cells.y * CellSize);
+
         private bool IsInside(Cell cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;
 
         private int IndexOf(Cell cell) => cell.Y * Width + cell.X;

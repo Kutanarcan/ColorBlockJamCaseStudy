@@ -21,7 +21,7 @@ namespace Game.Tests.Runtime
             ModifierPresenters presenters = NewPresenters();
 
             Assert.That(presenters.Find(new Ice(2)), Is.InstanceOf<IcePresenter>());
-            Assert.That(presenters.Find(new Arrow(Direction.Up)), Is.InstanceOf<ArrowPresenter>());
+            Assert.That(presenters.Find(new Arrow(Axis.Vertical)), Is.InstanceOf<ArrowPresenter>());
         }
 
         [Test]

@@ -15,5 +15,8 @@ namespace Game.Core
                 default: throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
         }
+
+        public static Axis ToAxis(this Direction direction) =>
+            direction == Direction.Left || direction == Direction.Right ? Axis.Horizontal : Axis.Vertical;
     }
 }

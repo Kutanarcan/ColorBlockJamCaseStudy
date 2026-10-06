@@ -15,6 +15,7 @@ namespace Game.Runtime
     {
         [SerializeField] private PresentationAssets assets;
         [SerializeField] private CameraRig cameraRig;
+        [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f);
         [SerializeField] private TextAsset[] levels;
         [SerializeField] private string levelKey;
 
@@ -55,6 +56,10 @@ namespace Game.Runtime
             var blocks = new BlocksView(new GameObject("Blocks").transform, assets, materials, blockParts,
                 ModifierPresenters.Default(assets.ModifierViews));
             blocks.Build(session.Value.Board);
+
+            var drag = new DragController(session.Value, blocks, new MousePointerInput(cameraRig.SceneCamera),
+                new DragResolver(session.Value), dragSettings);
+            gameObject.AddComponent<FrameTicker>().Initialize(drag);
         }
 
         private static Transform NewInactiveRoot(string name)

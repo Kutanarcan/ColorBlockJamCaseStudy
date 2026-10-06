@@ -9,10 +9,10 @@ namespace Game.Tests.EditMode
         private static readonly Cell ACell = new Cell(5, 1);
         private static readonly Cell BCell = new Cell(6, 1);
 
-        // R has free cells on both sides. A and B each sit above a door of their color: two exits available.
+        // R has free cells on both sides and above. A and B each sit above a door of their color: two exits available.
         private static LevelSession NewSession(params ModifierData[] rModifiers) =>
             LevelSession.TryCreate(AsciiLevel.Parse(
-                    "########",
+                    "##.#####",
                     "#.R..AB#",
                     "#####12#")
                 .Block('R', 2, rModifiers)
@@ -35,13 +35,13 @@ namespace Game.Tests.EditMode
         {
             LevelSession session = NewSession(
                 new IceData { Count = 2 },
-                new ArrowData { Direction = Direction.Right });
+                new ArrowData { Axis = Axis.Horizontal });
             Block r = BlockAt(session, RCell);
             Assert.That(session.TryMove(r, Direction.Right), Is.EqualTo(MoveResult.Blocked));
 
             ExitBoth(session);
 
-            Assert.That(session.TryMove(r, Direction.Left), Is.EqualTo(MoveResult.Blocked));
+            Assert.That(session.TryMove(r, Direction.Up), Is.EqualTo(MoveResult.Blocked), "free above, off the axis");
             Assert.That(session.TryMove(r, Direction.Right), Is.EqualTo(MoveResult.Moved));
         }
 

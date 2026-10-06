@@ -2,7 +2,7 @@ using Game.Core;
 
 namespace Game.Runtime
 {
-    /// <summary>Reads Arrow from the logic and drives its dumb view (D104): the arrow fitted to the block's run.</summary>
+    /// <summary>Reads Arrow from the logic and drives its dumb view (D104): the arrow laid along its axis on the block's run.</summary>
     public sealed class ArrowPresenter : IModifierPresenter
     {
         private readonly ArrowView prefab;
@@ -15,7 +15,7 @@ namespace Game.Runtime
         {
             var arrow = (Arrow)modifier;
             ArrowView arrowView = view.Attach(prefab);
-            ArrowPlacement placement = ArrowPlacementRule.Of(block, arrow.Direction, arrowView.MaxLength);
+            ArrowPlacement placement = ArrowPlacementRule.Of(block, arrow.Axis, arrowView.MaxLength);
 
             arrowView.Show(placement.Size, placement.Placement.Position, placement.Placement.Yaw);
         }

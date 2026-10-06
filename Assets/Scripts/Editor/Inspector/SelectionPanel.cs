@@ -137,6 +137,9 @@ namespace Game.LevelEditor
                     fields.SetDirection(index,
                         (Direction)EditorGUILayout.EnumPopup(fields.KeyAt(index), fields.DirectionAt(index)));
                     break;
+                case FieldKind.Axis:
+                    fields.SetAxis(index, (Axis)EditorGUILayout.EnumPopup(fields.KeyAt(index), fields.AxisAt(index)));
+                    break;
             }
         }
 

@@ -4,7 +4,7 @@
 
 **The level JSON format and the rules for changing it: required reading before touching level data, modifiers or LevelIO**
 
-![Schema](https://img.shields.io/badge/schemaVersion-1-1f6feb)
+![Schema](https://img.shields.io/badge/schemaVersion-2-1f6feb)
 ![Reflection](https://img.shields.io/badge/Runtime_reflection-none-2ea043)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Mechanics Reference](ColorBlockJamMechanics.md)</sub>
@@ -17,7 +17,7 @@
 | # | Section | What is in it |
 |---|---|---|
 | 1 | [Why it is hand-written](#1-why-it-is-hand-written) | No runtime reflection, and what that costs |
-| 2 | [Format v1](#2-format-v1) | Every key, its type, and whether it is required |
+| 2 | [Format v2](#2-format-v2) | Every key, its type, whether it is required, and the version history |
 | 3 | [Frozen names](#3-frozen-names) | Strings that are the save format and must never change |
 | 4 | [Change checklists](#4-change-checklists) | Step by step, for every kind of change |
 | 5 | [Tests that guard the format](#5-tests-that-guard-the-format) | Which test catches which mistake |
@@ -38,12 +38,12 @@
   - attributes read through reflection
 - **The cost:** every field is written twice, once in a writer and once in a reader. The checklists below exist to keep those two in step.
 
-## 2. Format v1
+## 2. Format v2
 
 ### Level object
 | Key | Type | Required | Notes |
 |---|---|---|---|
-| `schemaVersion` | integer | ✔ | Must be `1` (`LevelValidator.SupportedSchemaVersion`) |
+| `schemaVersion` | integer | ✔ | Must be `2` (`LevelValidator.SupportedSchemaVersion`) |
 | `width`, `height` | integer | ✔ | Above zero |
 | `timeLimit` | number | ✔ | Seconds |
 | `walls` | array of wall | — | Missing or `null` reads as empty |
@@ -60,6 +60,7 @@
 ### Values
 - **Cell:** `[x, y]`, two integers.
 - **Direction:** one of the strings `"Up"`, `"Down"`, `"Left"`, `"Right"`. A number is rejected.
+- **Axis:** one of the strings `"Horizontal"`, `"Vertical"`. A number or a direction name is rejected.
 - **Modifier:** an object with `"type"` (its `TypeName`) plus the fields that modifier writes.
 
 ### Errors
@@ -70,17 +71,23 @@
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "width": 8, "height": 10,
   "timeLimit": 90,
   "walls":  [ { "cells": [[0,0],[1,0],[2,0]] } ],
   "doors":  [ { "colorId": 2, "direction": "Down", "cells": [[3,0],[4,0]] } ],
   "blocks": [
     { "colorId": 2, "cells": [[3,1],[4,1]],
-      "modifiers": [ { "type": "ice", "count": 3 }, { "type": "arrow", "direction": "Down" } ] }
+      "modifiers": [ { "type": "ice", "count": 3 }, { "type": "arrow", "axis": "Vertical" } ] }
   ]
 }
 ```
+
+### Version history
+| Version | Change | Old shape | New shape | Existing levels |
+|---|---|---|---|---|
+| 1 | First format | — | — | — |
+| 2 | Arrow is an axis lock, not one direction (D105) | `{ "type": "arrow", "direction": "Left" }` | `{ "type": "arrow", "axis": "Horizontal" }` | Re-saved by hand (none shipped): Left / Right → Horizontal, Up / Down → Vertical. A v1 file fails the version check |
 
 ## 3. Frozen names
 Every key and every `TypeName` is part of the save format. **Renaming a C# class or field is safe; changing one of these strings breaks every saved level.** Change them only through a format change (§4.4).
@@ -88,7 +95,7 @@ Every key and every `TypeName` is part of the save format. **Renaming a C# class
 | Modifier | `TypeName` | Fields |
 |---|---|---|
 | Ice | `"ice"` | `count`: integer, > 0 |
-| Arrow | `"arrow"` | `direction`: Direction |
+| Arrow | `"arrow"` | `axis`: Axis |
 
 > Add a row here in the same pull request that adds a modifier.
 
@@ -172,6 +179,6 @@ For every pull request that touches `Core/Level/`, `Core/Modifiers/` or `LevelIO
 | Entry point | `LevelIO/LevelJson.cs` |
 | Reading | `LevelIO/Reading/` (`LevelJsonReader`, `JsonModifierReader`, `JsonRead`) |
 | Writing | `LevelIO/Writing/` (`LevelJsonWriter`, `JsonModifierWriter`) |
-| Direction names | `LevelIO/DirectionNames.cs` |
+| Direction and axis names | `LevelIO/DirectionNames.cs`, `LevelIO/AxisNames.cs` |
 | Editor field editing | `Editor/Model/ModifierFields.cs`, `FieldKind.cs`, `Editor/Inspector/SelectionPanel.cs` |
 | Tests | `Tests/LevelIO/`, `Tests/EditMode/Level/LevelValidatorTests.cs`, `Tests/EditMode/Modifiers/ModifierCatalogTests.cs` |

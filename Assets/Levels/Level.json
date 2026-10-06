@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "width": 9,
   "height": 12,
   "timeLimit": 60.0,
@@ -274,7 +274,7 @@
       "modifiers": [
         {
           "type": "arrow",
-          "direction": "Left"
+          "axis": "Horizontal"
         }
       ]
     }

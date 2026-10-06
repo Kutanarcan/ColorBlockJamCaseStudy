@@ -17,5 +17,7 @@ namespace Game.LevelIO
         public int Int(string key) => JsonRead.Int(json, key, path);
 
         public Direction Direction(string key) => JsonRead.Direction(json, key, path);
+
+        public Axis Axis(string key) => JsonRead.Axis(json, key, path);
     }
 }

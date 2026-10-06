@@ -13,5 +13,14 @@ namespace Game.Tests.EditMode
         {
             Assert.That(direction.ToOffset(), Is.EqualTo(new Cell(x, y)));
         }
+
+        [TestCase(Direction.Up, Axis.Vertical)]
+        [TestCase(Direction.Down, Axis.Vertical)]
+        [TestCase(Direction.Left, Axis.Horizontal)]
+        [TestCase(Direction.Right, Axis.Horizontal)]
+        public void ToAxis_IsTheLineTheDirectionMovesOn(Direction direction, Axis axis)
+        {
+            Assert.That(direction.ToAxis(), Is.EqualTo(axis));
+        }
     }
 }

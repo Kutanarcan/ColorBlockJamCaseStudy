@@ -5,28 +5,29 @@ namespace Game.Tests.EditMode
 {
     public class ArrowTests
     {
-        // A points right and sits above a matching door.
+        // A is locked to the horizontal axis, has free cells left, right and above, and sits above a matching door.
         private static Board NewBoard() =>
             BoardBuilder.Build(AsciiLevel.Parse(
-                    "#####",
+                    "##.##",
                     "#.A.#",
                     "##1##")
-                .Block('A', 0, new ArrowData { Direction = Direction.Right })
+                .Block('A', 0, new ArrowData { Axis = Axis.Horizontal })
                 .Door('1', 0, Direction.Down)
                 .Build());
 
-        [Test]
-        public void Arrow_AllowsItsDirection()
+        [TestCase(Direction.Left)]
+        [TestCase(Direction.Right)]
+        public void Arrow_AllowsBothWaysAlongItsAxis(Direction direction)
         {
             Board board = NewBoard();
             var a = (Block)board.EntityAt(new Cell(2, 1));
 
-            Assert.That(new BlockMover(board).TryMove(a, Direction.Right), Is.EqualTo(MoveResult.Moved));
+            Assert.That(new BlockMover(board).TryMove(a, direction), Is.EqualTo(MoveResult.Moved));
         }
 
-        [TestCase(Direction.Left)] // free cell, vetoed
+        [TestCase(Direction.Up)]   // free cell, vetoed
         [TestCase(Direction.Down)] // matching door, exit vetoed
-        public void Arrow_VetoesEveryOtherDirection(Direction direction)
+        public void Arrow_VetoesTheOtherAxis(Direction direction)
         {
             Board board = NewBoard();
             var a = (Block)board.EntityAt(new Cell(2, 1));

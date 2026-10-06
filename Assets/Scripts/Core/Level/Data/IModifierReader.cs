@@ -5,5 +5,6 @@ namespace Game.Core
     {
         int Int(string key);
         Direction Direction(string key);
+        Axis Axis(string key);
     }
 }

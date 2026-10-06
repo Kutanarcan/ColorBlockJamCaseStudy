@@ -27,7 +27,7 @@ namespace Game.Tests.LevelEditor
                 {
                     ColorId = 1,
                     Cells = new[] { new Cell(1, 1), new Cell(2, 1) },
-                    Modifiers = new ModifierData[] { new IceData { Count = 2 }, new ArrowData { Direction = Direction.Down } }
+                    Modifiers = new ModifierData[] { new IceData { Count = 2 }, new ArrowData { Axis = Axis.Vertical } }
                 }
             }
         };

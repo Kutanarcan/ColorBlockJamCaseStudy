@@ -12,20 +12,20 @@ namespace Game.Tests.LevelIO
 
         // The format documented in the plan (§10).
         private const string DocumentedLevel = @"{
-            ""schemaVersion"": 1,
+            ""schemaVersion"": 2,
             ""width"": 8, ""height"": 10,
             ""timeLimit"": 90,
             ""walls"":  [ { ""cells"": [[0,0],[1,0],[2,0]] } ],
             ""doors"":  [ { ""colorId"": 2, ""direction"": ""Down"", ""cells"": [[3,0],[4,0]] } ],
             ""blocks"": [
                 { ""colorId"": 2, ""cells"": [[3,1],[4,1]],
-                  ""modifiers"": [ { ""type"": ""ice"", ""count"": 3 }, { ""type"": ""arrow"", ""direction"": ""Down"" } ] }
+                  ""modifiers"": [ { ""type"": ""ice"", ""count"": 3 }, { ""type"": ""arrow"", ""axis"": ""Vertical"" } ] }
             ]
         }";
 
         private static LevelData SampleLevel() => new LevelData
         {
-            SchemaVersion = 1,
+            SchemaVersion = 2,
             Width = 5,
             Height = 3,
             TimeLimit = 42.5f,
@@ -40,7 +40,7 @@ namespace Game.Tests.LevelIO
                     Modifiers = new ModifierData[]
                     {
                         new IceData { Count = 3 },
-                        new ArrowData { Direction = Direction.Down },
+                        new ArrowData { Axis = Axis.Vertical },
                         new FakeTimedData { Seconds = 7, Facing = Direction.Left }
                     }
                 }
@@ -50,7 +50,7 @@ namespace Game.Tests.LevelIO
         private static LevelData RoundTrip(LevelData level) => Json.Parse(Json.Serialize(level)).Value;
 
         private static string ModifiersJson(string modifiers) =>
-            @"{ ""schemaVersion"": 1, ""width"": 3, ""height"": 3, ""timeLimit"": 60,
+            @"{ ""schemaVersion"": 2, ""width"": 3, ""height"": 3, ""timeLimit"": 60,
                 ""blocks"": [ { ""colorId"": 0, ""cells"": [[1,1]], ""modifiers"": [ " + modifiers + @" ] } ] }";
 
         [Test]
@@ -60,7 +60,7 @@ namespace Game.Tests.LevelIO
 
             Assert.That(modifiers.Length, Is.EqualTo(3));
             Assert.That(((IceData)modifiers[0]).Count, Is.EqualTo(3));
-            Assert.That(((ArrowData)modifiers[1]).Direction, Is.EqualTo(Direction.Down));
+            Assert.That(((ArrowData)modifiers[1]).Axis, Is.EqualTo(Axis.Vertical));
 
             var fake = (FakeTimedData)modifiers[2];
             Assert.That(fake.Seconds, Is.EqualTo(7));
@@ -72,7 +72,7 @@ namespace Game.Tests.LevelIO
         {
             LevelData level = RoundTrip(SampleLevel());
 
-            Assert.That(level.SchemaVersion, Is.EqualTo(1));
+            Assert.That(level.SchemaVersion, Is.EqualTo(2));
             Assert.That(level.Width, Is.EqualTo(5));
             Assert.That(level.Height, Is.EqualTo(3));
             Assert.That(level.TimeLimit, Is.EqualTo(42.5f));
@@ -101,7 +101,7 @@ namespace Game.Tests.LevelIO
             Assert.That(level.Doors[0].Direction, Is.EqualTo(Direction.Down));
             Assert.That(level.Doors[0].Cells, Is.EqualTo(new[] { new Cell(3, 0), new Cell(4, 0) }));
             Assert.That(((IceData)level.Blocks[0].Modifiers[0]).Count, Is.EqualTo(3));
-            Assert.That(((ArrowData)level.Blocks[0].Modifiers[1]).Direction, Is.EqualTo(Direction.Down));
+            Assert.That(((ArrowData)level.Blocks[0].Modifiers[1]).Axis, Is.EqualTo(Axis.Vertical));
         }
 
         [Test]
@@ -125,7 +125,7 @@ namespace Game.Tests.LevelIO
         [Test]
         public void Parse_Rejects_MissingScalarField()
         {
-            Assert.That(Json.Parse(@"{ ""schemaVersion"": 1, ""width"": 3, ""height"": 3 }").IsFailure, Is.True);
+            Assert.That(Json.Parse(@"{ ""schemaVersion"": 2, ""width"": 3, ""height"": 3 }").IsFailure, Is.True);
         }
 
         [Test]
@@ -137,13 +137,21 @@ namespace Game.Tests.LevelIO
         [Test]
         public void Parse_Rejects_NumericDirection()
         {
-            Assert.That(Json.Parse(ModifiersJson(@"{ ""type"": ""arrow"", ""direction"": 1 }")).IsFailure, Is.True);
+            Assert.That(Json.Parse(ModifiersJson(@"{ ""type"": ""fake-timed"", ""seconds"": 5, ""facing"": 1 }")).IsFailure,
+                Is.True);
+        }
+
+        [TestCase("1")]          // a number
+        [TestCase(@"""Left""")]  // a direction is not an axis: a v1 arrow fails loudly
+        public void Parse_Rejects_AxisThatIsNotHorizontalOrVertical(string axis)
+        {
+            Assert.That(Json.Parse(ModifiersJson(@"{ ""type"": ""arrow"", ""axis"": " + axis + " }")).IsFailure, Is.True);
         }
 
         [Test]
         public void Parse_Rejects_CellThatIsNotAPair()
         {
-            Result<LevelData> result = Json.Parse(@"{ ""schemaVersion"": 1, ""width"": 3, ""height"": 3, ""timeLimit"": 60,
+            Result<LevelData> result = Json.Parse(@"{ ""schemaVersion"": 2, ""width"": 3, ""height"": 3, ""timeLimit"": 60,
                 ""walls"": [ { ""cells"": [[1]] } ] }");
 
             Assert.That(result.IsFailure, Is.True);

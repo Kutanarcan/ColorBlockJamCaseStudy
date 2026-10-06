@@ -155,7 +155,7 @@ MonoBehaviour:
   margins:
     top: 0.15
     bottom: 0.12
-    side: 0.04
+    side: 0.01
 --- !u!4 &308788635
 Transform:
   m_ObjectHideFlags: 0
@@ -404,6 +404,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   assets: {fileID: 11400000, guid: 1a5f657f2479e2e4ee99c3cb3b632327, type: 2}
   cameraRig: {fileID: 308788634}
+  dragSettings:
+    liftHeight: 0.3
+    snapDuration: 0.1
   levels:
   - {fileID: 4900000, guid: 002a2a54a15f41147a3ada2b2e45a8a2, type: 3}
   - {fileID: 4900000, guid: dbb17d5d1026eb84bb75ceb1ac974050, type: 3}

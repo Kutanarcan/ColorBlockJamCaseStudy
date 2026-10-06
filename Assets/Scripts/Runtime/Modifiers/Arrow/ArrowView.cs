@@ -11,7 +11,7 @@ namespace Game.Runtime
         [SerializeField] private MeshFilter meshFilter;
         [Tooltip("Arrow_1, Arrow_2, Arrow_3: index = length − 1")]
         [SerializeField] private Mesh[] meshesByLength = new Mesh[0];
-        [Tooltip("Yaw that makes the mesh point +Z (Up). 0 if Arrow_N already points +Z at rotation 0.")]
+        [Tooltip("Yaw that lays the double-headed mesh along +Z (Vertical). 0 if Arrow_N already lies along Z at rotation 0.")]
         [SerializeField] private float yawOffset;
 
         public int MaxLength => meshesByLength.Length;

@@ -137,7 +137,7 @@ namespace Game.Tests.EditMode
         {
             LevelSession session = NewSession(Mods(
                 new IceData { Count = 1 },
-                new ArrowData { Direction = Direction.Right },
+                new ArrowData { Axis = Axis.Horizontal },
                 new IceData { Count = 5 }));
             Block t = BlockAt(session, TCell);
 

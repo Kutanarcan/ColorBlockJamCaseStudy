@@ -8,7 +8,7 @@ namespace Game.Tests.Runtime
 {
     public class TextAssetLevelSourceTests
     {
-        private const string Level = @"{ ""schemaVersion"": 1, ""width"": 3, ""height"": 3, ""timeLimit"": 60 }";
+        private const string Level = @"{ ""schemaVersion"": 2, ""width"": 3, ""height"": 3, ""timeLimit"": 60 }";
 
         private TextAsset asset;
 

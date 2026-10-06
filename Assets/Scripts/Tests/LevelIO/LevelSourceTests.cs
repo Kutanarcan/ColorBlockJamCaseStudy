@@ -6,7 +6,7 @@ namespace Game.Tests.LevelIO
 {
     public class LevelSourceTests
     {
-        private const string Level = @"{ ""schemaVersion"": 1, ""width"": 3, ""height"": 3, ""timeLimit"": 60 }";
+        private const string Level = @"{ ""schemaVersion"": 2, ""width"": 3, ""height"": 3, ""timeLimit"": 60 }";
 
         private static ILevelSource NewSource() =>
             new FakeLevelSource(new LevelJson(ModifierCatalog.Default())).Add("level-01", Level);

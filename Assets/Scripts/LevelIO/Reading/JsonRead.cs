@@ -46,6 +46,16 @@ namespace Game.LevelIO
             throw Invalid(path, key, "Up, Down, Left or Right");
         }
 
+        public static Axis Axis(JObject json, string key, string path)
+        {
+            JToken token = Required(json, key, path);
+
+            if (token.Type == JTokenType.String && AxisNames.TryParse((string)token, out Axis axis))
+                return axis;
+
+            throw Invalid(path, key, "Horizontal or Vertical");
+        }
+
         public static JArray Array(JObject json, string key, string path)
         {
             if (Required(json, key, path) is JArray array)

@@ -4,7 +4,7 @@ namespace Game.Core
 {
     public static class LevelValidator
     {
-        public const int SupportedSchemaVersion = 1;
+        public const int SupportedSchemaVersion = 2;
 
         public static IReadOnlyList<LevelError> Validate(LevelData level)
         {

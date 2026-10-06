@@ -11,6 +11,8 @@ namespace Game.Runtime
         [SerializeField] private Camera sceneCamera;
         [SerializeField] private FitMargins margins = new FitMargins(0.15f, 0.12f, 0.04f);
 
+        public Camera SceneCamera => sceneCamera;
+
         public void Fit(Bounds board)
         {
             Rect viewport = CameraFit.Viewport(new Vector2(Screen.width, Screen.height), Screen.safeArea, margins);

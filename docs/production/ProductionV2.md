@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-3/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-4/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -145,7 +145,7 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ### Input & drag (FINDINGS rules)
 - Pointer → ray onto the ground plane → `floor(local / 2)` → cell. No colliders.
-- Free 2D drag: logic walks toward the pointer cell by cell (larger axis first, other axis if blocked); the visual follows the pointer, leaning at most half a cell, never into a refused cell.
+- Free 2D drag: the logic moves toward the pointer cell by cell (larger axis first, other axis if blocked); the visual follows the pointer, clamped to reachable space: at most half a cell off its cell, never toward a refused cell.
 - Release snaps to the nearest reachable cell, then `CommitMove()`.
 - A block that exits mid-drag ends the move.
 - The pure parts (pointer → cell, walk planning) are tested without a scene.
@@ -271,7 +271,7 @@ Only after Delivery is secured (D80).
 | `Game.Infrastructure` | Asset loader & scopes, scene loader, Addressables flow, save storage, config loading | Core, LevelIO, Meta, UniTask, VContainer, Addressables |
 | `Game.LevelEditor` (V1) | Editor; gains Play (P9, I5) | Core, LevelIO |
 | `Game.Tests.Meta` | Meta tests | Meta |
-| `Game.Tests.Runtime` | EditMode tests of Runtime's pure parts (sequencer, draw rule, camera fit, drag planner) | Runtime |
+| `Game.Tests.Runtime` | EditMode tests of Runtime's pure parts (sequencer, draw rule, camera fit, drag resolver) | Runtime |
 | `Game.Tests.Infrastructure` | Asset scope tracking with a fake loader | Infrastructure |
 | `Game.Tests.PlayMode` | Only where the Unity runtime is required (scene flow smoke test) | Runtime |
 
@@ -300,8 +300,8 @@ One phase per answer, following the production process. **Files touched** are de
 | P0 | Runtime Skeleton | P0.1 UniTask package · P0.2 `Game.Runtime` + `Game.Tests.Runtime` asmdefs · P0.3 `ISessionObserver` in Core, called by the session · P0.4 Gameplay scene + manual `GameplayInstaller` + `TextAsset` level source | `Session_TellsTheObserver_MovesExitsRemovalsAndState` | ✅ |
 | P1 | Board View | P1.1 palette asset + one material per color · P1.2 ground tiles for playable cells · P1.3 frame and doors (D93, D98, D99) · P1.4 inner walls | `WallDrawRule_DressesFrameInnerWallsAndDoors` + level visible in the Editor | ✅ |
 | P2 | Block View | P2.1 `BlockDrawRule` (pure) · P2.2 pooled pieces (`BlockPiece` / `ArrowPiece` + `PieceView` mesh swap, D99) · P2.3 Arrow view · P2.4 Ice view with count · P2.5 modifier → view asset mapping | `BlockDrawRule_DressesLTURingAndPlus` | ✅ |
-| P3 | Camera Fit | P3.1 fit function (bounds, HUD margins, safe area, aspect) · P3.2 camera applies it on level load | `CameraFit_KeepsTheBoardInside_From16x9To20x9` | ⏳ |
-| P4 | Input & Drag | P4.1 pointer → cell · P4.2 drag planner (walk toward pointer) · P4.3 lean, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragPlanner_WalksTowardThePointer_LargerAxisFirst` | ⏳ |
+| P3 | Camera Fit | P3.1 fit function (bounds, HUD margins, safe area, aspect) · P3.2 camera applies it on level load | `CameraFit_KeepsTheBoardInside_From16x9To20x9` | ✅ |
+| P4 | Input & Drag | P4.1 pointer → cell (`BoardRaycast`) · P4.2 drag resolver (move toward the pointer) · P4.3 clamp to reachable, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragResolver_MovesTowardThePointer_LargerAxisFirst` | ⏳ |
 | P5 | Director & Sequencer | P5.1 step contract + sequencer (order, parallel, cancel) · P5.2 director: exit steps non-blocking · P5.3 input lock · P5.4 win / fail sequences (popup placeholder step) | `Sequencer_PlaysInOrder_GroupsInParallel_AndCancels` | ⏳ |
 | P6 | Exit Visual & Feedback | P6.1 production block shader with clip plane · P6.2 exit step (snap, slide, cut) · P6.3 pooled row particles · P6.4 SFX service | `ExitStep_CompletesAndDisablesTheBlock` (step with a fake view) + exit seen in the Editor | ⏳ |
 | P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ⏳ |
@@ -429,5 +429,7 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D100 | Folder size | A code folder holds at most 6 files; the change that adds the 7th splits it into concept subfolders, the root keeping the central types. Checked at the end of every phase (`code-shape.md` § Folders). Applied in P1 to `Runtime/Board` (`Drawing/`), `Core/Session` (`Win/`) and its tests |
 | D101 | Modifier → view | ~~A `ModifierViews` asset lists `ModifierView` prefabs. Each view says which modifier it draws (`Accepts`, a type check in its own class); the first that accepts draws it, none means no look. A new modifier's look is a new view class and one list entry; no reflection, no Core change~~ — superseded by D104 |
 | D102 | Ice view | The frozen block's parts switch to one shared ice material (`Art/Materials/Ice.mat`, shader `Game/IceBlock`: lit and opaque so studs keep their shading, two fixed ice colors blended by the ice texture projected triplanar in world space, crack detail and a view rim); the remaining count is 3D text on the block's anchor cell |
-| D103 | Arrow view | The kit's arrow is single-headed and points the Arrow modifier's direction; `ArrowView` sits on `ArrowPiece` and swaps `Arrow_1/2/3` by run length (`min(run, 3)`). A serialized yaw offset fixes the mesh's own orientation |
+| D103 | Arrow view | ~~The kit's arrow is single-headed and points the Arrow modifier's direction~~ — corrected by D105; `ArrowView` sits on `ArrowPiece` and swaps `Arrow_1/2/3` by run length (`min(run, 3)`). A serialized yaw offset fixes the mesh's own orientation |
 | D104 | View / presenter | Views are dumb MonoBehaviours with no `Game.Core` reference (`IceView.SetCount`, `ArrowView.Show`). A pure C# presenter per modifier (`IcePresenter`, `ArrowPresenter`) reads the logic (casts, `Durability`, placement rules) and drives its view; `ModifierPresenters.Default()` picks the first presenter that accepts a modifier. A new modifier's look adds a presenter, a view, one line in `Default()` and one field in `ModifierViews`. `BlockView` no longer exposes the `Block`. Rule in `architecture.md` § View / Presenter |
+| D105 | Arrow = axis lock | Arrow locks a block to an axis, `Horizontal` or `Vertical`, both ways (prototype behaviour); supersedes V1 D18 (one direction). Core gains `Axis` and `Direction.ToAxis()`; `Arrow.Allows` converts the move's direction to its axis. Saved as `"axis"`, a new field kind; `schemaVersion` 1 → 2, the levels re-saved by hand, no migration (LevelFormat §2 version history). The kit's `Arrow_N` is double-headed: laid along Z for Vertical, X for Horizontal. The drag keeps its previous-cell rule (`DragResolver.ClampToReachable` may offset back toward the cell the last move left) for future one-way mechanics |
+| D106 | Drag naming | Names say what the code does, not a hand metaphor; input uses Unity Input System words. `IPointerInput` (`WasPressedThisFrame`, `IsPressed`, `PointerRay`), `MousePointerInput`, `BoardRaycast` (`TryGetCellPoint`, `ToCell`), `DragResolver` (`MoveToward`, `ClampToReachable`, `BeginDrag`), `DragController` (`TrySelectBlock`, `UpdateDrag`, `EndDrag`), `DragSettings` (`LiftHeight`, `SnapDuration`), `BlockView.SetPosition` / `SnapTo` |
