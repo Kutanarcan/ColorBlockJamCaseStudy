@@ -38,6 +38,14 @@ namespace Game.Runtime
         /// <summary>The door covering this cell, or null.</summary>
         public DoorData DoorAt(Cell cell) => IsInside(cell) ? doors[IndexOf(cell)] : null;
 
+        /// <summary>The whole grid as a box in board space, <paramref name="height"/> tall: what the camera keeps in view.</summary>
+        public Bounds Extent(float height)
+        {
+            var size = new Vector3(Width * CellSize, height, Height * CellSize);
+
+            return new Bounds(size * 0.5f, size);
+        }
+
         public static Vector3 CellCenter(Cell cell) =>
             new Vector3((cell.X + 0.5f) * CellSize, 0f, (cell.Y + 0.5f) * CellSize);
 

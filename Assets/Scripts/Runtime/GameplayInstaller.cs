@@ -14,6 +14,7 @@ namespace Game.Runtime
     public sealed class GameplayInstaller : MonoBehaviour
     {
         [SerializeField] private PresentationAssets assets;
+        [SerializeField] private CameraRig cameraRig;
         [SerializeField] private TextAsset[] levels;
         [SerializeField] private string levelKey;
 
@@ -45,8 +46,10 @@ namespace Game.Runtime
             }
 
             materials = new PaletteMaterials(assets.Palette, assets.BlockTemplate, assets.DoorTemplate);
+            var layout = new BoardLayout(level.Value);
             var board = new BoardView(new GameObject("Board").transform, assets, materials);
-            board.Build(new BoardDressing(new BoardLayout(level.Value)));
+            board.Build(new BoardDressing(layout));
+            cameraRig.Fit(layout.Extent(assets.WallMesh.bounds.max.y));
 
             var blockParts = new PiecePool(assets.BlockPiece, NewInactiveRoot("Pool_BlockParts"));
             var blocks = new BlocksView(new GameObject("Blocks").transform, assets, materials, blockParts,
