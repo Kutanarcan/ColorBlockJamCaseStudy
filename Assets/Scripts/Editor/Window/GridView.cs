@@ -21,8 +21,10 @@ namespace Game.LevelEditor
         public bool Draw()
         {
             LevelModel model = session.Model;
-            Rect area = GUILayoutUtility.GetRect(model.Width * CellSize, model.Height * CellSize,
-                GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
+            float padding = EditorTheme.GridPadding;
+            Rect board = GUILayoutUtility.GetRect(model.Width * CellSize + 2f * padding,
+                model.Height * CellSize + 2f * padding, GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
+            Rect area = Inset(board, padding);
 
             if (Event.current.type == EventType.Repaint)
                 DrawCells(model, area);

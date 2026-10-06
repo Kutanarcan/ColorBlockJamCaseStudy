@@ -31,6 +31,29 @@ namespace Game.LevelEditor
             return keys;
         }
 
+        /// <summary>
+        /// Asks for a new level's name in Unity's save dialog, which also confirms overwriting a file. False when
+        /// cancelled (<paramref name="error"/> empty) or when the choice is not a valid level file in <see cref="Folder"/>.
+        /// </summary>
+        public static bool TryAskKey(out string key, out string error)
+        {
+            Directory.CreateDirectory(Folder);
+            string path = EditorUtility.SaveFilePanelInProject("Save level", "level", "json",
+                "Name the level. The name is its key: letters, digits, '-' and '_'.", Folder);
+            key = Path.GetFileNameWithoutExtension(path);
+            error = "";
+
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            if (Path.GetDirectoryName(path)?.Replace('\\', '/') != Folder)
+                error = $"Levels are saved in {Folder}.";
+            else if (!LevelKey.IsValid(key))
+                error = $"'{key}' is not a valid level name: use letters, digits, '-' and '_'.";
+
+            return error.Length == 0;
+        }
+
         public static string Read(string key) => File.ReadAllText(PathOf(key));
 
         public static void Write(string key, string json)

@@ -8,7 +8,10 @@ namespace Game.Tests.LevelEditor
 {
     public class CellLineTests
     {
-        private readonly List<Cell> line = new List<Cell>();
+        private List<Cell> line;
+
+        [SetUp]
+        public void CreateLine() => line = new List<Cell>();
 
         [Test]
         public void Fill_StraightLine_ListsEveryCellAfterTheStart()

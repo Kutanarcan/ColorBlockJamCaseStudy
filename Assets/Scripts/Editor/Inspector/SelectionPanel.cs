@@ -23,21 +23,27 @@ namespace Game.LevelEditor
 
         public void Draw()
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Selected", EditorStyles.boldLabel);
-            int selected = session.Selected;
+            EditorTheme.BeginSection("Selected");
 
-            if (selected == LevelModel.None)
-            {
-                EditorGUILayout.HelpBox("Paint with the brush, or Ctrl/Cmd + click an entity.", MessageType.None);
+            if (session.Selected == LevelModel.None)
+                GUILayout.Label("Paint with the brush, or Ctrl/Cmd + click an entity.", EditorTheme.Note);
+            else
+                DrawEntity(session.Selected);
 
-                return;
-            }
+            EditorTheme.EndSection();
+        }
 
+        private void DrawEntity(int selected)
+        {
             LevelModel model = session.Model;
             EntityKind kind = model.KindOf(selected);
-            EditorGUILayout.LabelField($"{kind} {model.OrdinalOf(selected)} of {model.CountOf(kind)}",
-                $"{model.CellsOf(selected).Count} cell(s)");
+
+            EditorGUILayout.BeginHorizontal();
+            EditorTheme.Chip(kind == EntityKind.Wall ? PreviewColors.Wall : PreviewColors.Of(model.ColorOf(selected)));
+            GUILayout.Label($"{kind} {model.OrdinalOf(selected)} of {model.CountOf(kind)}", EditorStyles.boldLabel);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label($"{model.CellsOf(selected).Count} cell(s)", EditorStyles.miniLabel);
+            EditorGUILayout.EndHorizontal();
 
             if (kind != EntityKind.Wall)
             {
@@ -55,7 +61,10 @@ namespace Game.LevelEditor
                 DrawModifiers(model.ModifiersOf(selected));
 
             EditorGUILayout.Space();
-            if (GUILayout.Button("Delete entity")) session.DeleteSelected();
+            using (ButtonTint.Danger())
+            {
+                if (GUILayout.Button("Delete entity")) session.DeleteSelected();
+            }
         }
 
         private void DrawModifiers(IReadOnlyList<ModifierData> modifiers)
@@ -78,8 +87,11 @@ namespace Game.LevelEditor
 
             EditorGUILayout.BeginHorizontal();
             modifierChoice = EditorGUILayout.Popup(Mathf.Clamp(modifierChoice, 0, modifierNames.Length - 1), modifierNames);
-            if (GUILayout.Button("Add", GUILayout.Width(50f)))
-                session.Edits.AddModifier(session.Selected, modifierNames[modifierChoice]);
+            using (ButtonTint.Primary())
+            {
+                if (GUILayout.Button("Add", GUILayout.Width(50f)))
+                    session.Edits.AddModifier(session.Selected, modifierNames[modifierChoice]);
+            }
             EditorGUILayout.EndHorizontal();
         }
 
@@ -89,7 +101,12 @@ namespace Game.LevelEditor
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(modifier.TypeName, EditorStyles.boldLabel);
-            bool remove = GUILayout.Button("Remove", GUILayout.Width(70f));
+            bool remove;
+
+            using (ButtonTint.Danger())
+            {
+                remove = GUILayout.Button("Remove", GUILayout.Width(70f));
+            }
             EditorGUILayout.EndHorizontal();
 
             ModifierFields fields = ModifierFields.Of(modifier);

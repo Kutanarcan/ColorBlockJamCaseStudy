@@ -73,11 +73,12 @@ namespace Game.LevelEditor
             HandleEscape();
             fileBar.Draw();
 
+            // Panels on the left at a fixed width; the grid takes the rest, so it grows to the right with the window.
             EditorGUILayout.BeginHorizontal();
-            scroll = EditorGUILayout.BeginScrollView(scroll);
+            inspector.Draw();
+            scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             bool edited = grid.Draw();
             EditorGUILayout.EndScrollView();
-            inspector.Draw();
             EditorGUILayout.EndHorizontal();
 
             DrawViolations();
@@ -114,20 +115,19 @@ namespace Game.LevelEditor
         private void DrawViolations()
         {
             IReadOnlyList<RuleViolation> violations = session.Document.Violations;
-
-            if (violations.Count == 0)
-            {
-                EditorGUILayout.HelpBox("All rules pass.", MessageType.Info);
-
-                return;
-            }
-
-            EditorGUILayout.LabelField($"Rules ({violations.Count})", EditorStyles.boldLabel);
+            bool pass = violations.Count == 0;
+            EditorTheme.BeginSection(pass ? "Rules · all pass" : $"Rules · {violations.Count} broken",
+                pass ? EditorTheme.Success : EditorTheme.Warning);
 
             foreach (RuleViolation violation in violations)
             {
-                EditorGUILayout.HelpBox(violation.Message, MessageType.Warning);
+                EditorGUILayout.BeginHorizontal();
+                EditorTheme.Chip(EditorTheme.Warning, 6f);
+                GUILayout.Label(violation.Message, EditorStyles.wordWrappedLabel);
+                EditorGUILayout.EndHorizontal();
             }
+
+            EditorTheme.EndSection();
         }
     }
 }

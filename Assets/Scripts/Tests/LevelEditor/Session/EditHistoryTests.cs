@@ -6,7 +6,11 @@ namespace Game.Tests.LevelEditor
 {
     public class EditHistoryTests
     {
-        private readonly EditHistory history = new EditHistory();
+        // NUnit shares one fixture instance across its tests, so each test gets a fresh history here.
+        private EditHistory history;
+
+        [SetUp]
+        public void CreateHistory() => history = new EditHistory();
 
         private static LevelModel Level(float timeLimit) => new LevelModel(3, 3) { TimeLimit = timeLimit };
 

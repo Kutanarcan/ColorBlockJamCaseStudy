@@ -4,22 +4,10 @@ using UnityEngine;
 
 namespace Game.LevelEditor
 {
-    /// <summary>The controls (read-only: the mouse buttons and keys do the work), and the brush a left-drag lays down.</summary>
+    /// <summary>The brush a left-drag lays down (D53, D57).</summary>
     internal sealed class BrushPanel
     {
         private static readonly string[] KindNames = { "Wall", "Door", "Block" };
-
-        /// <summary>Input → what it does, one row each.</summary>
-        private static readonly string[,] Controls =
-        {
-            { "Left-drag", "Paint" },
-            { "Right-drag", "Erase" },
-            { "Ctrl/Cmd + click", "Select" },
-            { "Esc", "Deselect" },
-            { "Del", "Delete selected" },
-            { "Ctrl/Cmd + Z", "Undo" },
-            { "Ctrl/Cmd + Shift + Z", "Redo" }
-        };
 
         private readonly LevelEditorSession session;
 
@@ -27,34 +15,52 @@ namespace Game.LevelEditor
 
         public void Draw()
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Controls", EditorStyles.boldLabel);
-
-            for (int row = 0; row < Controls.GetLength(0); row++)
-            {
-                EditorGUILayout.LabelField(Controls[row, 0], Controls[row, 1], EditorStyles.miniLabel);
-            }
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Brush", EditorStyles.boldLabel);
+            EditorTheme.BeginSection("Brush");
             DrawBrush(session.Brush);
+            EditorTheme.EndSection();
         }
 
         private void DrawBrush(Brush brush)
         {
             EditorGUI.BeginChangeCheck();
-            var kind = (EntityKind)GUILayout.Toolbar((int)brush.Kind, KindNames);
+            EntityKind kind = DrawKinds(brush.Kind);
             int color = kind == EntityKind.Wall ? brush.ColorId : ColorSwatches.Draw("Color", brush.ColorId);
             Direction direction = brush.Direction;
 
             if (kind == EntityKind.Door)
             {
                 direction = (Direction)EditorGUILayout.EnumPopup("Inner direction", brush.Direction);
-                EditorGUILayout.LabelField("Doors started on the edge point outward.", EditorStyles.miniLabel);
+                GUILayout.Label("Doors started on the edge point outward.", EditorTheme.Note);
             }
 
             if (EditorGUI.EndChangeCheck())
                 session.ChooseBrush(new Brush(kind, color, direction));
+        }
+
+        /// <summary>One button per kind; the chosen one is tinted, the others plain.</summary>
+        private static EntityKind DrawKinds(EntityKind chosen)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            for (int i = 0; i < KindNames.Length; i++)
+            {
+                var kind = (EntityKind)i;
+                GUIStyle style = i == 0 ? EditorStyles.miniButtonLeft
+                    : i == KindNames.Length - 1 ? EditorStyles.miniButtonRight : EditorStyles.miniButtonMid;
+
+                using (kind == chosen ? ButtonTint.Primary() : ButtonTint.None())
+                {
+                    if (GUILayout.Toggle(kind == chosen, KindNames[i], style, GUILayout.Height(24f)) && kind != chosen)
+                    {
+                        GUI.changed = true;
+                        chosen = kind;
+                    }
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            return chosen;
         }
     }
 }

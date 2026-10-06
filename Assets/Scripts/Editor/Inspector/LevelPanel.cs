@@ -16,8 +16,14 @@ namespace Game.LevelEditor
 
         public void Draw()
         {
-            LevelModel model = session.Model;
-            EditorGUILayout.LabelField("Level", EditorStyles.boldLabel);
+            if (EditorTheme.BeginFoldoutSection("Level"))
+                DrawContent(session.Model);
+
+            EditorTheme.EndSection();
+        }
+
+        private void DrawContent(LevelModel model)
+        {
             float time = EditorGUILayout.FloatField("Time limit (s)", model.TimeLimit);
 
             if (!Mathf.Approximately(time, model.TimeLimit))
@@ -36,12 +42,14 @@ namespace Game.LevelEditor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(name, GUILayout.Width(EditorGUIUtility.labelWidth));
 
+            using (ButtonTint.Danger())
             using (new EditorGUI.DisabledScope(!LevelResizer.CanResize(session.Model, side, -1)))
             {
                 if (GUILayout.Button("-", EditorStyles.miniButtonLeft))
                     Shrink(side, name);
             }
 
+            using (ButtonTint.Positive())
             using (new EditorGUI.DisabledScope(!LevelResizer.CanResize(session.Model, side, 1)))
             {
                 if (GUILayout.Button("+", EditorStyles.miniButtonRight))

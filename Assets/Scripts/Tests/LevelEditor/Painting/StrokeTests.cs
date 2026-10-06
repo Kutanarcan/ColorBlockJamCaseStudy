@@ -9,7 +9,10 @@ namespace Game.Tests.LevelEditor
         private static readonly Brush RedBlock = new Brush(EntityKind.Block, 0, Direction.Down);
         private static readonly Brush BlueBlock = new Brush(EntityKind.Block, 1, Direction.Down);
 
-        private readonly Stroke stroke = new Stroke();
+        private Stroke stroke;
+
+        [SetUp]
+        public void CreateStroke() => stroke = new Stroke();
 
         // 'A' is a red block at (1, 3); '1' a red door facing down at (1, 0) and (2, 0).
         private static LevelModel Level() =>

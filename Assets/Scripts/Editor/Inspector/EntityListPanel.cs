@@ -18,9 +18,14 @@ namespace Game.LevelEditor
 
         public void Draw()
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Entities", EditorStyles.boldLabel);
+            if (EditorTheme.BeginFoldoutSection("Entities"))
+                DrawGroups();
 
+            EditorTheme.EndSection();
+        }
+
+        private void DrawGroups()
+        {
             for (int group = 0; group < Kinds.Length; group++)
             {
                 session.Model.CollectEntities(Kinds[group], entities);
@@ -40,17 +45,20 @@ namespace Game.LevelEditor
         {
             LevelModel model = session.Model;
             EntityKind kind = model.KindOf(entity);
-            EditorGUILayout.BeginHorizontal();
+            bool selected = entity == session.Selected;
+            Rect row = EditorGUILayout.BeginHorizontal();
 
-            Rect swatch = GUILayoutUtility.GetRect(12f, 12f, GUILayout.Width(12f), GUILayout.Height(16f));
-            EditorGUI.DrawRect(swatch, kind == EntityKind.Wall ? PreviewColors.Wall : PreviewColors.Of(model.ColorOf(entity)));
+            if (selected && Event.current.type == EventType.Repaint)
+                EditorGUI.DrawRect(row, EditorTheme.Accent * new Color(1f, 1f, 1f, 0.35f));
+
+            GUILayout.Space(4f);
+            EditorTheme.Chip(kind == EntityKind.Wall ? PreviewColors.Wall : PreviewColors.Of(model.ColorOf(entity)));
 
             string label = kind == EntityKind.Door
-                ? $"{kind} {ordinal} · {model.DirectionOf(entity)} · {model.CellsOf(entity).Count} cell(s)"
-                : $"{kind} {ordinal} · {model.CellsOf(entity).Count} cell(s)";
-            bool selected = entity == session.Selected;
+                ? $"{kind} {ordinal}   {model.DirectionOf(entity)} · {model.CellsOf(entity).Count} cell(s)"
+                : $"{kind} {ordinal}   {model.CellsOf(entity).Count} cell(s)";
 
-            if (GUILayout.Toggle(selected, label, EditorStyles.miniButton) && !selected)
+            if (GUILayout.Button(label, EditorStyles.label) && !selected)
                 session.Select(entity);
 
             EditorGUILayout.EndHorizontal();

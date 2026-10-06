@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.LevelEditor
 {
-    /// <summary>Toolbar: new level, undo / redo, open, key, save / overwrite, and the last file message.</summary>
+    /// <summary>Toolbar, left to right: open, save, new level (size, time, New), undo / redo; and the last file message.</summary>
     internal sealed class FileBar
     {
         private readonly LevelEditorSession session;
@@ -20,22 +20,58 @@ namespace Game.LevelEditor
 
         public void Draw()
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            DrawNew();
+            Rect bar = EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            DrawOpen();
+
+            using (Document.IsDirty ? ButtonTint.Primary() : ButtonTint.None())
+            {
+                if (GUILayout.Button(Document.IsDirty ? "Save *" : "Save", EditorStyles.toolbarButton)) Save();
+            }
+
+            DrawBarColorAfterLastControl(bar);
+
+            GUILayout.Space(8f);
+            DrawNewSize();
+            DrawNewButton();
+            GUILayout.Space(8f);
             DrawHistory();
             GUILayout.FlexibleSpace();
-            DrawOpen();
-            Document.Key = EditorGUILayout.TextField(Document.Key, EditorStyles.toolbarTextField, GUILayout.Width(160f));
-            if (GUILayout.Button(Document.IsDirty ? "Save *" : "Save", EditorStyles.toolbarButton)) Save();
             EditorGUILayout.EndHorizontal();
 
             if (message.Length > 0)
                 EditorGUILayout.HelpBox(message, MessageType.None);
         }
 
-        /// <summary>Writes the level under its key; asks before overwriting another level's file. True when saved.</summary>
+        /// <summary>
+        /// Writes the level. A level opened or saved before goes back to its own file; a new one is named in Unity's
+        /// save dialog first. Rules are checked before asking for a name. True when saved.
+        /// </summary>
         public bool Save()
         {
+            Result rules = Document.CheckRules();
+
+            if (rules.IsFailure)
+            {
+                message = rules.Error;
+
+                return false;
+            }
+
+            if (Document.SavedKey.Length > 0)
+            {
+                Document.Key = Document.SavedKey;
+            }
+            else if (LevelFiles.TryAskKey(out string key, out string error))
+            {
+                Document.Key = key;
+            }
+            else
+            {
+                message = error;
+
+                return false;
+            }
+
             Result<string> json = Document.Save();
 
             if (json.IsFailure)
@@ -45,11 +81,6 @@ namespace Game.LevelEditor
                 return false;
             }
 
-            if (LevelFiles.Exists(Document.Key) && Document.Key != Document.SavedKey &&
-                !EditorUtility.DisplayDialog("Overwrite level",
-                    $"{LevelFiles.PathOf(Document.Key)} already exists. Overwrite it?", "Overwrite", "Cancel"))
-                return false;
-
             LevelFiles.Write(Document.Key, json.Value);
             Document.MarkSaved();
             message = $"Saved {LevelFiles.PathOf(Document.Key)}";
@@ -57,20 +88,37 @@ namespace Game.LevelEditor
             return true;
         }
 
-        private void DrawNew()
+        /// <summary>Colors the bar from the last drawn control (Save) to its end; Open and Save keep the plain toolbar.</summary>
+        private static void DrawBarColorAfterLastControl(Rect bar)
         {
-            GUILayout.Label("W", GUILayout.Width(14f));
-            newWidth = Clamp(EditorGUILayout.IntField(newWidth, GUILayout.Width(30f)));
-            GUILayout.Label("H", GUILayout.Width(14f));
-            newHeight = Clamp(EditorGUILayout.IntField(newHeight, GUILayout.Width(30f)));
-            GUILayout.Label("Time", GUILayout.Width(32f));
-            newTime = Mathf.Max(1f, EditorGUILayout.FloatField(newTime, GUILayout.Width(40f)));
+            if (Event.current.type != EventType.Repaint)
+                return;
 
-            if (GUILayout.Button("New", EditorStyles.toolbarButton) && ConfirmDiscard())
+            float start = GUILayoutUtility.GetLastRect().xMax;
+            EditorGUI.DrawRect(new Rect(start, bar.y, bar.xMax - start, bar.height), EditorTheme.BarBackground);
+        }
+
+        private void DrawNewButton()
+        {
+            using (ButtonTint.Primary())
             {
-                session.New(newWidth, newHeight, newTime);
-                message = "";
+                if (GUILayout.Button("New", EditorStyles.toolbarButton) && ConfirmDiscard())
+                {
+                    session.New(newWidth, newHeight, newTime);
+                    message = "";
+                }
             }
+        }
+
+        /// <summary>The size and time a new level gets, with accent labels.</summary>
+        private void DrawNewSize()
+        {
+            GUILayout.Label("W", EditorTheme.ToolbarLabel, GUILayout.Width(14f));
+            newWidth = Clamp(EditorGUILayout.IntField(newWidth, GUILayout.Width(30f)));
+            GUILayout.Label("H", EditorTheme.ToolbarLabel, GUILayout.Width(14f));
+            newHeight = Clamp(EditorGUILayout.IntField(newHeight, GUILayout.Width(30f)));
+            GUILayout.Label("Time", EditorTheme.ToolbarLabel, GUILayout.Width(32f));
+            newTime = Mathf.Max(1f, EditorGUILayout.FloatField(newTime, GUILayout.Width(40f)));
         }
 
         /// <summary>Undo / redo drop keyboard focus, so a focused field shows the restored value.</summary>

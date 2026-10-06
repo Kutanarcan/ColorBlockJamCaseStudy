@@ -67,15 +67,25 @@ namespace Game.LevelEditor
         /// <summary>The JSON to write under <see cref="Key"/>; fails while the key is invalid or a rule is broken.</summary>
         public Result<string> Save()
         {
+            Result rules = CheckRules();
+
+            if (rules.IsFailure)
+                return Result<string>.Failure(rules.Error);
+
             if (!LevelKey.IsValid(Key))
                 return Result<string>.Failure("The level key may only use letters, digits, '-' and '_'.");
 
+            return Result<string>.Success(Snapshot());
+        }
+
+        /// <summary>Re-runs the rules; fails while any is broken. Lets the window refuse a save before asking for a name.</summary>
+        public Result CheckRules()
+        {
             report.Refresh(Model);
 
-            if (Violations.Count > 0)
-                return Result<string>.Failure($"{Violations.Count} rule(s) broken; fix them before saving.");
-
-            return Result<string>.Success(Snapshot());
+            return Violations.Count > 0
+                ? Result.Failure($"{Violations.Count} rule(s) broken; fix them before saving.")
+                : Result.Success();
         }
 
         public void MarkSaved()

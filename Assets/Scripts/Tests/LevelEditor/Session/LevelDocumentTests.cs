@@ -18,6 +18,15 @@ namespace Game.Tests.LevelEditor
         }
 
         [Test]
+        public void CheckRules_FailsWhileARuleIsBroken_WhateverTheKey()
+        {
+            LevelDocument document = TestSessions.New(new FakeReportingRule("broken")).Document;
+
+            Assert.That(document.CheckRules().IsFailure, Is.True);
+            Assert.That(TestSessions.New().Document.CheckRules().IsSuccess, Is.True);
+        }
+
+        [Test]
         public void Save_IsBlocked_ByAnInvalidKey()
         {
             LevelDocument document = TestSessions.Playable().Document;
