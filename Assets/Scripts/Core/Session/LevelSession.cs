@@ -14,6 +14,9 @@ namespace Game.Core
         public Board Board { get; private set; }
 
         public GameState State { get; private set; }
+
+        /// <summary>Presentation listens here (D68). Null by default; the logic never needs one.</summary>
+        public ISessionObserver Observer { get; set; }
         public float RemainingTime => timer.Remaining;
 
         /// <summary>Player moves that moved a block or ended in an exit.</summary>
@@ -43,12 +46,18 @@ namespace Game.Core
 
             MoveResult result = mover.TryMove(block, direction);
 
-            if (result == MoveResult.Moved)
-                moveInProgress = true;
-
-            if (result != MoveResult.Exited)
+            if (result == MoveResult.Blocked)
                 return result;
 
+            if (result == MoveResult.Moved)
+            {
+                moveInProgress = true;
+                Observer?.OnEntityMoved(block, direction.ToOffset());
+
+                return result;
+            }
+
+            Observer?.OnBlockExited(block, direction);
             events.RaiseExited(block);
             commands.Flush();
             CheckWin();
@@ -81,7 +90,7 @@ namespace Game.Core
                 CheckWin();
 
             if (State == GameState.Playing && timer.IsExpired)
-                State = GameState.Failed;
+                SetState(GameState.Failed);
         }
 
         /// <summary>Continue: adds time and resumes a failed level. When and how often is Runtime's decision.</summary>
@@ -93,7 +102,7 @@ namespace Game.Core
             timer.Add(seconds);
 
             if (State == GameState.Failed && !timer.IsExpired)
-                State = GameState.Playing;
+                SetState(GameState.Playing);
         }
 
         public void Restart()
@@ -103,15 +112,15 @@ namespace Game.Core
             commands = new LevelCommands(Board, this);
             events = new EventDispatcher(Board, commands);
             timer.Reset(level.TimeLimit);
-            State = GameState.Playing;
             MoveCount = 0;
             moveInProgress = false;
+            SetState(GameState.Playing);
         }
 
         internal void Fail()
         {
             if (State == GameState.Playing)
-                State = GameState.Failed;
+                SetState(GameState.Failed);
         }
 
         /// <summary>The move is counted even when the level was just won; listeners hear it only while playing.</summary>
@@ -132,7 +141,14 @@ namespace Game.Core
         private void CheckWin()
         {
             if (State == GameState.Playing && WinRule.IsWon(Board))
-                State = GameState.Won;
+                SetState(GameState.Won);
+        }
+
+        /// <summary>Every state change goes through here, so the observer hears each one (D85).</summary>
+        private void SetState(GameState state)
+        {
+            State = state;
+            Observer?.OnStateChanged(state);
         }
     }
 }

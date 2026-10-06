@@ -44,10 +44,10 @@ namespace Game.Core
             switch (command.Kind)
             {
                 case CommandKind.AddModifier:
-                    command.Entity.AddModifier(command.Modifier);
+                    ApplyAddModifier(command.Entity, command.Modifier);
                     break;
                 case CommandKind.RemoveModifier:
-                    command.Entity.RemoveModifier(command.Modifier);
+                    ApplyRemoveModifier(command.Entity, command.Modifier);
                     break;
                 case CommandKind.MoveEntity:
                     ApplyMove(command.Entity, command.Offset);
@@ -61,13 +61,29 @@ namespace Game.Core
             }
         }
 
+        private void ApplyAddModifier(Entity entity, IModifier modifier)
+        {
+            entity.AddModifier(modifier);
+            session.Observer?.OnModifierAdded(entity, modifier);
+        }
+
+        /// <summary>Two listeners may remove the same modifier in one flush; the view hears it once.</summary>
+        private void ApplyRemoveModifier(Entity entity, IModifier modifier)
+        {
+            if (entity.RemoveModifier(modifier))
+                session.Observer?.OnModifierRemoved(entity, modifier);
+        }
+
         private void ApplyMove(Entity entity, Cell offset)
         {
             if (entity is Block block && block.IsExited)
                 return;
 
-            if (board.CanPlace(entity, offset))
-                board.MoveEntity(entity, offset);
+            if (!board.CanPlace(entity, offset))
+                return;
+
+            board.MoveEntity(entity, offset);
+            session.Observer?.OnEntityMoved(entity, offset);
         }
     }
 }

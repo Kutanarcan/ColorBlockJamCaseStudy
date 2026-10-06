@@ -24,6 +24,6 @@ namespace Game.Core
 
         public IModifier GetModifier(int index) => modifiers[index];
         internal void AddModifier(IModifier modifier) => modifiers.Add(modifier);
-        internal void RemoveModifier(IModifier modifier) => modifiers.Remove(modifier);
+        internal bool RemoveModifier(IModifier modifier) => modifiers.Remove(modifier);
     }
 }
