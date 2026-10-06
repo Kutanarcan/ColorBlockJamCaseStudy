@@ -47,6 +47,19 @@ namespace Game.Runtime
             materials = new PaletteMaterials(assets.Palette, assets.BlockTemplate, assets.DoorTemplate);
             var board = new BoardView(new GameObject("Board").transform, assets, materials);
             board.Build(new BoardDressing(new BoardLayout(level.Value)));
+
+            var blockParts = new PiecePool(assets.BlockPiece, NewInactiveRoot("Pool_BlockParts"));
+            var blocks = new BlocksView(new GameObject("Blocks").transform, assets, materials, blockParts,
+                ModifierPresenters.Default(assets.ModifierViews));
+            blocks.Build(session.Value.Board);
+        }
+
+        private static Transform NewInactiveRoot(string name)
+        {
+            var root = new GameObject(name);
+            root.SetActive(false);
+
+            return root.transform;
         }
     }
 }

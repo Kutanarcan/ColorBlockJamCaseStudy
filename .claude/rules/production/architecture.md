@@ -28,6 +28,11 @@ A MonoBehaviour may only:
 
 Forbidden: business-rule `if`s, calculations, state machines, caching logic, data transformation.
 
+## View / Presenter
+- **A view never references `Game.Core`.** It exposes dumb setters in Unity terms (`SetCount(int)`, `Place(Vector3)`, `SetMaterial(Material)`) and nothing else.
+- **A presenter is pure C#** (Runtime): it reads the logic — casts, modifier parts, rules such as `BlockAnchor` — and calls the view's setters. Type checks ("which modifier is this?") live in the presenter, never in a view.
+- The presenter, not the view, is what the director talks to; views are reached only through presenters.
+
 - Never do work inside `Update()` — call `ITickable.Tick(float dt)`.
 - No singletons, no service locator, no static state.
 - Composition root (D64):

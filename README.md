@@ -15,7 +15,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
 ![Production V1](https://img.shields.io/badge/Production_V1-✅_Logic_·_Levels_·_Additive-2ea043)
-![Presentation](https://img.shields.io/badge/Presentation-🚧_Next-1f6feb)
+![Production V2](https://img.shields.io/badge/Production_V2-🚧_3/28_phases-1f6feb)
 
 </div>
 
@@ -42,7 +42,7 @@ flowchart LR
 | 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
 | ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
 | 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
-| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 Presentation next |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 V2 vertical slice (presentation in progress) |
 
 **From prototype to production**
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
@@ -73,7 +73,7 @@ AI is used as a pair programmer under rules I designed — not as an autopilot. 
 | Project | [`CLAUDE.md`](CLAUDE.md) | Communication style, folder layout, which mode is active, which plan is loaded |
 | Mode | [`.claude/modes/`](.claude/modes/) | The process: how phases are sliced, what "done" means, the answer format |
 | Folder | [`.claude/rules/`](.claude/rules/) | Code rules that load only for matching folders: `prototype.md` for `Assets/Prototype/`, `production/*` for `Assets/Scripts/` |
-| Plan | [`ProductionV1.md`](docs/production/ProductionV1.md) (active) · [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) | Scope, rules, data model, phase list and decisions for the active mode |
+| Plan | [`ProductionV2.md`](docs/production/ProductionV2.md) (active) · [`ProductionV1.md`](docs/production/ProductionV1.md) (done) · [`PrototypeV1.md`](docs/prototype/PrototypeV1.md) | Scope, rules, data model, phase list and decisions for the active mode |
 
 The mode line in `CLAUDE.md` is changed only by me. The AI never infers the mode from the code, and stops to ask if the mode and its rules disagree.
 
@@ -203,7 +203,7 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 > [!IMPORTANT]
 > **V1 goal:** The whole game is playable and verified **in the logic layer alone**, with tests, before any presentation work starts.
-> **Status:** ✅ V1 done (Phases 0–13, Phase 9 dropped) · ▶️ Presentation next
+> **Status:** ✅ V1 done (Phases 0–13, Phase 9 dropped) · 🚧 V2 in progress (see [V2: Vertical Slice](#-v2-vertical-slice))
 > **Input:** the prototype's [`FINDINGS.md`](docs/prototype/FINDINGS.md), not its code (see **Workflow** at the top).
 
 V1 is built on three pillars: **logic** that runs and is tested without Unity, a **level pipeline** that saves exactly what the logic loads, and an architecture where a new mechanic is **added, not edited in**. Presentation (visuals, drag feel, exit animation, audio) comes after, on top of a verified core.
@@ -286,13 +286,29 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 | `Game.Core` | Logic and level data model, no `UnityEngine` |
 | `Game.LevelIO` | JSON serialization, shared by Runtime and the Editor |
 | `Game.LevelEditor` | Editor-only level editor |
-| `Game.Runtime` | Presentation, next |
+| `Game.Runtime` | Presentation (V2): board, blocks, modifier looks; views and presenters |
 
-## ▶️ Next: Presentation
-`GameInstaller` composition root, color palette, modifier views, block drawing, drag, exit visual, timer and continue UI.
+## 🎬 V2: Vertical Slice
+
+> [!IMPORTANT]
+> **V2 goal:** the case brief's vertical slice — a playable level flow (Home → Gameplay → Win / Fail), five levels made with the Level Editor, coins and progress that survive a restart, an APK and a video.
+> **Status:** 🚧 Presentation stage: P0–P2 done, P3 Camera Fit next. Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
+
+| # | Phase | Result |
+|---|---|---|
+| P0 | Runtime Skeleton | UniTask, `Game.Runtime`; one logic → view seam (`ISessionObserver`) heard for moves, exits, modifier changes and state; Gameplay scene with a manual installer |
+| P1 | Board View | Ground, frame, inner walls and doors from the kit; one quadrant rule draws every wall; door runs stretched to their length; palette materials shared per color |
+| P2 | Block View | `BlockDrawRule` dresses any polyomino; pooled parts; Arrow and Ice looks; a lit triplanar ice shader |
+
+**Decisions worth knowing**
+- **The V1 core is not rewritten.** Presentation sits on top through one observer seam; Core only gained that seam.
+- **Kit prefabs only.** Variety is mesh / material swap and run length through a View component with serialized references; no child is found by path.
+- **Views are dumb, presenters are pure C#.** A view never references the logic; a presenter reads it and drives the view. A new modifier's look is a new presenter and view plus one registration line.
+- **Small folders.** A code folder holds at most 6 files; the change that adds the 7th splits it.
 
 ## 📚 Production Docs
 
+- [`ProductionV2.md`](docs/production/ProductionV2.md) — **active:** vertical slice plan: presentation, infrastructure, UI, meta, delivery; decision log D61+
 - [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, phase plan, decision log
 - [`LevelFormat.md`](docs/production/LevelFormat.md) — level JSON format and the **mandatory** checklists for changing level data, modifiers or LevelIO
 - [`Extending.md`](docs/production/Extending.md) — how to add a mechanic, the Turn Based Arrow example, edit points

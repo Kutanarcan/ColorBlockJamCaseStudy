@@ -72,6 +72,15 @@ A new field kind (float, bool, cell, list) is not part of this recipe: it follow
 ### 2.4 Tests
 - **Logic:** EditMode tests through `LevelSession` (an ASCII level is enough): the capability before and after, and stacking with an existing modifier.
 - **Data:** the round-trip and validation tests listed in [Level Format §4.1](LevelFormat.md#41-adding-a-modifier).
+- **Look:** add the presenter to the expectations in `ModifierPresentersTests`.
+
+### 2.5 Its look (V2)
+A modifier without a look still plays; it is simply not drawn. To give it one ([ProductionV2 D104](ProductionV2.md#-14-decision-log)), in `Runtime/Modifiers/<Mechanic>/`:
+1. **View** (`MonoBehaviour`, dumb): setters in Unity terms only, no `Game.Core` reference. Its prefab is a kit prefab or a small prefab of its own.
+2. **Presenter** (pure C#, `IModifierPresenter`): `Accepts` checks the modifier's type; `Show` reads the modifier and the block and calls the view.
+3. **Register:** one line in `ModifierPresenters.Default()` and one view field in `ModifierViews`, then assign the prefab in the asset.
+
+These two lines are the presentation's accepted growth, like the catalog line in §2.2.
 
 ## 3. Worked example: Turn Based Arrow
 The Phase 13 proof (D39, D60). It lives in its own test assembly, `Game.Tests.Additivity`, which references only **Game.Core** and **Game.LevelIO** and sees only their public API. Nothing in Core, LevelIO or the Level Editor changed for it.
@@ -111,7 +120,7 @@ Not built in V1. Each needs a change in a known place, so it is a choice, not a 
 
 ## 5. Before merging
 - [ ] The mechanic maps to seams (§1), or the edit point it opens is recorded as a decision.
-- [ ] `git diff --stat` shows **only new files**, plus the `Default()` line or the edit point's files.
+- [ ] `git diff --stat` shows **only new files**, plus the `Default()` line(s) (catalog, and presenters if it has a look), the `ModifierViews` field, or the edit point's files.
 - [ ] [Level Format §4.1](LevelFormat.md#41-adding-a-modifier) checklist done; [§6 review checklist](LevelFormat.md#6-review-checklist) passes.
 - [ ] Logic tests cover: before, after, and stacking with an existing modifier.
 - [ ] The modifier shows up in the Level Editor's "Add" list and its fields can be edited.

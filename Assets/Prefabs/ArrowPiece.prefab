@@ -41,6 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8157456003731300926}
+  - component: {fileID: 7410000000000000004}
   m_Layer: 0
   m_Name: ArrowPiece
   m_TagString: Untagged
@@ -147,3 +148,21 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7410000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4083678253565155017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d25fdbcc7ebcbf3b92aec5d8203e158, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  meshFilter: {fileID: 6476780593414403614}
+  meshesByLength:
+  - {fileID: -4135818882167075391, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  - {fileID: -1341611790480939518, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  - {fileID: 7264089000736223243, guid: 84957c64825b2b5409dc9036645f2cd6, type: 3}
+  yawOffset: 0

@@ -22,6 +22,14 @@ namespace Game.Runtime
         [SerializeField] private Mesh wallMesh;
         [SerializeField] private Mesh cornerMesh;
 
+        [Header("Blocks")]
+        [SerializeField] private PieceView blockPiece;
+        [SerializeField] private Mesh outerCornerMesh;
+        [SerializeField] private Mesh edgeMesh;
+        [SerializeField] private Mesh centerMesh;
+        [SerializeField] private Mesh innerCornerMesh;
+        [SerializeField] private ModifierViews modifierViews;
+
         public Palette Palette => palette;
         public Material BlockTemplate => blockTemplate;
         public Material DoorTemplate => doorTemplate;
@@ -31,5 +39,19 @@ namespace Game.Runtime
         public DoorPieceView DoorPiece => doorPiece;
         public Mesh WallMesh => wallMesh;
         public Mesh CornerMesh => cornerMesh;
+
+        public PieceView BlockPiece => blockPiece;
+        public ModifierViews ModifierViews => modifierViews;
+
+        public Mesh BlockMesh(BlockPartKind kind)
+        {
+            switch (kind)
+            {
+                case BlockPartKind.OuterCorner: return outerCornerMesh;
+                case BlockPartKind.Edge: return edgeMesh;
+                case BlockPartKind.Center: return centerMesh;
+                default: return innerCornerMesh;
+            }
+        }
     }
 }

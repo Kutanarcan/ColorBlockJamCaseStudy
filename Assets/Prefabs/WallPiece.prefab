@@ -161,3 +161,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshFilter: {fileID: 3028574693321120785}
+  meshRenderer: {fileID: 1424652870009018094}

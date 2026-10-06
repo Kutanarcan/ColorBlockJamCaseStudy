@@ -20,3 +20,9 @@ MonoBehaviour:
   doorPiece: {fileID: 7410000000000000002, guid: 3957e5a286d9a33429081e8a850e0b6b, type: 3}
   wallMesh: {fileID: 8733429697405204941, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
   cornerMesh: {fileID: -5221963080773851136, guid: bd798eb4827a05848b23ed51ea7bbe48, type: 3}
+  blockPiece: {fileID: 7410000000000000003, guid: bf869b8e47fb1c74f981f4fcc435a5e5, type: 3}
+  outerCornerMesh: {fileID: -3023630919892535758, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  edgeMesh: {fileID: 4163668623295024386, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  centerMesh: {fileID: -3289860805121049569, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  innerCornerMesh: {fileID: 3222031244701842341, guid: da198a95277791b4a865d07db6b524d4, type: 3}
+  modifierViews: {fileID: 11400000, guid: 02c8272e21fe875ccaa3541fba56f7ee, type: 2}

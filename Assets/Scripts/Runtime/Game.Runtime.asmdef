@@ -4,7 +4,8 @@
     "references": [
         "Game.Core",
         "Game.LevelIO",
-        "UniTask"
+        "UniTask",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

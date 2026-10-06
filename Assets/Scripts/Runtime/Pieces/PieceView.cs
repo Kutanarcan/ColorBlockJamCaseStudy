@@ -9,7 +9,10 @@ namespace Game.Runtime
     public sealed class PieceView : MonoBehaviour
     {
         [SerializeField] private MeshFilter meshFilter;
+        [SerializeField] private MeshRenderer meshRenderer;
 
         public void SetMesh(Mesh mesh) => meshFilter.sharedMesh = mesh;
+
+        public void SetMaterial(Material material) => meshRenderer.sharedMaterial = material;
     }
 }
