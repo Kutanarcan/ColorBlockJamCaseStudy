@@ -208,6 +208,20 @@ Each topic has a full walkthrough with diagrams and a worked example in [`Algori
 
 V1 is built on three pillars: **logic** that runs and is tested without Unity, a **level pipeline** that saves exactly what the logic loads, and an architecture where a new mechanic is **added, not edited in**. Presentation (visuals, drag feel, exit animation, audio) comes after, on top of a verified core.
 
+## ⏱️ Time Spent
+
+Production V1 took **12 hours of hands-on work**: a planning pass first, then **3 working sessions**:
+
+| Session | Duration |
+|---|:---:|
+| Planning | 2 h |
+| Session 1 | 4 h |
+| Session 2 | 3 h |
+| Session 3 | 3 h |
+| **Total** | **12 h** |
+
+Planning came first on purpose: the design, the phase plan and the decision log were settled before any production code, so each session built a phase that was already agreed.
+
 ## 🎬 Level Editor
 
 <!-- Level Editor video (OBS, landscape): replace LEVEL_EDITOR_VIDEO_URL with the uploaded asset link. -->
