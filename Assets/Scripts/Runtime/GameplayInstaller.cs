@@ -16,14 +16,23 @@ namespace Game.Runtime
         [SerializeField] private PresentationAssets assets;
         [SerializeField] private CameraRig cameraRig;
         [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f);
+        [Tooltip("Seconds between the last exit finishing and the win popup (D89). Moves to GameConfig in I4.")]
+        [SerializeField, Min(0f)] private float winPopupDelay = 0.5f;
         [SerializeField] private TextAsset[] levels;
         [SerializeField] private string levelKey;
 
+        private readonly Sequencer exits = new Sequencer();
+        private readonly Sequencer flow = new Sequencer();
         private PaletteMaterials materials;
 
         private void Start() => InstallAsync(destroyCancellationToken).Forget();
 
-        private void OnDestroy() => materials?.Dispose();
+        private void OnDestroy()
+        {
+            flow.Dispose();
+            exits.Dispose();
+            materials?.Dispose();
+        }
 
         private async UniTaskVoid InstallAsync(CancellationToken cancellation)
         {
@@ -57,8 +66,11 @@ namespace Game.Runtime
                 ModifierPresenters.Default(assets.ModifierViews));
             blocks.Build(session.Value.Board);
 
+            var inputLock = new InputLock();
+            session.Value.Observer = new GameplayDirector(blocks, inputLock, exits, flow, winPopupDelay);
+
             var drag = new DragController(session.Value, blocks, new MousePointerInput(cameraRig.SceneCamera),
-                new DragResolver(session.Value), dragSettings);
+                inputLock, new DragResolver(session.Value), dragSettings);
             gameObject.AddComponent<FrameTicker>().Initialize(drag);
         }
 

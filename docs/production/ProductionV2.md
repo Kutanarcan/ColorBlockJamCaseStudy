@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-4/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-5/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -301,7 +301,7 @@ One phase per answer, following the production process. **Files touched** are de
 | P1 | Board View | P1.1 palette asset + one material per color · P1.2 ground tiles for playable cells · P1.3 frame and doors (D93, D98, D99) · P1.4 inner walls | `WallDrawRule_DressesFrameInnerWallsAndDoors` + level visible in the Editor | ✅ |
 | P2 | Block View | P2.1 `BlockDrawRule` (pure) · P2.2 pooled pieces (`BlockPiece` / `ArrowPiece` + `PieceView` mesh swap, D99) · P2.3 Arrow view · P2.4 Ice view with count · P2.5 modifier → view asset mapping | `BlockDrawRule_DressesLTURingAndPlus` | ✅ |
 | P3 | Camera Fit | P3.1 fit function (bounds, HUD margins, safe area, aspect) · P3.2 camera applies it on level load | `CameraFit_KeepsTheBoardInside_From16x9To20x9` | ✅ |
-| P4 | Input & Drag | P4.1 pointer → cell (`BoardRaycast`) · P4.2 drag resolver (move toward the pointer) · P4.3 clamp to reachable, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragResolver_MovesTowardThePointer_LargerAxisFirst` | ⏳ |
+| P4 | Input & Drag | P4.1 pointer → cell (`BoardRaycast`) · P4.2 drag resolver (move toward the pointer) · P4.3 clamp to reachable, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragResolver_MovesTowardThePointer_LargerAxisFirst` | ✅ |
 | P5 | Director & Sequencer | P5.1 step contract + sequencer (order, parallel, cancel) · P5.2 director: exit steps non-blocking · P5.3 input lock · P5.4 win / fail sequences (popup placeholder step) | `Sequencer_PlaysInOrder_GroupsInParallel_AndCancels` | ⏳ |
 | P6 | Exit Visual & Feedback | P6.1 production block shader with clip plane · P6.2 exit step (snap, slide, cut) · P6.3 pooled row particles · P6.4 SFX service | `ExitStep_CompletesAndDisablesTheBlock` (step with a fake view) + exit seen in the Editor | ⏳ |
 | P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ⏳ |

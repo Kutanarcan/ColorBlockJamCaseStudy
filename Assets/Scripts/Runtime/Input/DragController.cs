@@ -6,13 +6,15 @@ namespace Game.Runtime
     /// <summary>
     /// Select, drag, end. The logic moves first (<see cref="DragResolver"/>), the dragged block's view follows:
     /// lifted and clamped to reachable space while dragged, snapped onto its cell when the drag ends, which commits
-    /// the move. A block that exits mid-drag ends the drag.
+    /// the move. A block that exits mid-drag ends the drag; the director plays its exit. A locked input ends the
+    /// drag and refuses a new one.
     /// </summary>
     public sealed class DragController : ITickable
     {
         private readonly LevelSession session;
         private readonly BlocksView blocks;
         private readonly IPointerInput pointer;
+        private readonly InputLock inputLock;
         private readonly DragResolver resolver;
         private readonly DragSettings settings;
 
@@ -20,12 +22,13 @@ namespace Game.Runtime
         private Vector2 dragStartPointer;
         private Vector2 dragStartPosition;
 
-        public DragController(LevelSession session, BlocksView blocks, IPointerInput pointer, DragResolver resolver,
-            DragSettings settings)
+        public DragController(LevelSession session, BlocksView blocks, IPointerInput pointer, InputLock inputLock,
+            DragResolver resolver, DragSettings settings)
         {
             this.session = session;
             this.blocks = blocks;
             this.pointer = pointer;
+            this.inputLock = inputLock;
             this.resolver = resolver;
             this.settings = settings;
         }
@@ -34,13 +37,13 @@ namespace Game.Runtime
         {
             if (draggedBlock == null)
             {
-                if (pointer.WasPressedThisFrame)
+                if (pointer.WasPressedThisFrame && !inputLock.IsLocked)
                     TrySelectBlock();
 
                 return;
             }
 
-            if (pointer.IsPressed)
+            if (pointer.IsPressed && !inputLock.IsLocked)
                 UpdateDrag();
             else
                 EndDrag();
@@ -48,8 +51,7 @@ namespace Game.Runtime
 
         private void TrySelectBlock()
         {
-            if (session.State != GameState.Playing
-                || !BoardRaycast.TryGetCellPoint(pointer.PointerRay, out Vector2 cellPoint))
+            if (!BoardRaycast.TryGetCellPoint(pointer.PointerRay, out Vector2 cellPoint))
                 return;
 
             if (!(session.Board.EntityAt(BoardRaycast.ToCell(cellPoint)) is Block block))
@@ -72,8 +74,6 @@ namespace Game.Runtime
 
             if (resolver.MoveToward(draggedBlock, target) == MoveResult.Exited)
             {
-                // Placeholder until the exit step (P6) plays the exit.
-                blocks.ViewOf(draggedBlock).Hide();
                 draggedBlock = null;
                 return;
             }
