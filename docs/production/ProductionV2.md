@@ -102,7 +102,19 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ### Observer seam (Core, D68)
 - Core gains one interface, `ISessionObserver`, set on the session. The session calls it explicitly, like the dispatcher: no C# events, no bus (V1 D32 still holds).
-- Calls: block moved (from, to) · block exited (block, direction) · modifier removed (entity, modifier) · state changed (Won / Failed / Playing).
+- Calls: entity moved (entity, offset) · block exited (block, direction) · modifier added (entity, modifier) · modifier removed (entity, modifier) · state changed (Won / Failed / Playing).
+- **Where each call comes from** (every path that changes what the view shows, D85):
+
+| Call | Raised from |
+|---|---|
+| Entity moved | `LevelSession.TryMove` after a `Moved` step · `LevelCommands` applying `MoveEntity` (a listener can move walls and doors too, so it is an entity, not a block) |
+| Block exited | `LevelSession.TryMove` after an `Exited` step, **before** the Exited event is dispatched, so the view hears the exit before its consequences |
+| Modifier added / removed | `LevelCommands` applying `AddModifier` / `RemoveModifier` (Ice melting reaches it through `Durability.WearDown` → `RemoveModifier`) |
+| State changed | One private `SetState` in `LevelSession`, used by win (`CheckWin`), fail (timeout, `Fail()` from a listener), continue (`AddTime`: Failed → Playing) and `Restart` |
+
+- **Order inside one call:** the logic step completes, then the observer is told; commands flushed after an event report their own changes in flush order. The view therefore receives a move, the exit, then the modifier changes and finally the state change.
+- `Restart` reports Playing; views rebuild from the board, not from replayed calls.
+- `AddTime` from a listener changes no view directly; the HUD reads `RemainingTime`.
 - A null observer is the default; Core tests do not need one.
 - **The logic finishes first.** Exit and win happen in the logic immediately; the view is told and plays them later (FINDINGS: "logic finishes before the visual").
 
@@ -118,7 +130,7 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ### Board view
 - **Ground:** one GroundGrid tile per playable cell, cell pitch 2 units (FINDINGS).
-- **Frame and doors:** production walls and doors are **cells**; the art's walls sit on **cell edges**. How frame cells are drawn is Q1 (§13). The working proposal: the frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line render as one door run; inner wall cells use full wall pieces.
+- **Frame and doors:** production walls and doors are **cells**; the art's walls sit on **cell edges**. How frame cells are drawn is settled by D86: the frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line render as one door run; inner wall cells use full wall pieces.
 - **Palette:** a palette asset maps `colorId` → material (one shared material per color, D74); the editor's preview colors and the "colorId exists in the palette" rule (V1 D52) switch to it.
 
 ### Block view
@@ -356,14 +368,14 @@ The brief's acceptance criteria (§1) are never cut.
 
 ## ❓ 13. Open Questions
 
-| # | Question | Needed by | Working proposal |
+| # | Question | Needed by | Answer |
 |---|---|---|---|
-| Q1 | **Frame cells vs. edge art.** Walls and doors are cells in production, but the kit's walls sit on cell edges. How is the frame drawn? | P1 | The frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; door cells in a line become one door run; inner walls use full wall pieces |
-| Q2 | Does the board view read the `Board` directly, or a view model built once from `LevelData`? | P1 | Read `Board` (read-only use) for positions; static layout (frame, ground) once from `LevelData` |
-| Q3 | Ice view: count shown as text or as cracks per stage? | P2 | Text count; stages later if time |
-| Q4 | Win popup timing: fixed delay after the last exit, or after the exit particles end? | P5 | After the exit step, plus a config delay |
-| Q5 | Is `Game.Runtime` one assembly with UI inside, or UI separate? | P0 | One assembly; split if a folder passes depth 2 |
-| Q6 | Hammer: is a hammered block an exit (counts for Ice, listeners) or a removal? | B2 | Decide when B2 starts |
+| Q1 | **Frame cells vs. edge art.** Walls and doors are cells in production, but the kit's walls sit on cell edges. How is the frame drawn? | P1 | ✅ D86 |
+| Q2 | Does the board view read the `Board` directly, or a view model built once from `LevelData`? | P1 | ✅ D87 |
+| Q3 | Ice view: count shown as text or as cracks per stage? | P2 | ✅ D88 |
+| Q4 | Win popup timing: fixed delay after the last exit, or after the exit particles end? | P5 | ✅ D89 |
+| Q5 | Is `Game.Runtime` one assembly with UI inside, or UI separate? | P0 | ✅ D90 |
+| Q6 | Hammer: is a hammered block an exit (counts for Ice, listeners) or a removal? | B2 | Open; decided when B2 starts |
 
 ---
 
@@ -396,3 +408,11 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D82 | Messaging | No message bus library; services are injected. Revisited only if a real need appears |
 | D83 | Deliverables | Both an APK and a video; the Android build is tried in I6, before the last day |
 | D84 | Tweens | DOTween stays for production tweens, awaited through UniTask's DOTween support |
+| D85 | Observer call points | `ISessionObserver` also hears modifier added and entity moved (not only blocks). Calls come from `LevelSession` (moves, exits, one `SetState` for every state change incl. continue and restart) and `LevelCommands` (command moves, modifier add / remove). The exit is reported before its event is dispatched |
+| D86 | Frame drawing (Q1) | The frame ring is drawn as the prototype's thin border on the edge between a frame cell and a playable cell; same-color door cells in a line become one door run; inner wall cells use full wall pieces |
+| D87 | Board view source (Q2) | Views read `Board` read-only for positions; static layout (frame, ground) is built once from `LevelData` |
+| D88 | Ice view (Q3) | Remaining count as text; crack stages only if time |
+| D89 | Win popup timing (Q4) | After the last exit step finishes, plus a delay from config |
+| D90 | Runtime assembly (Q5) | `Game.Runtime` is one assembly with UI inside; split only when a folder would pass depth 2 |
+| D91 | `Resources` exception | `Assets/Resources/DOTweenSettings.asset` stays: DOTween requires it. It is the only `Resources` use; game content never goes there (D65) |
+| D92 | Case brief | `docs/Game Developer Case 2026.pdf` is kept locally and ignored by git |
