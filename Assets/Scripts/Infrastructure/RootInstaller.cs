@@ -11,17 +11,20 @@ namespace Game.Infrastructure
     {
         private readonly IContentInitializer content;
         private readonly IAssetSource assets;
+        private readonly ISceneLoader scenes;
 
-        public RootInstaller(IContentInitializer content, IAssetSource assets)
+        public RootInstaller(IContentInitializer content, IAssetSource assets, ISceneLoader scenes)
         {
             this.content = content;
             this.assets = assets;
+            this.scenes = scenes;
         }
 
         public void Install(IContainerBuilder builder)
         {
             builder.RegisterInstance(content);
             builder.RegisterInstance(assets);
+            builder.RegisterInstance(scenes);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();
             builder.RegisterEntryPoint<Bootstrapper>();
         }

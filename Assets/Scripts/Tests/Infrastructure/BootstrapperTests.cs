@@ -12,9 +12,22 @@ namespace Game.Tests.Infrastructure
         {
             var content = new FakeContentInitializer();
 
-            new Bootstrapper(content).StartAsync(CancellationToken.None).Forget();
+            new Bootstrapper(content, new FakeSceneLoader()).StartAsync(CancellationToken.None).Forget();
 
             Assert.That(content.Calls, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Bootstrapper_LoadsGameplay_OnlyAfterContentIsReady()
+        {
+            var content = new FakeContentInitializer(held: true);
+            var scenes = new FakeSceneLoader();
+
+            new Bootstrapper(content, scenes).StartAsync(CancellationToken.None).Forget();
+            Assert.That(scenes.Log, Is.Empty);
+
+            content.Finish();
+            Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }));
         }
     }
 }

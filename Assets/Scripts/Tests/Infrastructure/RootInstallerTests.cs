@@ -15,13 +15,15 @@ namespace Game.Tests.Infrastructure
         public void RootScope_ResolvesItsServices()
         {
             var content = new FakeContentInitializer();
+            var scenes = new FakeSceneLoader();
             var builder = new ContainerBuilder();
-            new RootInstaller(content, new FakeAssetSource()).Install(builder);
+            new RootInstaller(content, new FakeAssetSource(), scenes).Install(builder);
 
             using IObjectResolver container = builder.Build();
 
             Assert.That(container.Resolve<IContentInitializer>(), Is.SameAs(content));
             Assert.That(container.Resolve<IAssetLoader>(), Is.InstanceOf<AssetScope>());
+            Assert.That(container.Resolve<ISceneLoader>(), Is.SameAs(scenes));
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
         }
 
@@ -30,7 +32,7 @@ namespace Game.Tests.Infrastructure
         {
             var source = new FakeAssetSource();
             var builder = new ContainerBuilder();
-            new RootInstaller(new FakeContentInitializer(), source).Install(builder);
+            new RootInstaller(new FakeContentInitializer(), source, new FakeSceneLoader()).Install(builder);
             using IObjectResolver root = builder.Build();
             IScopedObjectResolver child = root.CreateScope();
 

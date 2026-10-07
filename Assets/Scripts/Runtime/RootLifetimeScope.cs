@@ -5,8 +5,8 @@ using VContainer.Unity;
 namespace Game.Runtime
 {
     /// <summary>
-    /// The root scope in the Bootstrap scene (D64): holds the services that live for the whole run. Main and Gameplay
-    /// scopes become its children in I2.
+    /// The root scope in the Bootstrap scene (D64): holds the services that live for the whole run. Bootstrap stays
+    /// loaded, so the scope does too; content scenes open next to it and their scopes become its children (D114).
     /// </summary>
     public sealed class RootLifetimeScope : LifetimeScope
     {
@@ -14,7 +14,8 @@ namespace Game.Runtime
         {
             new RootInstaller(
                 new AddressablesContentInitializer(),
-                new AddressablesAssetSource())
+                new AddressablesAssetSource(),
+                new AddressablesSceneLoader(this))
                 .Install(builder);
         }
     }

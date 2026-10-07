@@ -72,8 +72,16 @@ LifetimeScope (root / Main / Gameplay)
 | `IAssetHandle` | One loaded asset plus the right to release it |
 
 - `AssetScope` is registered `Lifetime.Scoped` in the root installer: every `LifetimeScope` that resolves `IAssetLoader` gets **its own** scope, and VContainer disposes it when that `LifetimeScope` closes.
-- Scene unload → its `LifetimeScope` is destroyed → its `AssetScope` is disposed → its handles are released (wired in I2).
+- Scene unload → its `LifetimeScope` is destroyed → its `AssetScope` is disposed → its handles are released.
 - One asset is loaded one at a time; there is no batch or label load in game code (a label load returns an unordered list and makes release tracking harder).
+
+### Scenes (D114)
+- `ISceneLoader` (`ReplaceContentSceneAsync(key)`, `UnloadContentSceneAsync()`) is the only way to change scenes; keys live in `SceneKeys`.
+- **Bootstrap stays loaded** for the whole run and is the only scene in Build Settings; the root scope lives with it (no `DontDestroyOnLoad`).
+- One **content scene** at a time is loaded **additively** next to it and made the active scene, so objects created from code land in it and are destroyed with it. Replacing it unloads the current one first.
+- The loaded scene's `LifetimeScope` gets the root scope as parent through `LifetimeScope.EnqueueParent`; a scene played alone in the Editor has no parent and still runs.
+- Unloading: `Addressables.UnloadSceneAsync` → the scene's scope is destroyed → its `AssetScope` releases its handles.
+- Content scenes are addressable under their key (`Gameplay`; `Main` from M2) and **not** in Build Settings.
 
 ## 5. Leaks
 - **A leak is a handle that would outlive its scope.** Normal handles are released by `Dispose`, so a scope closing with handles is expected, not a leak.
@@ -110,8 +118,8 @@ Moving to a server is a profile change plus marking groups remote, not a code ch
 | Phase | What | State |
 |---|---|---|
 | I0 | Packages, root scope, `Bootstrapper` → `InitializeAsync` | ✅ |
-| I1 | `IAssetLoader`, `AssetScope`, `AddressablesAssetSource`, leak report | ✅ code · tests pending |
-| I2 | `ISceneLoader`, child scopes for Main / Gameplay, scene unload disposes scope | ⏳ |
+| I1 | `IAssetLoader`, `AssetScope`, `AddressablesAssetSource`, leak report | ✅ |
+| I2 | `ISceneLoader`, Gameplay child scope (Main in M2), scene unload disposes scope | ✅ |
 | I3 | Groups and keys, Local / Remote profiles, content update flow | ⏳ |
 | I4 | `GameConfig`, Addressables level source, `PresentationAssets` from Addressables | ⏳ |
 | I6 | Event Viewer round trip, first APK | ⏳ |
