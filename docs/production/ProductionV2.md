@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-7/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-8/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -304,7 +304,7 @@ One phase per answer, following the production process. **Files touched** are de
 | P4 | Input & Drag | P4.1 pointer → cell (`BoardRaycast`) · P4.2 drag resolver (move toward the pointer) · P4.3 clamp to reachable, snap, `CommitMove` · P4.4 exit mid-drag ends the move | `DragResolver_MovesTowardThePointer_LargerAxisFirst` | ✅ |
 | P5 | Director & Sequencer | P5.1 step contract + sequencer (order, parallel, cancel) · P5.2 director: exit steps non-blocking · P5.3 input lock · P5.4 win / fail sequences (popup placeholder step) | `Sequencer_PlaysInOrder_GroupsInParallel_AndCancels` | ✅ |
 | P6 | Exit Visual & Feedback | P6.1 production block shader with clip plane · P6.2 exit step (snap, slide, cut) · P6.3 pooled row particles · P6.4 SFX service | `ExitStep_CompletesAndDisablesTheBlock` (step with a fake view) + exit seen in the Editor | ✅ |
-| P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ⏳ |
+| P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ✅ |
 | P8 | Polish & Performance | P8.1 feel pass (tuning from FINDINGS) · P8.2 draw call pass (shared materials, instancing) · P8.3 GC Alloc pass on drag / tick · P8.4 measurement table | Measurement table recorded (batches, GC Alloc per frame) | ⏳ |
 | P9 | Five Levels & Editor Play | P9.1 Play button (save → open Gameplay with the key) · P9.2 build levels 1–5 in the editor · P9.3 palette rule in the editor | `PlayRequest_StoresTheLevelKey_ForTheGame` + five levels played | ⏳ |
 
@@ -433,3 +433,4 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D104 | View / presenter | Views are dumb MonoBehaviours with no `Game.Core` reference (`IceView.SetCount`, `ArrowView.Show`). A pure C# presenter per modifier (`IcePresenter`, `ArrowPresenter`) reads the logic (casts, `Durability`, placement rules) and drives its view; `ModifierPresenters.Default()` picks the first presenter that accepts a modifier. A new modifier's look adds a presenter, a view, one line in `Default()` and one field in `ModifierViews`. `BlockView` no longer exposes the `Block`. Rule in `architecture.md` § View / Presenter |
 | D105 | Arrow = axis lock | Arrow locks a block to an axis, `Horizontal` or `Vertical`, both ways (prototype behaviour); supersedes V1 D18 (one direction). Core gains `Axis` and `Direction.ToAxis()`; `Arrow.Allows` converts the move's direction to its axis. Saved as `"axis"`, a new field kind; `schemaVersion` 1 → 2, the levels re-saved by hand, no migration (LevelFormat §2 version history). The kit's `Arrow_N` is double-headed: laid along Z for Vertical, X for Horizontal. The drag keeps its previous-cell rule (`DragResolver.ClampToReachable` may offset back toward the cell the last move left) for future one-way mechanics |
 | D106 | Drag naming | Names say what the code does, not a hand metaphor; input uses Unity Input System words. `IPointerInput` (`WasPressedThisFrame`, `IsPressed`, `PointerRay`), `MousePointerInput`, `BoardRaycast` (`TryGetCellPoint`, `ToCell`), `DragResolver` (`MoveToward`, `ClampToReachable`, `BeginDrag`), `DragController` (`TrySelectBlock`, `UpdateDrag`, `EndDrag`), `DragSettings` (`LiftHeight`, `SnapDuration`), `BlockView.SetPosition` / `SnapTo` |
+| D107 | Move preview | Core decides every move, also the ones presentation only previews. `BlockMover.Preview` holds the move rule and `TryMove` applies its answer; `LevelSession.PreviewMove` exposes it without changing the board or telling the observer. `DragResolver.ClampToReachable` leans only where the preview says `Moved`; Runtime no longer combines `Capabilities` and `Board.CanPlace` itself. Board occupancy is still read for two view-only cases: the diagonal lean and the cell the last move left |

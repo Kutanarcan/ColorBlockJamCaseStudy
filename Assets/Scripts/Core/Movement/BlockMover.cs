@@ -6,28 +6,34 @@ namespace Game.Core
 
         public BlockMover(Board board) => this.board = board;
 
-        public MoveResult TryMove(Block block, Direction direction)
+        /// <summary>
+        /// What <see cref="TryMove"/> would do, without doing it: the board does not change. The one place the move
+        /// rule lives; <see cref="TryMove"/> only applies its answer.
+        /// </summary>
+        public MoveResult Preview(Block block, Direction direction)
         {
             if (block.IsExited || !Capabilities.CanMove(block, direction))
                 return MoveResult.Blocked;
 
-            Cell offset = direction.ToOffset();
-
-            if (board.CanPlace(block, offset))
-            {
-                board.MoveEntity(block, offset);
-
+            if (board.CanPlace(block, direction.ToOffset()))
                 return MoveResult.Moved;
-            }
 
             if (Capabilities.CanExit(block) && ExitRule.CanExit(board, block, direction))
-            {
-                board.RemoveBlock(block);
-
                 return MoveResult.Exited;
-            }
 
             return MoveResult.Blocked;
+        }
+
+        public MoveResult TryMove(Block block, Direction direction)
+        {
+            MoveResult result = Preview(block, direction);
+
+            if (result == MoveResult.Moved)
+                board.MoveEntity(block, direction.ToOffset());
+            else if (result == MoveResult.Exited)
+                board.RemoveBlock(block);
+
+            return result;
         }
     }
 }

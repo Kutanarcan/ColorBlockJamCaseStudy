@@ -95,13 +95,19 @@ namespace Game.Runtime
             return result;
         }
 
+        /// <summary>
+        /// Core decides (<see cref="LevelSession.PreviewMove"/>): the visual leans only where the next move would go.
+        /// The one presentation exception is the cell the last move left, while it is still free.
+        /// </summary>
         private bool CanOffsetToward(Block block, bool alongX, int sign)
         {
+            if (session.PreviewMove(block, ToDirection(alongX, sign)) == MoveResult.Moved)
+                return true;
+
             Cell offset = Offset(alongX, sign);
             bool towardPreviousCell = offset + lastMoveOffset == default;
 
-            return session.Board.CanPlace(block, offset)
-                   && (towardPreviousCell || Capabilities.CanMove(block, ToDirection(alongX, sign)));
+            return towardPreviousCell && session.Board.CanPlace(block, offset);
         }
 
         private static Cell Offset(bool alongX, int sign) => alongX ? new Cell(sign, 0) : new Cell(0, sign);

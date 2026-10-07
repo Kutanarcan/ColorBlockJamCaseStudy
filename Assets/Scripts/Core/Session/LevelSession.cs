@@ -39,6 +39,13 @@ namespace Game.Core
             return Result<LevelSession>.Success(new LevelSession(level));
         }
 
+        /// <summary>
+        /// What <see cref="TryMove"/> would return, without moving anything or telling the observer. Presentation
+        /// asks here before it shows a move that has not happened yet (the drag's lean), so the rule stays in Core.
+        /// </summary>
+        public MoveResult PreviewMove(Block block, Direction direction) =>
+            State == GameState.Playing ? mover.Preview(block, direction) : MoveResult.Blocked;
+
         public MoveResult TryMove(Block block, Direction direction)
         {
             if (State != GameState.Playing)

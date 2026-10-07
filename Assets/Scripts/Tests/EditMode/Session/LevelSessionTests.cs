@@ -23,6 +23,26 @@ namespace Game.Tests.EditMode
 
         private static Block BlockAt(LevelSession session, Cell cell) => (Block)session.Board.EntityAt(cell);
 
+        [TestCase(Direction.Right, MoveResult.Moved)]
+        [TestCase(Direction.Down, MoveResult.Exited)]
+        [TestCase(Direction.Up, MoveResult.Blocked)]
+        public void PreviewMove_AnswersLikeTryMove_WithoutChangingAnything(Direction direction, MoveResult expected)
+        {
+            LevelSession session = NewSession();
+            var observer = new FakeSessionObserver();
+            session.Observer = observer;
+            Block a = BlockAt(session, ACell);
+
+            MoveResult previewed = session.PreviewMove(a, direction);
+
+            Assert.That(previewed, Is.EqualTo(expected));
+            Assert.That(a.Position, Is.EqualTo(ACell));
+            Assert.That(a.IsExited, Is.False);
+            Assert.That(session.Board.EntityAt(ACell), Is.SameAs(a));
+            Assert.That(observer.Calls, Is.Empty, "a preview is not a move");
+            Assert.That(session.TryMove(a, direction), Is.EqualTo(expected), "and the move agrees");
+        }
+
         [Test]
         public void TryCreate_Fails_ForInvalidLevel()
         {
