@@ -35,6 +35,7 @@ namespace Game.Runtime
         [SerializeField] private AudioClip selectSound;
         [SerializeField] private AudioClip dropSound;
         [SerializeField] private AudioClip crunchSound;
+        [SerializeField] private Material selectionOutline;
 
         public Palette Palette => palette;
         public Material BlockTemplate => blockTemplate;
@@ -50,6 +51,7 @@ namespace Game.Runtime
         public ModifierViews ModifierViews => modifierViews;
 
         public ExitParticles ExitParticles => exitParticles;
+        public Material SelectionOutline => selectionOutline;
 
         public AudioClip Sound(SoundEffect effect)
         {

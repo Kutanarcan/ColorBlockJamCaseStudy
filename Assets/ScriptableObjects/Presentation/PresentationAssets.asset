@@ -30,3 +30,4 @@ MonoBehaviour:
   selectSound: {fileID: 8300000, guid: 2cca23a32f6cd6c49be7010ccdbde3ba, type: 3}
   dropSound: {fileID: 8300000, guid: 195da8d85d7d51740ae9bafd390ea2c4, type: 3}
   crunchSound: {fileID: 8300000, guid: 0e98272349e997d4082b088526692bac, type: 3}
+  selectionOutline: {fileID: 2100000, guid: ffdaa997bbae4c31af151251141a909e, type: 2}

@@ -54,6 +54,13 @@ namespace Game.LevelEditor
             inspector = new InspectorView(session);
         }
 
+        /// <summary>A mouse up released over another window never comes here; the stroke still closes and the rules run.</summary>
+        private void OnLostFocus()
+        {
+            session.EndStroke();
+            Repaint();
+        }
+
         private void OnDisable()
         {
             snapshot = session.Document.Snapshot();

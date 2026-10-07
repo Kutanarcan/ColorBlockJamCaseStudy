@@ -96,6 +96,15 @@ namespace Game.Runtime
                 attachedRenderers[i].SetPropertyBlock(buffer);
         }
 
+        /// <summary>Every renderer of the block: its parts and what is attached to it (the selection outline draws them).</summary>
+        public void AddRenderersTo(List<Renderer> renderers)
+        {
+            for (int i = 0; i < parts.Count; i++)
+                renderers.Add(parts[i].Renderer);
+
+            renderers.AddRange(attachedRenderers);
+        }
+
         /// <summary>Puts the block at a board position at once, stopping a snap still running.</summary>
         public void SetPosition(Vector3 boardPosition)
         {

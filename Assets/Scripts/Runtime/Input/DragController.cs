@@ -18,13 +18,14 @@ namespace Game.Runtime
         private readonly DragResolver resolver;
         private readonly DragSettings settings;
         private readonly ISfxPlayer sfx;
+        private readonly IBlockSelection selection;
 
         private Block draggedBlock;
         private Vector2 dragStartPointer;
         private Vector2 dragStartPosition;
 
         public DragController(LevelSession session, IBlocksView blocks, IPointerInput pointer, InputLock inputLock,
-            DragResolver resolver, DragSettings settings, ISfxPlayer sfx)
+            DragResolver resolver, DragSettings settings, ISfxPlayer sfx, IBlockSelection selection)
         {
             this.session = session;
             this.blocks = blocks;
@@ -33,10 +34,15 @@ namespace Game.Runtime
             this.resolver = resolver;
             this.settings = settings;
             this.sfx = sfx;
+            this.selection = selection;
         }
 
         /// <summary>Restart: forgets the dragged block without committing; its view is being rebuilt.</summary>
-        public void Cancel() => draggedBlock = null;
+        public void Cancel()
+        {
+            draggedBlock = null;
+            selection.Hide();
+        }
 
         public void Tick(float deltaTime)
         {
@@ -68,6 +74,7 @@ namespace Game.Runtime
             dragStartPosition = PositionOf(block);
             blocks.ViewOf(block).SetPosition(BoardLayout.ToBoard(dragStartPosition, settings.LiftHeight));
             sfx.Play(SoundEffect.Select);
+            selection.Show(block);
         }
 
         private void UpdateDrag()
@@ -78,8 +85,10 @@ namespace Game.Runtime
             Vector2 wanted = dragStartPosition + cellPoint - dragStartPointer;
             var target = new Cell(Mathf.RoundToInt(wanted.x), Mathf.RoundToInt(wanted.y));
 
-            if (resolver.MoveToward(draggedBlock, target) == MoveResult.Exited)
+            if (resolver.MoveToward(draggedBlock, target) == MoveResult.Exited
+                || resolver.TryExitToward(draggedBlock, wanted, settings.ExitThreshold))
             {
+                selection.Hide();
                 draggedBlock = null;
                 return;
             }
@@ -92,6 +101,7 @@ namespace Game.Runtime
         {
             session.CommitMove();
             sfx.Play(SoundEffect.Drop);
+            selection.Hide();
             blocks.ViewOf(draggedBlock).SnapTo(BoardLayout.ToBoard(PositionOf(draggedBlock), 0f), settings.SnapDuration);
             draggedBlock = null;
         }

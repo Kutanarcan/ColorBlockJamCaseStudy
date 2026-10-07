@@ -114,28 +114,34 @@ namespace Game.LevelEditor
         }
 
         /// <summary>
-        /// Mouse down, drag, up → one stroke. The grid takes the hot control on mouse down, so the drag and the
-        /// mouse up still reach it outside the grid.
+        /// Mouse down, drag, up → one stroke. Events are read as they are and the open stroke decides, not
+        /// <c>GetTypeForControl</c>: while another control is still hot (a panel clicked just before), it reports every
+        /// mouse event as Ignore, so the first click and the closing mouse up were lost, and an unclosed stroke left
+        /// the rules unrefreshed. The grid still takes the hot control, so the drag and the mouse up reach it outside
+        /// the grid, and drops keyboard focus, so a field being edited lets go.
         /// </summary>
         private bool HandleMouse(LevelModel model, Rect area)
         {
             int control = GUIUtility.GetControlID(ControlHint, FocusType.Passive);
             Event e = Event.current;
 
-            switch (e.GetTypeForControl(control))
+            switch (e.type)
             {
                 case EventType.MouseDown when e.button == 0 && EditorGUI.actionKey && area.Contains(e.mousePosition):
                     session.SelectAt(CellAt(model, area, e.mousePosition));
                     break;
                 case EventType.MouseDown when e.button <= 1 && area.Contains(e.mousePosition):
                     GUIUtility.hotControl = control;
+                    GUIUtility.keyboardControl = 0;
                     session.BeginStroke(CellAt(model, area, e.mousePosition), e.button == 1 ? EditorTool.Erase : EditorTool.Paint);
                     break;
-                case EventType.MouseDrag when GUIUtility.hotControl == control:
+                case EventType.MouseDrag when session.IsStroking:
                     session.ContinueStroke(CellAt(model, area, e.mousePosition));
                     break;
-                case EventType.MouseUp when GUIUtility.hotControl == control:
-                    GUIUtility.hotControl = 0;
+                case EventType.MouseUp when session.IsStroking:
+                    if (GUIUtility.hotControl == control)
+                        GUIUtility.hotControl = 0;
+
                     session.EndStroke();
                     break;
                 default:

@@ -16,6 +16,25 @@ namespace Game.Tests.LevelEditor
         }
 
         [Test]
+        public void ClosingAStroke_RefreshesTheRules_AnOpenStrokeDoesNot()
+        {
+            LevelEditorSession session = TestSessions.Playable(new DoorWidthRule());
+            Assert.That(session.Document.Violations, Is.Empty);
+
+            session.BeginStroke(new Cell(2, 0), EditorTool.Erase);
+            Assert.That(session.IsStroking);
+            Assert.That(session.Document.Violations, Is.Empty, "the rules wait for the mouse up");
+
+            session.EndStroke();
+            Assert.That(session.IsStroking, Is.False);
+            Assert.That(session.Document.Violations.Count, Is.EqualTo(1), "the block lost its door");
+
+            session.BeginStroke(new Cell(2, 1), EditorTool.Erase);
+            session.EndStroke();
+            Assert.That(session.Document.Violations, Is.Empty, "with the block gone, nothing breaks the rule");
+        }
+
+        [Test]
         public void ChoosingABrush_CreatesNoEntity_UntilACellIsPainted()
         {
             LevelEditorSession session = TestSessions.New();

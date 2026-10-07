@@ -96,12 +96,41 @@ namespace Game.Runtime
         }
 
         /// <summary>
-        /// Core decides (<see cref="LevelSession.PreviewMove"/>): the visual leans only where the next move would go.
-        /// The one presentation exception is the cell the last move left, while it is still free.
+        /// Exits early (D111): when the pointer pulls the block at least <paramref name="threshold"/> of a cell toward a
+        /// side where Core says the next move exits, the exit happens now, not at the half-cell where the pointer would
+        /// round onto the door. The larger axis is tried first, as for moves.
+        /// </summary>
+        public bool TryExitToward(Block block, Vector2 pointer, float threshold)
+        {
+            float x = pointer.x - block.Position.X;
+            float y = pointer.y - block.Position.Y;
+            bool xFirst = Math.Abs(x) >= Math.Abs(y);
+
+            return TryExitAlong(block, xFirst ? x : y, xFirst, threshold)
+                   || TryExitAlong(block, xFirst ? y : x, !xFirst, threshold);
+        }
+
+        private bool TryExitAlong(Block block, float pull, bool alongX, float threshold)
+        {
+            if (pull == 0f || Math.Abs(pull) < threshold)
+                return false;
+
+            Direction direction = ToDirection(alongX, Math.Sign(pull));
+
+            return session.PreviewMove(block, direction) == MoveResult.Exited
+                   && session.TryMove(block, direction) == MoveResult.Exited;
+        }
+
+        /// <summary>
+        /// Core decides (<see cref="LevelSession.PreviewMove"/>): the visual leans only where the next move would go,
+        /// into a free cell or out through a door. The one presentation exception is the cell the last move left,
+        /// while it is still free.
         /// </summary>
         private bool CanOffsetToward(Block block, bool alongX, int sign)
         {
-            if (session.PreviewMove(block, ToDirection(alongX, sign)) == MoveResult.Moved)
+            MoveResult next = session.PreviewMove(block, ToDirection(alongX, sign));
+
+            if (next == MoveResult.Moved || next == MoveResult.Exited)
                 return true;
 
             Cell offset = Offset(alongX, sign);

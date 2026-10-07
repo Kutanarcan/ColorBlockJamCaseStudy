@@ -117,6 +117,46 @@ namespace Game.Tests.Runtime
             AssertNear(resolver.ClampToReachable(block, new Vector2(1.7f, 1f)), new Vector2(1.7f, 1f), "on in its own direction");
         }
 
+        [Test]
+        public void DragResolver_ExitsEarly_WhenPulledPastTheThreshold_TowardItsDoor()
+        {
+            (LevelSession session, Block block, _) = Start(new Cell(1, 1),
+                "#####",
+                "0...#",
+                "#####");
+            var resolver = new DragResolver(session);
+
+            Assert.That(resolver.TryExitToward(block, new Vector2(0.8f, 1f), 0.3f), Is.False, "0.2 of a cell: not yet");
+            Assert.That(block.IsExited, Is.False);
+
+            Assert.That(resolver.TryExitToward(block, new Vector2(0.6f, 1f), 0.3f), Is.True, "0.4 of a cell: out");
+            Assert.That(block.IsExited);
+        }
+
+        [Test]
+        public void DragResolver_DoesNotExit_TowardAWall()
+        {
+            (LevelSession session, Block block, _) = Start(new Cell(1, 1),
+                "#####",
+                "0...#",
+                "#####");
+
+            Assert.That(new DragResolver(session).TryExitToward(block, new Vector2(1f, 0.4f), 0.3f), Is.False);
+            Assert.That(block.IsExited, Is.False);
+        }
+
+        [Test]
+        public void ClampToReachable_LeansIntoAnOpenDoor()
+        {
+            (LevelSession session, Block block, _) = Start(new Cell(1, 1),
+                "#####",
+                "0...#",
+                "#####");
+
+            AssertNear(new DragResolver(session).ClampToReachable(block, new Vector2(0.8f, 1f)), new Vector2(0.8f, 1f),
+                "Core says the next move exits, so the block may lean into the door");
+        }
+
         private static void AssertNear(Vector2 actual, Vector2 expected, string message) =>
             Assert.That(Vector2.Distance(actual, expected), Is.LessThan(1e-4f), $"{message}: {actual}");
     }

@@ -41,7 +41,7 @@ namespace Game.Tests.Runtime
             var blocks = new FakeBlocksView();
             resolver = new DragResolver(session);
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, resolver,
-                new DragSettings(0f, 0f), new FakeSfxPlayer());
+                new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
         }
 

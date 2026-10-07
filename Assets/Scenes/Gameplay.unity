@@ -407,6 +407,7 @@ MonoBehaviour:
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
+    exitThreshold: 0.3
   exitSettings:
     snapDuration: 0.08
     slideSpeed: 10

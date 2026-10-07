@@ -42,7 +42,7 @@ namespace Game.Tests.Runtime
             var director = new GameplayDirector(exitSteps, inputLock, exits, flow, 0f);
             session.Observer = director;
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, new DragResolver(session),
-                new DragSettings(0f, 0f), new FakeSfxPlayer());
+                new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
         }
 

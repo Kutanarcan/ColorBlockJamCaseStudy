@@ -17,7 +17,7 @@ namespace Game.Runtime
     {
         [SerializeField] private PresentationAssets assets;
         [SerializeField] private CameraRig cameraRig;
-        [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f);
+        [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f, 0.3f);
         [SerializeField] private ExitSettings exitSettings = new ExitSettings(0.08f, 10f, 0.5f);
         [Tooltip("Seconds between the last exit finishing and the win popup (D89). Moves to GameConfig in I4.")]
         [SerializeField, Min(0f)] private float winPopupDelay = 0.5f;
@@ -28,6 +28,7 @@ namespace Game.Runtime
         private readonly Sequencer flow = new Sequencer();
         private PaletteMaterials materials;
         private BoardView board;
+        private SelectionOutline outline;
         private GameplayLoop loop;
 
         private void Start() => InstallAsync(destroyCancellationToken).Forget();
@@ -36,6 +37,7 @@ namespace Game.Runtime
         {
             flow.Dispose();
             exits.Dispose();
+            outline?.Dispose();
             board?.Dispose();
             materials?.Dispose();
         }
@@ -107,12 +109,13 @@ namespace Game.Runtime
                 new GameObject("ExitParticles").transform, Environment.TickCount);
             var exitSteps = new ExitSteps(blocks, burst, sfx, exitSettings);
 
+            outline = new SelectionOutline(cameraRig.SceneCamera, assets.SelectionOutline, blocks);
             var inputLock = new InputLock();
             var director = new GameplayDirector(exitSteps, inputLock, exits, flow, winPopupDelay);
             session.Observer = director;
 
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
-                new DragResolver(session), dragSettings, sfx);
+                new DragResolver(session), dragSettings, sfx, outline);
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
             gameObject.AddComponent<FrameTicker>().Initialize(loop);
         }

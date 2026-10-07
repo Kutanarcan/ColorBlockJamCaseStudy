@@ -20,6 +20,9 @@ namespace Game.LevelEditor
         public Brush Brush { get; private set; } = new Brush(EntityKind.Block, 0, Direction.Down);
         public int Selected { get; private set; } = LevelModel.None;
 
+        /// <summary>A stroke is open: mouse down happened, mouse up not yet.</summary>
+        public bool IsStroking => stroke.IsActive;
+
         public LevelEditorSession(ModifierCatalog catalog, LevelRules rules)
         {
             Document = new LevelDocument(catalog, rules);
