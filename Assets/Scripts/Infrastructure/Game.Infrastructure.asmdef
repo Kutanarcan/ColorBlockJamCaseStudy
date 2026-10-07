@@ -1,14 +1,12 @@
 {
-    "name": "Game.Runtime",
-    "rootNamespace": "Game.Runtime",
+    "name": "Game.Infrastructure",
+    "rootNamespace": "Game.Infrastructure",
     "references": [
-        "Game.Core",
-        "Game.LevelIO",
-        "Game.Infrastructure",
         "UniTask",
-        "UniTask.DOTween",
-        "Unity.TextMeshPro",
-        "VContainer"
+        "UniTask.Addressables",
+        "VContainer",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
