@@ -4,10 +4,12 @@ namespace Game.Runtime
 {
     /// <summary>
     /// Dumb view of one exit particle emitter (FINDINGS). One instance per palette color, made once and reused, so an
-    /// exit never instantiates anything: the color comes from the shared block material, not a property block.
+    /// exit never instantiates anything. It draws with the shared block material; its color is set once (D108).
     /// </summary>
     public sealed class ExitParticles : MonoBehaviour
     {
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+
         [SerializeField] private ParticleSystem system;
         [SerializeField] private ParticleSystemRenderer particleRenderer;
         [SerializeField] private BurstTuning tuning;
@@ -15,9 +17,12 @@ namespace Game.Runtime
         public BurstTuning Tuning => tuning;
 
         /// <summary>World-space, no emission of its own: particles appear only through <see cref="Emit"/>.</summary>
-        public void Prepare(Material material, int maxParticles)
+        public void Prepare(Material material, Color color, int maxParticles)
         {
             particleRenderer.sharedMaterial = material;
+            var colorBlock = new MaterialPropertyBlock();
+            colorBlock.SetColor(ColorId, color);
+            particleRenderer.SetPropertyBlock(colorBlock);
             system.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             ParticleSystem.MainModule main = system.main;

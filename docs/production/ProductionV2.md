@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-8/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-9/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -258,6 +258,19 @@ Only after Delivery is secured (D80).
 - **Draw calls:** one shared material per palette color; GPU instancing on block and ground materials where the shader allows; the exit clip uses a cached property block only while a block exits (FINDINGS cost).
 - **Evidence, not claims:** Frame Debugger batch count and a Profiler GC Alloc capture during a drag, before and after P8, recorded as a table in P8. A mid-range Android check in I6 / Delivery.
 
+### Measurements (P8)
+Editor (Mono), Game view 1080×1920, `Level.json`, Deep Profile off. GC Alloc is read under `FrameTicker.Update` only. Logic hot paths are also guarded by `HotPathAllocationTests` (zero allocation).
+
+| Scenario | Before P8.2 | Instancing (same mesh + material) | + one block material, per-instance color (D108) |
+|---|---|---|---|
+| Batches, full board | 181 (Frame Debugger draw calls 183) | 32 (draw calls 34) | 14 (draw calls 15) |
+| SetPass calls, full board | 14 | 14 | 13 |
+| Batches / SetPass, no blocks left | 135 / 8 | — | 9 / 8 |
+| Saved by batching | 0 | 14 | 165 (126 with no blocks left) |
+| GC Alloc, idle / drag / release | 0 | 0 | — |
+| GC Alloc, first exit | 10.1 KB: Mono JIT 4.3 KB (Editor only, IL2CPP is AOT), DOTween's lazy init 2.7 KB, static constructors 0.8 KB, exit objects 2.3 KB | 6.8 KB (Deep Profile): DOTween setup JIT, first tween objects (DOTween init moved to loading) | — |
+| GC Alloc, later exits | 0 (reported) | — | — |
+
 ---
 
 ## 📦 9. Assemblies & Tests
@@ -305,7 +318,7 @@ One phase per answer, following the production process. **Files touched** are de
 | P5 | Director & Sequencer | P5.1 step contract + sequencer (order, parallel, cancel) · P5.2 director: exit steps non-blocking · P5.3 input lock · P5.4 win / fail sequences (popup placeholder step) | `Sequencer_PlaysInOrder_GroupsInParallel_AndCancels` | ✅ |
 | P6 | Exit Visual & Feedback | P6.1 production block shader with clip plane · P6.2 exit step (snap, slide, cut) · P6.3 pooled row particles · P6.4 SFX service | `ExitStep_CompletesAndDisablesTheBlock` (step with a fake view) + exit seen in the Editor | ✅ |
 | P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ✅ |
-| P8 | Polish & Performance | P8.1 feel pass (tuning from FINDINGS) · P8.2 draw call pass (shared materials, instancing) · P8.3 GC Alloc pass on drag / tick · P8.4 measurement table | Measurement table recorded (batches, GC Alloc per frame) | ⏳ |
+| P8 | Polish & Performance | P8.1 feel pass (tuning from FINDINGS) · P8.2 draw call pass (shared materials, instancing) · P8.3 GC Alloc pass on drag / tick · P8.4 measurement table | Measurement table recorded (batches, GC Alloc per frame) | ✅ |
 | P9 | Five Levels & Editor Play | P9.1 Play button (save → open Gameplay with the key) · P9.2 build levels 1–5 in the editor · P9.3 palette rule in the editor | `PlayRequest_StoresTheLevelKey_ForTheGame` + five levels played | ⏳ |
 
 ### 🏛️ Stage B: Infrastructure
@@ -400,7 +413,7 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D71 | Restart | Session restarts from `LevelData`; views go back to pools and are rebuilt; the sequence is cancelled |
 | D72 | Config | `GameConfig` Addressable: level keys in order, coin reward, presentation delays. Tunable values are data, not literals |
 | D73 | Camera | Prototype camera kept; a fit function places the board inside the safe area with HUD margins, 16:9 to 20:9 |
-| D74 | Materials | One shared material per palette color; colors come from the palette asset, never `new Material` per block |
+| D74 | Materials | One shared material per palette color; colors come from the palette asset, never `new Material` per block — for blocks superseded by D108 |
 | D75 | Editor Play | Level Editor Play saves, stores the key in `SessionState` and enters play mode; from I5 always through the bootstrapper |
 | D76 | UI | uGUI, `CanvasScaler` 1080×1920, `SafeArea` on every screen root, one shared button feedback |
 | D77 | Meta | Progression, wallet and settings are pure C# in `Game.Meta`; storage behind `ISaveStorage`, JSON in `persistentDataPath` |
@@ -434,3 +447,4 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D105 | Arrow = axis lock | Arrow locks a block to an axis, `Horizontal` or `Vertical`, both ways (prototype behaviour); supersedes V1 D18 (one direction). Core gains `Axis` and `Direction.ToAxis()`; `Arrow.Allows` converts the move's direction to its axis. Saved as `"axis"`, a new field kind; `schemaVersion` 1 → 2, the levels re-saved by hand, no migration (LevelFormat §2 version history). The kit's `Arrow_N` is double-headed: laid along Z for Vertical, X for Horizontal. The drag keeps its previous-cell rule (`DragResolver.ClampToReachable` may offset back toward the cell the last move left) for future one-way mechanics |
 | D106 | Drag naming | Names say what the code does, not a hand metaphor; input uses Unity Input System words. `IPointerInput` (`WasPressedThisFrame`, `IsPressed`, `PointerRay`), `MousePointerInput`, `BoardRaycast` (`TryGetCellPoint`, `ToCell`), `DragResolver` (`MoveToward`, `ClampToReachable`, `BeginDrag`), `DragController` (`TrySelectBlock`, `UpdateDrag`, `EndDrag`), `DragSettings` (`LiftHeight`, `SnapDuration`), `BlockView.SetPosition` / `SnapTo` |
 | D107 | Move preview | Core decides every move, also the ones presentation only previews. `BlockMover.Preview` holds the move rule and `TryMove` applies its answer; `LevelSession.PreviewMove` exposes it without changing the board or telling the observer. `DragResolver.ClampToReachable` leans only where the preview says `Moved`; Runtime no longer combines `Capabilities` and `Board.CanPlace` itself. Board occupancy is still read for two view-only cases: the diagonal lean and the cell the last move left |
+| D108 | Instanced drawing (P8.2) | Every block shares one instanced `Game/Block` material; its color is a per-instance property (`UNITY_DEFINE_INSTANCED_PROP _Color`) set through one reused `MaterialPropertyBlock`, so pieces of one mesh draw together whatever their color. Exit particles use the same material with their color set once. Doors keep one material per color. Walls and door arrows draw with instanced copies of the kit's FBX-embedded materials; `Ground`, `Arrow` and `Ice` materials and the `IceBlock` shader are instanced. Static batching was not used: runtime combining needs Read/Write meshes and instancing already covers the repeats. Known cost: an exiting block's clip plane is not per instance, so that block draws alone until it is gone. Supersedes D74 for blocks |

@@ -1,5 +1,4 @@
 using Game.Core;
-using UnityEngine;
 
 namespace Game.Runtime
 {
@@ -13,7 +12,6 @@ namespace Game.Runtime
         private readonly ExitBurst burst;
         private readonly ISfxPlayer sfx;
         private readonly ExitSettings settings;
-        private readonly MaterialPropertyBlock clipBuffer = new MaterialPropertyBlock();
 
         public ExitSteps(IBlocksView blocks, ExitBurst burst, ISfxPlayer sfx, ExitSettings settings)
         {
@@ -26,7 +24,7 @@ namespace Game.Runtime
         public IStep For(Block block, Direction direction)
         {
             var path = new ExitPath(block, direction, settings.ClipOffset);
-            var view = new BlockExitView(blocks.ViewOf(block), burst, path, Colors.Of(block), clipBuffer);
+            var view = new BlockExitView(blocks.ViewOf(block), burst, path, Colors.Of(block));
 
             return new ExitStep(view, path, settings, sfx);
         }

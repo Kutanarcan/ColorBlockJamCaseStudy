@@ -10,6 +10,9 @@ namespace Game.Runtime
     {
         [SerializeField] private Transform door;
         [SerializeField] private MeshRenderer doorRenderer;
+        [SerializeField] private MeshRenderer arrowRenderer;
+
+        public Renderer ArrowRenderer => arrowRenderer;
 
         public void SetLength(int cells)
         {
@@ -18,5 +21,7 @@ namespace Game.Runtime
         }
 
         public void SetMaterial(Material material) => doorRenderer.sharedMaterial = material;
+
+        public void SetArrowMaterial(Material material) => arrowRenderer.sharedMaterial = material;
     }
 }

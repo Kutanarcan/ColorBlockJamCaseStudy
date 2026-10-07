@@ -18,6 +18,7 @@ namespace Game.Runtime
         private readonly ModifierPresenters presenters;
         private readonly HashSet<Cell> cellBuffer = new HashSet<Cell>();
         private readonly List<BlockPart> partBuffer = new List<BlockPart>();
+        private readonly MaterialPropertyBlock propertyBuffer = new MaterialPropertyBlock();
         private BlockView[] views;
 
         public BlocksView(Transform root, PresentationAssets assets, PaletteMaterials materials, PiecePool parts,
@@ -61,7 +62,8 @@ namespace Game.Runtime
             blockRoot.SetParent(root, false);
 
             Vector3 home = BoardLayout.ToBoard(new Vector2(block.Position.X, block.Position.Y), 0f);
-            var view = new BlockView(blockRoot, materials.Block(Colors.Of(block)), home);
+            var view = new BlockView(blockRoot, materials.Block, materials.BlockColor(Colors.Of(block)), propertyBuffer,
+                home);
             AddParts(view, block);
             AddModifiers(view, block);
 

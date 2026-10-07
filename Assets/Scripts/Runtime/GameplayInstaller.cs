@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Game.Core;
 using Game.LevelIO;
 using UnityEngine;
@@ -26,6 +27,7 @@ namespace Game.Runtime
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PaletteMaterials materials;
+        private BoardView board;
         private GameplayLoop loop;
 
         private void Start() => InstallAsync(destroyCancellationToken).Forget();
@@ -34,6 +36,7 @@ namespace Game.Runtime
         {
             flow.Dispose();
             exits.Dispose();
+            board?.Dispose();
             materials?.Dispose();
         }
 
@@ -58,6 +61,9 @@ namespace Game.Runtime
                 return;
             }
 
+            // DOTween sets itself up on its first tween (a component and its settings asset); do it while loading,
+            // not on the first exit.
+            DOTween.Init();
             materials = new PaletteMaterials(assets.Palette, assets.BlockTemplate, assets.DoorTemplate);
             BuildBoard(level.Value);
             BlocksView blocks = BuildBlocks(session.Value);
@@ -67,7 +73,7 @@ namespace Game.Runtime
         private void BuildBoard(LevelData level)
         {
             var layout = new BoardLayout(level);
-            var board = new BoardView(new GameObject("Board").transform, assets, materials);
+            board = new BoardView(new GameObject("Board").transform, assets, materials);
             board.Build(new BoardDressing(layout));
             cameraRig.Fit(layout.Extent(assets.WallMesh.bounds.max.y));
         }

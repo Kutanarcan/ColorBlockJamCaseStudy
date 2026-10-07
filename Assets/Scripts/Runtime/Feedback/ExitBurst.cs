@@ -23,7 +23,7 @@ namespace Game.Runtime
             for (int i = 0; i < colorCount; i++)
             {
                 emitters[i] = Object.Instantiate(prefab, root);
-                emitters[i].Prepare(materials.Block(i), MaxParticlesPerColor);
+                emitters[i].Prepare(materials.Block, materials.BlockColor(i), MaxParticlesPerColor);
             }
         }
 

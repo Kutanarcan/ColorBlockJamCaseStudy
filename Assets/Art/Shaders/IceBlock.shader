@@ -36,6 +36,8 @@ Shader "Game/IceBlock"
         CGPROGRAM
         #pragma surface surf Standard fullforwardshadows
         #pragma target 3.0
+        // Every frozen piece shares this material: draw them instanced.
+        #pragma multi_compile_instancing
 
         sampler2D _IceTex;
         fixed4 _DeepColor, _SurfaceColor, _CrackColor, _RimColor;

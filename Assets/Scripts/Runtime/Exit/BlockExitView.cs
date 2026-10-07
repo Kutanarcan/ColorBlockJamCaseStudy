@@ -12,19 +12,16 @@ namespace Game.Runtime
         private readonly ExitBurst burst;
         private readonly ExitPath path;
         private readonly int colorId;
-        private readonly MaterialPropertyBlock clipBuffer;
 
-        public BlockExitView(BlockView view, ExitBurst burst, ExitPath path, int colorId,
-            MaterialPropertyBlock clipBuffer)
+        public BlockExitView(BlockView view, ExitBurst burst, ExitPath path, int colorId)
         {
             this.view = view;
             this.burst = burst;
             this.path = path;
             this.colorId = colorId;
-            this.clipBuffer = clipBuffer;
         }
 
-        public void SetClipPlane(Vector4 plane) => view.SetClipPlane(plane, clipBuffer);
+        public void SetClipPlane(Vector4 plane) => view.SetClipPlane(plane);
 
         public UniTask MoveTo(Vector3 boardPosition, float duration, Ease ease, CancellationToken cancellation) =>
             view.MoveTo(boardPosition, duration, ease, cancellation);

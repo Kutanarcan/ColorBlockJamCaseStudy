@@ -246,3 +246,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   door: {fileID: 8293003588538945339}
   doorRenderer: {fileID: 6978744604026371721}
+  arrowRenderer: {fileID: 2965104195109082865}

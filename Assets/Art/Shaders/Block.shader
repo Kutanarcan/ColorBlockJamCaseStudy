@@ -23,13 +23,19 @@ Shader "Game/Block"
         // addshadow: the shadow caster runs surf too, so the clipped part casts no shadow.
         #pragma surface surf Standard fullforwardshadows addshadow
         #pragma target 3.0
+        // Every block shares one material; the color is per instance (D108), so pieces of one mesh draw together
+        // whatever their color. An exiting block's clip plane is not per instance: it takes only that block out.
+        #pragma multi_compile_instancing
 
         sampler2D _MainTex;
         half _Glossiness;
         half _Metallic;
-        fixed4 _Color;
         float4 _ClipPlane;
         half _CapShade;
+
+        UNITY_INSTANCING_BUFFER_START(Props)
+            UNITY_DEFINE_INSTANCED_PROP(fixed4, _Color)
+        UNITY_INSTANCING_BUFFER_END(Props)
 
         struct Input
         {
@@ -42,7 +48,7 @@ Shader "Game/Block"
         {
             clip(_ClipPlane.w - dot(IN.worldPos, _ClipPlane.xyz));
 
-            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * UNITY_ACCESS_INSTANCED_PROP(Props, _Color);
 
             // Back face = the inside seen through the cut: flat and unlit (its normal points the wrong way).
             if (IN.facing < 0)

@@ -10,31 +10,40 @@ namespace Game.Runtime
     /// One block on screen: its root (moved as one), its pooled parts and the views attached to it. The root sits at
     /// the board origin and parts at the block's cells, so a move is only a root offset from <c>home</c>, the board
     /// position the parts were built at (AlgorithmExplanation § Coordinates). Knows nothing of the logic (D104).
+    /// Parts share one block material; this block's color reaches them per instance through a property block (D108).
+    /// The property block is one shared, reused buffer: each renderer copies its values when it is set.
     /// </summary>
     public sealed class BlockView
     {
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
         private static readonly int ClipPlaneId = Shader.PropertyToID("_ClipPlane");
 
         private readonly List<PieceView> parts = new List<PieceView>();
-        private readonly List<Renderer> renderers = new List<Renderer>();
+        private readonly List<Renderer> attachedRenderers = new List<Renderer>();
         private readonly List<GameObject> attached = new List<GameObject>();
-        private readonly Material color;
+        private readonly Material material;
+        private readonly Color color;
+        private readonly MaterialPropertyBlock buffer;
         private readonly Vector3 home;
 
         public Transform Root { get; }
 
-        public BlockView(Transform root, Material color, Vector3 home)
+        public BlockView(Transform root, Material material, Color color, MaterialPropertyBlock buffer, Vector3 home)
         {
             Root = root;
+            this.material = material;
             this.color = color;
+            this.buffer = buffer;
             this.home = home;
         }
 
         public void AddPart(PieceView part)
         {
-            part.SetMaterial(color);
+            part.SetMaterial(material);
+            buffer.Clear();
+            buffer.SetColor(ColorId, color);
+            part.Renderer.SetPropertyBlock(buffer);
             parts.Add(part);
-            renderers.Add(part.Renderer);
         }
 
         /// <summary>A modifier's view, placed under the root so it moves (and is cut) with the block.</summary>
@@ -42,29 +51,42 @@ namespace Game.Runtime
         {
             T view = Object.Instantiate(prefab, Root);
             attached.Add(view.gameObject);
-            renderers.AddRange(view.GetComponentsInChildren<Renderer>(true));
+            attachedRenderers.AddRange(view.GetComponentsInChildren<Renderer>(true));
 
             return view;
         }
 
-        /// <summary>Draws every part with another material (Ice) instead of the block's palette color.</summary>
-        public void SetSurface(Material material)
+        /// <summary>
+        /// Draws every part with another material (Ice) instead of the block's color; the color block goes, so the
+        /// parts batch with every other part of that material.
+        /// </summary>
+        public void SetSurface(Material surface)
         {
             for (int i = 0; i < parts.Count; i++)
-                parts[i].SetMaterial(material);
+            {
+                parts[i].SetMaterial(surface);
+                parts[i].Renderer.SetPropertyBlock(null);
+            }
         }
 
         /// <summary>
-        /// Cuts the block at a world plane (Game/Block shader). <paramref name="buffer"/> is a shared, reused block:
-        /// each renderer copies its values, so materials stay shared.
+        /// Cuts the block and what is attached to it at a world plane (Game/Block shader). The parts keep their color;
+        /// attached views (the arrow) keep their own material's.
         /// </summary>
-        public void SetClipPlane(Vector4 plane, MaterialPropertyBlock buffer)
+        public void SetClipPlane(Vector4 plane)
         {
+            buffer.Clear();
+            buffer.SetColor(ColorId, color);
+            buffer.SetVector(ClipPlaneId, plane);
+
+            for (int i = 0; i < parts.Count; i++)
+                parts[i].Renderer.SetPropertyBlock(buffer);
+
             buffer.Clear();
             buffer.SetVector(ClipPlaneId, plane);
 
-            for (int i = 0; i < renderers.Count; i++)
-                renderers[i].SetPropertyBlock(buffer);
+            for (int i = 0; i < attachedRenderers.Count; i++)
+                attachedRenderers[i].SetPropertyBlock(buffer);
         }
 
         /// <summary>Puts the block at a board position at once, stopping a snap still running.</summary>
