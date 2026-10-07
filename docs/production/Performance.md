@@ -43,7 +43,7 @@
 | Draw calls (Frame Debugger) | 183 | 34 | **15** |
 | Batches (Stats) | 181 | 32 | **14** |
 | SetPass calls | 14 | 14 | **13** |
-| Saved by batching | 0 | 14 | **165** |
+| Saved by batching | 0 | 149 | **165** |
 | No blocks left: batches / SetPass | 135 / 8 | — | **9 / 8** |
 
 **What was done**
