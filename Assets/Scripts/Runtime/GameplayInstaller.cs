@@ -26,6 +26,7 @@ namespace Game.Runtime
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PaletteMaterials materials;
+        private GameplayLoop loop;
 
         private void Start() => InstallAsync(destroyCancellationToken).Forget();
 
@@ -89,12 +90,24 @@ namespace Game.Runtime
             var exitSteps = new ExitSteps(blocks, burst, sfx, exitSettings);
 
             var inputLock = new InputLock();
-            session.Observer = new GameplayDirector(exitSteps, inputLock, exits, flow, winPopupDelay);
+            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, winPopupDelay);
+            session.Observer = director;
 
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
                 new DragResolver(session), dragSettings, sfx);
-            gameObject.AddComponent<FrameTicker>().Initialize(drag);
+            loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            gameObject.AddComponent<FrameTicker>().Initialize(loop);
         }
+
+        // Development hooks until the HUD's restart and pause buttons exist (U1, U2): right-click the component.
+        [ContextMenu("Restart")]
+        private void Restart() => loop?.Restart();
+
+        [ContextMenu("Pause")]
+        private void Pause() => loop?.Pause();
+
+        [ContextMenu("Resume")]
+        private void Resume() => loop?.Resume();
 
         private static Transform NewInactiveRoot(string name)
         {

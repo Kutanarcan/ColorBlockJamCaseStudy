@@ -12,7 +12,7 @@ namespace Game.Runtime
     public sealed class DragController : ITickable
     {
         private readonly LevelSession session;
-        private readonly BlocksView blocks;
+        private readonly IBlocksView blocks;
         private readonly IPointerInput pointer;
         private readonly InputLock inputLock;
         private readonly DragResolver resolver;
@@ -23,7 +23,7 @@ namespace Game.Runtime
         private Vector2 dragStartPointer;
         private Vector2 dragStartPosition;
 
-        public DragController(LevelSession session, BlocksView blocks, IPointerInput pointer, InputLock inputLock,
+        public DragController(LevelSession session, IBlocksView blocks, IPointerInput pointer, InputLock inputLock,
             DragResolver resolver, DragSettings settings, ISfxPlayer sfx)
         {
             this.session = session;
@@ -34,6 +34,9 @@ namespace Game.Runtime
             this.settings = settings;
             this.sfx = sfx;
         }
+
+        /// <summary>Restart: forgets the dragged block without committing; its view is being rebuilt.</summary>
+        public void Cancel() => draggedBlock = null;
 
         public void Tick(float deltaTime)
         {

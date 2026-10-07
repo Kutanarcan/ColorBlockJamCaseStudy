@@ -27,6 +27,12 @@ namespace Game.Runtime
             }
         }
 
+        public void Clear()
+        {
+            for (int i = 0; i < emitters.Length; i++)
+                emitters[i].Clear();
+        }
+
         public void Emit(ExitPath path, int row, int colorId)
         {
             ExitParticles emitter = emitters[colorId];

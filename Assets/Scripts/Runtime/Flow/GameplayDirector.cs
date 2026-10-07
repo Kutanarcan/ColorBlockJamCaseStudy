@@ -9,13 +9,13 @@ namespace Game.Runtime
     /// </summary>
     public sealed class GameplayDirector : ISessionObserver
     {
-        private readonly ExitSteps exitSteps;
+        private readonly IExitSteps exitSteps;
         private readonly InputLock input;
         private readonly Sequencer exits;
         private readonly Sequencer flow;
         private readonly float winPopupDelay;
 
-        public GameplayDirector(ExitSteps exitSteps, InputLock input, Sequencer exits, Sequencer flow,
+        public GameplayDirector(IExitSteps exitSteps, InputLock input, Sequencer exits, Sequencer flow,
             float winPopupDelay)
         {
             this.exitSteps = exitSteps;
@@ -25,12 +25,13 @@ namespace Game.Runtime
             this.winPopupDelay = winPopupDelay;
         }
 
-        /// <summary>Restart and home: nothing from the last attempt keeps playing (D71).</summary>
+        /// <summary>Restart and home: nothing from the last attempt keeps playing or flying (D71).</summary>
         public void CancelAll()
         {
             // The flow first, so the exits going idle cannot let a waiting popup through.
             flow.CancelAll();
             exits.CancelAll();
+            exitSteps.ClearEffects();
         }
 
         // The drag moves the dragged block's view itself; no mechanic moves entities from a listener yet.
@@ -48,18 +49,18 @@ namespace Game.Runtime
             switch (state)
             {
                 case GameState.Won:
-                    input.Lock();
+                    input.Lock(InputLockReason.Flow);
                     flow.Run(new StepSequence(
                         new WaitForIdleStep(exits),
                         new DelayStep(winPopupDelay),
                         new PopupPlaceholderStep("Win")));
                     break;
                 case GameState.Failed:
-                    input.Lock();
+                    input.Lock(InputLockReason.Flow);
                     flow.Run(new StepSequence(new WaitForIdleStep(exits), new PopupPlaceholderStep("Fail")));
                     break;
                 default:
-                    input.Unlock();
+                    input.Unlock(InputLockReason.Flow);
                     break;
             }
         }

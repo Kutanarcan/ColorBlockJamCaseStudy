@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.Runtime
 {
-    /// <summary>Forwards Unity's frame to the gameplay's tickable; nothing else runs in <c>Update</c>. P7.2 adds pause.</summary>
+    /// <summary>Forwards Unity's frame to the gameplay loop; nothing else runs in <c>Update</c>.</summary>
     public sealed class FrameTicker : MonoBehaviour
     {
         private ITickable tickable;

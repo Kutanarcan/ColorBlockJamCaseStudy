@@ -36,6 +36,9 @@ namespace Game.Runtime
             system.Play();
         }
 
+        /// <summary>Removes every particle still flying; the emitter keeps running for the next burst.</summary>
+        public void Clear() => system.Clear();
+
         public void Emit(Vector3 position, Vector3 velocity, Vector3 rotation, float size, float lifetime)
         {
             var particle = new ParticleSystem.EmitParams

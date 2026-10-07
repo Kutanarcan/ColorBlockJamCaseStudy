@@ -17,6 +17,7 @@ namespace Game.Runtime
 
         private readonly List<PieceView> parts = new List<PieceView>();
         private readonly List<Renderer> renderers = new List<Renderer>();
+        private readonly List<GameObject> attached = new List<GameObject>();
         private readonly Material color;
         private readonly Vector3 home;
 
@@ -39,10 +40,11 @@ namespace Game.Runtime
         /// <summary>A modifier's view, placed under the root so it moves (and is cut) with the block.</summary>
         public T Attach<T>(T prefab) where T : Component
         {
-            T attached = Object.Instantiate(prefab, Root);
-            renderers.AddRange(attached.GetComponentsInChildren<Renderer>(true));
+            T view = Object.Instantiate(prefab, Root);
+            attached.Add(view.gameObject);
+            renderers.AddRange(view.GetComponentsInChildren<Renderer>(true));
 
-            return attached;
+            return view;
         }
 
         /// <summary>Draws every part with another material (Ice) instead of the block's palette color.</summary>
@@ -90,5 +92,25 @@ namespace Game.Runtime
         }
 
         public void Hide() => Root.gameObject.SetActive(false);
+
+        /// <summary>
+        /// Ends this view (restart, D71): stops its motion, returns its parts uncut to the pool and destroys the
+        /// rest. The view is not used afterwards.
+        /// </summary>
+        public void Release(PiecePool pool)
+        {
+            Root.DOKill();
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                parts[i].Renderer.SetPropertyBlock(null);
+                pool.Release(parts[i]);
+            }
+
+            for (int i = 0; i < attached.Count; i++)
+                Object.Destroy(attached[i]);
+
+            Object.Destroy(Root.gameObject);
+        }
     }
 }

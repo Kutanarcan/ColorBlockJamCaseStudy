@@ -1,12 +1,17 @@
 namespace Game.Runtime
 {
-    /// <summary>The director's flag that keeps the player's hands off the board (D69); the drag reads it.</summary>
+    /// <summary>
+    /// Keeps the player's hands off the board (D69, D70); the drag reads it. Locked while any reason holds it:
+    /// the director's flow (win, fail) or the pause.
+    /// </summary>
     public sealed class InputLock
     {
-        public bool IsLocked { get; private set; }
+        private InputLockReason reasons;
 
-        public void Lock() => IsLocked = true;
+        public bool IsLocked => reasons != InputLockReason.None;
 
-        public void Unlock() => IsLocked = false;
+        public void Lock(InputLockReason reason) => reasons |= reason;
+
+        public void Unlock(InputLockReason reason) => reasons &= ~reason;
     }
 }

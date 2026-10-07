@@ -7,9 +7,9 @@ namespace Game.Runtime
     /// <summary>
     /// Builds a <see cref="BlockView"/> for every block on the board: parts from the pool with their mesh swapped
     /// (D99), the block's palette material, and each modifier's look through its presenter (D104).
-    /// Keeps the views by entity id so the drag (and later the director) can reach a block's view.
+    /// Keeps the views by entity id so the drag and the exits can reach a block's view; a restart clears and rebuilds.
     /// </summary>
-    public sealed class BlocksView
+    public sealed class BlocksView : IBlocksView
     {
         private readonly Transform root;
         private readonly PresentationAssets assets;
@@ -38,6 +38,18 @@ namespace Game.Runtime
             {
                 if (board.GetEntity(id) is Block block)
                     views[id] = BuildBlock(block);
+            }
+        }
+
+        public void Clear()
+        {
+            if (views == null)
+                return;
+
+            for (int i = 0; i < views.Length; i++)
+            {
+                views[i]?.Release(parts);
+                views[i] = null;
             }
         }
 
