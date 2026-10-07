@@ -3,7 +3,8 @@
     "rootNamespace": "Game.LevelEditor",
     "references": [
         "Game.Core",
-        "Game.LevelIO"
+        "Game.LevelIO",
+        "Game.Runtime"
     ],
     "includePlatforms": [
         "Editor"

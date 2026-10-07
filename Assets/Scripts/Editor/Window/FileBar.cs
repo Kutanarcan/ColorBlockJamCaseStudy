@@ -9,12 +9,17 @@ namespace Game.LevelEditor
     internal sealed class FileBar
     {
         private readonly LevelEditorSession session;
+        private readonly HistoryButtons history;
         private int newWidth = 9;
         private int newHeight = 11;
         private float newTime = 60f;
         private string message = "";
 
-        public FileBar(LevelEditorSession session) => this.session = session;
+        public FileBar(LevelEditorSession session)
+        {
+            this.session = session;
+            history = new HistoryButtons(session);
+        }
 
         private LevelDocument Document => session.Document;
 
@@ -28,13 +33,14 @@ namespace Game.LevelEditor
                 if (GUILayout.Button(Document.IsDirty ? "Save *" : "Save", EditorStyles.toolbarButton)) Save();
             }
 
+            DrawPlay();
             DrawBarColorAfterLastControl(bar);
 
             GUILayout.Space(8f);
             DrawNewSize();
             DrawNewButton();
             GUILayout.Space(8f);
-            DrawHistory();
+            history.Draw();
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 
@@ -88,7 +94,17 @@ namespace Game.LevelEditor
             return true;
         }
 
-        /// <summary>Colors the bar from the last drawn control (Save) to its end; Open and Save keep the plain toolbar.</summary>
+        /// <summary>Saves (rules first), then plays the level in the game (D75). Off while play mode is on.</summary>
+        private void DrawPlay()
+        {
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
+            {
+                if (GUILayout.Button("▶ Play", EditorStyles.toolbarButton) && Save())
+                    PlayLauncher.Play(Document.Key);
+            }
+        }
+
+        /// <summary>Colors the bar from the last drawn control (Play) to its end; Open, Save and Play keep the plain toolbar.</summary>
         private static void DrawBarColorAfterLastControl(Rect bar)
         {
             if (Event.current.type != EventType.Repaint)
@@ -119,28 +135,6 @@ namespace Game.LevelEditor
             newHeight = Clamp(EditorGUILayout.IntField(newHeight, GUILayout.Width(30f)));
             GUILayout.Label("Time", EditorTheme.ToolbarLabel, GUILayout.Width(32f));
             newTime = Mathf.Max(1f, EditorGUILayout.FloatField(newTime, GUILayout.Width(40f)));
-        }
-
-        /// <summary>Undo / redo drop keyboard focus, so a focused field shows the restored value.</summary>
-        private void DrawHistory()
-        {
-            using (new EditorGUI.DisabledScope(!Document.CanUndo))
-            {
-                if (GUILayout.Button("Undo", EditorStyles.toolbarButton))
-                {
-                    GUI.FocusControl(null);
-                    session.Undo();
-                }
-            }
-
-            using (new EditorGUI.DisabledScope(!Document.CanRedo))
-            {
-                if (GUILayout.Button("Redo", EditorStyles.toolbarButton))
-                {
-                    GUI.FocusControl(null);
-                    session.Redo();
-                }
-            }
         }
 
         private void DrawOpen()

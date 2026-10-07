@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Game.Runtime;
 using UnityEditor;
 
 namespace Game.LevelEditor
@@ -7,7 +8,7 @@ namespace Game.LevelEditor
     /// <summary>Level files on disk: Assets/Levels/&lt;key&gt;.json. The key is the file name and the address.</summary>
     internal static class LevelFiles
     {
-        public const string Folder = "Assets/Levels";
+        public const string Folder = EditorFileLevelSource.Folder;
 
         public static string PathOf(string key) => $"{Folder}/{key}.json";
 

@@ -407,10 +407,14 @@ MonoBehaviour:
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
+  exitSettings:
+    snapDuration: 0.08
+    slideSpeed: 10
+    clipOffset: 0.5
+  winPopupDelay: 0.5
   levels:
-  - {fileID: 4900000, guid: 002a2a54a15f41147a3ada2b2e45a8a2, type: 3}
-  - {fileID: 4900000, guid: dbb17d5d1026eb84bb75ceb1ac974050, type: 3}
-  levelKey: Level
+  - {fileID: 4900000, guid: 46eb3fbc1a6ed2c48b06fd9cfb5cd40a, type: 3}
+  levelKey: Level_5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

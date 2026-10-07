@@ -24,6 +24,23 @@ namespace Game.Tests.LevelEditor
         }
 
         [Test]
+        public void PaletteColor_PastThePalette_Violates_OnTheEntitysCell()
+        {
+            LevelModel model = AsciiModel.Parse(
+                    "#####",
+                    "#A..#",
+                    "##1##")
+                .Block('A', 3)
+                .Door('1', 2, Direction.Down)
+                .Build();
+
+            var violations = RuleCheck.Run(new PaletteColorRule(3), model);
+
+            Assert.That(violations.Count, Is.EqualTo(1), "the block's 3 is past a 3-color palette; the door's 2 is in");
+            Assert.That(violations[0].CellIndex, Is.EqualTo(model.IndexOf(new Cell(1, 1))));
+        }
+
+        [Test]
         public void InvalidModifierValue_IsReported_ThroughCoreValidation()
         {
             LevelModel model = AsciiModel.Parse(

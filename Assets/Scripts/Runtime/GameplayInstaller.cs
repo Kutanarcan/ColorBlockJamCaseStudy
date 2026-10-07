@@ -42,14 +42,14 @@ namespace Game.Runtime
 
         private async UniTaskVoid InstallAsync(CancellationToken cancellation)
         {
-            var source = new TextAssetLevelSource(levels, new LevelJson(ModifierCatalog.Default()));
-            Result<LevelData> level = await source.LoadAsync(levelKey)
+            ILevelSource source = ChooseLevel(new LevelJson(ModifierCatalog.Default()), out string key);
+            Result<LevelData> level = await source.LoadAsync(key)
                 .AsUniTask()
                 .AttachExternalCancellation(cancellation);
 
             if (level.IsFailure)
             {
-                Debug.LogError($"Level '{levelKey}' could not be loaded: {level.Error}", this);
+                Debug.LogError($"Level '{key}' could not be loaded: {level.Error}", this);
                 return;
             }
 
@@ -57,7 +57,7 @@ namespace Game.Runtime
 
             if (session.IsFailure)
             {
-                Debug.LogError($"Level '{levelKey}' is invalid: {session.Error}", this);
+                Debug.LogError($"Level '{key}' is invalid: {session.Error}", this);
                 return;
             }
 
@@ -68,6 +68,18 @@ namespace Game.Runtime
             BuildBoard(level.Value);
             BlocksView blocks = BuildBlocks(session.Value);
             WirePlay(session.Value, blocks);
+        }
+
+        /// <summary>The level the Level Editor asked to play (D75), read from its file; otherwise the scene's own.</summary>
+        private ILevelSource ChooseLevel(LevelJson json, out string key)
+        {
+#if UNITY_EDITOR
+            if (new PlayRequest(new SessionStatePlayRequestStore()).TryTake(out key))
+                return new EditorFileLevelSource(json);
+#endif
+            key = levelKey;
+
+            return new TextAssetLevelSource(levels, json);
         }
 
         private void BuildBoard(LevelData level)
