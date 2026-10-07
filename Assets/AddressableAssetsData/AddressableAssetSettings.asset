@@ -80,7 +80,7 @@ MonoBehaviour:
       - m_Id: 916fc4a933f13524697f822cd7699d9e
         m_Value: 
       - m_Id: e399de21615436645ae9bd723386b58b
-        m_Value: ' ServerData/[BuildTarget]'
+        m_Value: ServerData/[BuildTarget]
       - m_Id: f4cac90f2c44f4c4b99232fac022a7d1
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
     m_ProfileEntryNames:
