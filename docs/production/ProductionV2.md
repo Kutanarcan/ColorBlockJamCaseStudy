@@ -259,17 +259,7 @@ Only after Delivery is secured (D80).
 - **Evidence, not claims:** Frame Debugger batch count and a Profiler GC Alloc capture during a drag, before and after P8, recorded as a table in P8. A mid-range Android check in I6 / Delivery.
 
 ### Measurements (P8)
-Editor (Mono), Game view 1080×1920, `Level.json`, Deep Profile off. GC Alloc is read under `FrameTicker.Update` only. Logic hot paths are also guarded by `HotPathAllocationTests` (zero allocation).
-
-| Scenario | Before P8.2 | Instancing (same mesh + material) | + one block material, per-instance color (D108) |
-|---|---|---|---|
-| Batches, full board | 181 (Frame Debugger draw calls 183) | 32 (draw calls 34) | 14 (draw calls 15) |
-| SetPass calls, full board | 14 | 14 | 13 |
-| Batches / SetPass, no blocks left | 135 / 8 | — | 9 / 8 |
-| Saved by batching | 0 | 14 | 165 (126 with no blocks left) |
-| GC Alloc, idle / drag / release | 0 | 0 | — |
-| GC Alloc, first exit | 10.1 KB: Mono JIT 4.3 KB (Editor only, IL2CPP is AOT), DOTween's lazy init 2.7 KB, static constructors 0.8 KB, exit objects 2.3 KB | 6.8 KB (Deep Profile): DOTween setup JIT, first tween objects (DOTween init moved to loading) | — |
-| GC Alloc, later exits | 0 (reported) | — | — |
+Recorded in [`Performance.md`](Performance.md): draw calls 183 → 15, no allocation per frame, and the small per-action garbage accepted on purpose with its known fixes (D108, D109).
 
 ---
 
@@ -448,3 +438,4 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D106 | Drag naming | Names say what the code does, not a hand metaphor; input uses Unity Input System words. `IPointerInput` (`WasPressedThisFrame`, `IsPressed`, `PointerRay`), `MousePointerInput`, `BoardRaycast` (`TryGetCellPoint`, `ToCell`), `DragResolver` (`MoveToward`, `ClampToReachable`, `BeginDrag`), `DragController` (`TrySelectBlock`, `UpdateDrag`, `EndDrag`), `DragSettings` (`LiftHeight`, `SnapDuration`), `BlockView.SetPosition` / `SnapTo` |
 | D107 | Move preview | Core decides every move, also the ones presentation only previews. `BlockMover.Preview` holds the move rule and `TryMove` applies its answer; `LevelSession.PreviewMove` exposes it without changing the board or telling the observer. `DragResolver.ClampToReachable` leans only where the preview says `Moved`; Runtime no longer combines `Capabilities` and `Board.CanPlace` itself. Board occupancy is still read for two view-only cases: the diagonal lean and the cell the last move left |
 | D108 | Instanced drawing (P8.2) | Every block shares one instanced `Game/Block` material; its color is a per-instance property (`UNITY_DEFINE_INSTANCED_PROP _Color`) set through one reused `MaterialPropertyBlock`, so pieces of one mesh draw together whatever their color. Exit particles use the same material with their color set once. Doors keep one material per color. Walls and door arrows draw with instanced copies of the kit's FBX-embedded materials; `Ground`, `Arrow` and `Ice` materials and the `IceBlock` shader are instanced. Static batching was not used: runtime combining needs Read/Write meshes and instancing already covers the repeats. Known cost: an exiting block's clip plane is not per instance, so that block draws alone until it is gone. Supersedes D74 for blocks |
+| D109 | Tween garbage | Measured on Android (IL2CPP): DOTween's `DOLocalMove` cost ~0.6 KB per release and ~0.7 KB per exit (new getter / setter closures and a new tween each call). `BlockView` moves through `DOTween.To` with a getter and setter made once per view, and marks its tweens recyclable; no tween reference is kept past its end, so a recycled tween is never touched again. Recycling stays per tween, not global |

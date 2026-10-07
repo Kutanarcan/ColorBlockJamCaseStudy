@@ -15,7 +15,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
 ![Production V1](https://img.shields.io/badge/Production_V1-✅_Logic_·_Levels_·_Additive-2ea043)
-![Production V2](https://img.shields.io/badge/Production_V2-🚧_3/28_phases-1f6feb)
+![Production V2](https://img.shields.io/badge/Production_V2-🚧_9/28_phases-1f6feb)
 
 </div>
 
@@ -237,7 +237,7 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 - **Movement:** one cell per step; every target cell must be empty or the block's own.
 - **Exit:** each column the block covers scans forward; its first occupied cell must be a door of the block's color and direction. This closes the prototype's U-recess bug.
 - **Game state:** timer driven by `Tick(dt)`, win, fail on timeout or by a listener, continue with added time, restart from level data. No undo in the game.
-- **Modifiers:** Ice (frozen until N exits) and Arrow (one direction), stackable.
+- **Modifiers:** Ice (frozen until N exits) and Arrow (one axis, both ways; one direction until V2 D105), stackable.
 
 ### 💾 Level Pipeline
 - **Level data** (`LevelData`) is plain C# in Core; **JSON** lives in `Game.LevelIO` and is mapped by hand: no runtime reflection, IL2CPP safe.
@@ -292,13 +292,19 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 
 > [!IMPORTANT]
 > **V2 goal:** the case brief's vertical slice — a playable level flow (Home → Gameplay → Win / Fail), five levels made with the Level Editor, coins and progress that survive a restart, an APK and a video.
-> **Status:** 🚧 Presentation stage: P0–P2 done, P3 Camera Fit next. Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
+> **Status:** 🚧 Presentation stage: P0–P8 done, P9 Five Levels & Editor Play next. Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
 
 | # | Phase | Result |
 |---|---|---|
 | P0 | Runtime Skeleton | UniTask, `Game.Runtime`; one logic → view seam (`ISessionObserver`) heard for moves, exits, modifier changes and state; Gameplay scene with a manual installer |
 | P1 | Board View | Ground, frame, inner walls and doors from the kit; one quadrant rule draws every wall; door runs stretched to their length; palette materials shared per color |
 | P2 | Block View | `BlockDrawRule` dresses any polyomino; pooled parts; Arrow and Ice looks; a lit triplanar ice shader |
+| P3 | Camera Fit | The board fills the safe area minus the HUD margins, 16:9 to 20:9 |
+| P4 | Input & Drag | Free 2D drag; Core decides every move, the view only previews what Core allows; Arrow became an axis lock (level format v2) |
+| P5 | Director & Sequencer | Logic events become awaitable, cancellable steps; exits never block the player, win / fail wait for them |
+| P6 | Exit Visual & Feedback | Snap, slide and clip-plane cut through the door, per-row particles, select / drop / crunch sounds |
+| P7 | Restart & Lifecycle | Restart leaves nothing from the last attempt; pause stops the timer and locks input |
+| P8 | Polish & Performance | Draw calls 183 → 15 through instancing; no allocation per frame (see **Performance** below) |
 
 **Decisions worth knowing**
 - **The V1 core is not rewritten.** Presentation sits on top through one observer seam; Core only gained that seam.
@@ -306,10 +312,21 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 - **Views are dumb, presenters are pure C#.** A view never references the logic; a presenter reads it and drives the view. A new modifier's look is a new presenter and view plus one registration line.
 - **Small folders.** A code folder holds at most 6 files; the change that adds the 7th splits it.
 
+**⚡ Performance** (measured in the Editor and on an Android phone, IL2CPP)
+
+| | Result |
+|---|---|
+| Draw calls | **183 → 15** (GPU instancing; one block material with per-instance color) |
+| Garbage per frame | **0 B** (idle, drag, release), also guarded by a test |
+| Garbage per action | ~0.5 KB per exit, 2.3 KB per win: **accepted on purpose**, small and per action, not per frame |
+
+The captures, what each allocation is, the known fixes and why they were not applied yet are in [`Performance.md`](docs/production/Performance.md).
+
 ## 📚 Production Docs
 
 - [`ProductionV2.md`](docs/production/ProductionV2.md) — **active:** vertical slice plan: presentation, infrastructure, UI, meta, delivery; decision log D61+
 - [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, phase plan, decision log
+- [`Performance.md`](docs/production/Performance.md) — measurements, profiler captures, accepted costs and their known fixes
 - [`LevelFormat.md`](docs/production/LevelFormat.md) — level JSON format and the **mandatory** checklists for changing level data, modifiers or LevelIO
 - [`Extending.md`](docs/production/Extending.md) — how to add a mechanic, the Turn Based Arrow example, edit points
 - [`ColorBlockJamMechanics.md`](docs/production/ColorBlockJamMechanics.md) — the mechanics reference the architecture is built for
