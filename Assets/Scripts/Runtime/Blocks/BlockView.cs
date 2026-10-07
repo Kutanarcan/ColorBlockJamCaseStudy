@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using DG.Tweening.Core;
 using UnityEngine;
 
 namespace Game.Runtime
@@ -25,6 +26,8 @@ namespace Game.Runtime
         private readonly Color color;
         private readonly MaterialPropertyBlock buffer;
         private readonly Vector3 home;
+        private readonly DOGetter<Vector3> getLocalPosition;
+        private readonly DOSetter<Vector3> setLocalPosition;
 
         public Transform Root { get; }
 
@@ -35,6 +38,10 @@ namespace Game.Runtime
             this.color = color;
             this.buffer = buffer;
             this.home = home;
+
+            // Made once: DOLocalMove would build both as new closures on every move.
+            getLocalPosition = GetLocalPosition;
+            setLocalPosition = SetLocalPosition;
         }
 
         public void AddPart(PieceView part)
@@ -97,21 +104,13 @@ namespace Game.Runtime
         }
 
         /// <summary>Animates the block onto a board position.</summary>
-        public void SnapTo(Vector3 boardPosition, float duration)
-        {
-            Root.DOKill();
-            Root.DOLocalMove(boardPosition - home, duration).SetEase(Ease.OutCubic);
-        }
+        public void SnapTo(Vector3 boardPosition, float duration) => Move(boardPosition, duration).SetEase(Ease.OutCubic);
 
         /// <summary>Moves the block to a board position and finishes with the motion; a cancel kills it.</summary>
-        public UniTask MoveTo(Vector3 boardPosition, float duration, Ease ease, CancellationToken cancellation)
-        {
-            Root.DOKill();
-
-            return Root.DOLocalMove(boardPosition - home, duration)
+        public UniTask MoveTo(Vector3 boardPosition, float duration, Ease ease, CancellationToken cancellation) =>
+            Move(boardPosition, duration)
                 .SetEase(ease)
                 .ToUniTask(TweenCancelBehaviour.KillAndCancelAwait, cancellation);
-        }
 
         public void Hide() => Root.gameObject.SetActive(false);
 
@@ -134,5 +133,23 @@ namespace Game.Runtime
 
             Object.Destroy(Root.gameObject);
         }
+
+        /// <summary>
+        /// One root move, without per-call garbage: the getter and setter are made once, and the tween goes back to
+        /// DOTween's pool when it ends (recyclable). Safe because no tween reference is kept past its end; the
+        /// target lets <c>DOKill</c> find it.
+        /// </summary>
+        private Tweener Move(Vector3 boardPosition, float duration)
+        {
+            Root.DOKill();
+
+            return DOTween.To(getLocalPosition, setLocalPosition, boardPosition - home, duration)
+                .SetTarget(Root)
+                .SetRecyclable(true);
+        }
+
+        private Vector3 GetLocalPosition() => Root.localPosition;
+
+        private void SetLocalPosition(Vector3 position) => Root.localPosition = position;
     }
 }
