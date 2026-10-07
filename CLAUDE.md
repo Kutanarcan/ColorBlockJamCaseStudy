@@ -19,7 +19,8 @@ MODE: PRODUCTION
 - `Assets/Scripts/` — production.
 - The two assemblies never reference each other.
 - `docs/prototype/` — prototype docs: plan (`PrototypeV1.md`) and `FINDINGS.md`.
-- `docs/production/` — production docs: active plan (`ProductionV2.md`), finished plan (`ProductionV1.md`), level format rules (`LevelFormat.md`), mechanic recipe (`Extending.md`), mechanics reference (`ColorBlockJamMechanics.md`).
+- `docs/production/` — production docs: active plan (`ProductionV2.md`), finished plan (`ProductionV1.md`), level format rules (`LevelFormat.md`), mechanic recipe (`Extending.md`), mechanics reference (`ColorBlockJamMechanics.md`), performance record (`Performance.md`), Addressables guide (`Addressables.md`).
+- `Addressables.md` follows the code: at the end of every phase that changes loading, groups, keys, labels, profiles or the download flow, update its sections and its **Status** table.
 - `docs/Game Developer Case 2026.pdf` — the case brief: required scope, acceptance criteria, evaluation order, deliverables.
 - `docs/` sits next to `Assets/`, outside the Unity project content. Never put `.md` files under `Assets/`.
 - Code rules live in `.claude/rules/` and load by folder. Before creating the first file in a folder, read the rule files whose `paths` match it.

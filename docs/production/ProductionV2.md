@@ -169,6 +169,9 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ## 🏛️ 4. Infrastructure
 
+> [!NOTE]
+> How groups, keys, labels, loading and release work in practice, and what is built so far: [`Addressables.md`](Addressables.md).
+
 ### Scopes & scenes (D63, D64)
 | Scene | In Build Settings | Scope | Holds |
 |---|---|---|---|
