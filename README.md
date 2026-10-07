@@ -15,7 +15,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
 ![Production V1](https://img.shields.io/badge/Production_V1-✅_Logic_·_Levels_·_Additive-2ea043)
-![Production V2](https://img.shields.io/badge/Production_V2-🚧_9/28_phases-1f6feb)
+![Production V2](https://img.shields.io/badge/Production_V2-🚧_10/28_phases-1f6feb)
 
 </div>
 
@@ -42,7 +42,7 @@ flowchart LR
 | 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
 | ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
 | 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
-| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 V2 vertical slice (presentation in progress) |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 V2 vertical slice (presentation done, infrastructure next) |
 
 **From prototype to production**
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
@@ -253,7 +253,9 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 | **Undo / Redo** | Snapshot history, one step per stroke or edit |
 | **Resize** | Grow or shrink each side; the frame moves, the inside stays, a cut asks first |
 | **Modifiers** | Listed from the catalog, fields edited generically: a new modifier needs no editor change |
-| **Rules** | Edge cells, edge doors, straight doors, connected blocks, door width, time limit, Core validation; broken cells are outlined |
+| **Rules** | Edge cells, edge doors, straight doors, connected blocks, door width, time limit, Core validation, palette colors (V2); broken cells are outlined |
+| **▶ Play** (V2) | Saves the level, opens the Gameplay scene and plays it: a new level needs no list or code change |
+| **Colors** (V2) | Swatches and grid colors come from the game's palette asset, so the editor shows what the game shows |
 
 ### 🔌 Additive
 - **Modifiers only declare** (suspends a capability, constrains a direction, listens to an event); central rules decide.
@@ -285,14 +287,25 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 |---|---|
 | `Game.Core` | Logic and level data model, no `UnityEngine` |
 | `Game.LevelIO` | JSON serialization, shared by Runtime and the Editor |
-| `Game.LevelEditor` | Editor-only level editor |
-| `Game.Runtime` | Presentation (V2): board, blocks, modifier looks; views and presenters |
+| `Game.LevelEditor` | Editor-only level editor; plays a level in the game and reads the palette through `Game.Runtime` (V2) |
+| `Game.Runtime` | Presentation (V2): board, blocks, modifier looks, drag, director and sequencer, exit, camera fit |
+| `Game.Tests.Runtime` | EditMode tests of Runtime's pure parts (V2) |
 
 ## 🎬 V2: Vertical Slice
 
 > [!IMPORTANT]
 > **V2 goal:** the case brief's vertical slice — a playable level flow (Home → Gameplay → Win / Fail), five levels made with the Level Editor, coins and progress that survive a restart, an APK and a video.
-> **Status:** 🚧 Presentation stage: P0–P8 done, P9 Five Levels & Editor Play next. Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
+> **Status:** ✅ Presentation stage done (P0–P9) · 🚧 Infrastructure next (I0 Packages & Root Scope). Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
+
+### ⏱️ Time Spent
+
+The presentation stage (P0–P9) took **8 hours of hands-on work** over **2 working sessions**:
+
+| Session | Duration |
+|---|:---:|
+| Session 1 | 4 h |
+| Session 2 | 4 h |
+| **Total** | **8 h** |
 
 | # | Phase | Result |
 |---|---|---|
@@ -300,16 +313,21 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 | P1 | Board View | Ground, frame, inner walls and doors from the kit; one quadrant rule draws every wall; door runs stretched to their length; palette materials shared per color |
 | P2 | Block View | `BlockDrawRule` dresses any polyomino; pooled parts; Arrow and Ice looks; a lit triplanar ice shader |
 | P3 | Camera Fit | The board fills the safe area minus the HUD margins, 16:9 to 20:9 |
-| P4 | Input & Drag | Free 2D drag; Core decides every move, the view only previews what Core allows; Arrow became an axis lock (level format v2) |
+| P4 | Input & Drag | Free 2D drag; Core decides every move, the view only previews what Core allows; a block beside its door leans in and exits early; the held block is outlined; Arrow became an axis lock (level format v2) |
 | P5 | Director & Sequencer | Logic events become awaitable, cancellable steps; exits never block the player, win / fail wait for them |
 | P6 | Exit Visual & Feedback | Snap, slide and clip-plane cut through the door, per-row particles, select / drop / crunch sounds |
 | P7 | Restart & Lifecycle | Restart leaves nothing from the last attempt; pause stops the timer and locks input |
 | P8 | Polish & Performance | Draw calls 183 → 15 through instancing; no allocation per frame (see **Performance** below) |
+| P9 | Five Levels & Editor Play | **▶ Play** in the Level Editor saves and plays the level in the game; editor colors come from the game's palette, with a rule for ids outside it; levels 1–6 built in the editor |
+
+**Tests:** 43 EditMode test methods in `Game.Tests.Runtime` (sequencer, draw rules, camera fit, drag, exit path, restart, allocation on hot paths), plus the V1 suites extended for move preview, axis lock and editor play.
 
 **Decisions worth knowing**
 - **The V1 core is not rewritten.** Presentation sits on top through one observer seam; Core only gained that seam.
 - **Kit prefabs only.** Variety is mesh / material swap and run length through a View component with serialized references; no child is found by path.
 - **Views are dumb, presenters are pure C#.** A view never references the logic; a presenter reads it and drives the view. A new modifier's look is a new presenter and view plus one registration line.
+- **The logic decides, the view plays.** Every move, also one the drag only previews, is answered by Core (`PreviewMove`); the logic finishes first, then the director turns what happened into steps the sequencer plays.
+- **One token cancels everything.** Restart cancels every running step and rebuilds the views from the level data: nothing of the last attempt survives, on screen either.
 - **Small folders.** A code folder holds at most 6 files; the change that adds the 7th splits it.
 
 **⚡ Performance** (measured in the Editor and on an Android phone, IL2CPP)

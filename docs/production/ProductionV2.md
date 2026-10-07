@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-9/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-10/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -309,7 +309,7 @@ One phase per answer, following the production process. **Files touched** are de
 | P6 | Exit Visual & Feedback | P6.1 production block shader with clip plane · P6.2 exit step (snap, slide, cut) · P6.3 pooled row particles · P6.4 SFX service | `ExitStep_CompletesAndDisablesTheBlock` (step with a fake view) + exit seen in the Editor | ✅ |
 | P7 | Restart & Lifecycle | P7.1 cancel sequence, return pools, rebuild · P7.2 tick adapter, pause stops ticks | `Restart_LeavesNoViewOrStepFromTheLastAttempt` | ✅ |
 | P8 | Polish & Performance | P8.1 feel pass (tuning from FINDINGS) · P8.2 draw call pass (shared materials, instancing) · P8.3 GC Alloc pass on drag / tick · P8.4 measurement table | Measurement table recorded (batches, GC Alloc per frame) | ✅ |
-| P9 | Five Levels & Editor Play | P9.1 Play button (save → open Gameplay with the key) · P9.2 build levels 1–5 in the editor · P9.3 palette rule in the editor | `PlayRequest_StoresTheLevelKey_ForTheGame` + five levels played | ⏳ |
+| P9 | Five Levels & Editor Play | P9.1 Play button (save → open Gameplay with the key) · P9.2 build levels 1–5 in the editor · P9.3 palette rule in the editor | `PlayRequest_StoresTheLevelKey_ForTheGame` + five levels played | ✅ |
 
 ### 🏛️ Stage B: Infrastructure
 | # | Phase | Sub-steps | Done when | Status |
