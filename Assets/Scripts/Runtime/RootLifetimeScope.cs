@@ -14,6 +14,7 @@ namespace Game.Runtime
         {
             new RootInstaller(
                 new AddressablesContentInitializer(),
+                new AddressablesContentDelivery(),
                 new AddressablesAssetSource(),
                 new AddressablesSceneLoader(this))
                 .Install(builder);

@@ -17,7 +17,7 @@ namespace Game.Tests.Infrastructure
             var content = new FakeContentInitializer();
             var scenes = new FakeSceneLoader();
             var builder = new ContainerBuilder();
-            new RootInstaller(content, new FakeAssetSource(), scenes).Install(builder);
+            new RootInstaller(content, new FakeContentDelivery(), new FakeAssetSource(), scenes).Install(builder);
 
             using IObjectResolver container = builder.Build();
 
@@ -32,7 +32,8 @@ namespace Game.Tests.Infrastructure
         {
             var source = new FakeAssetSource();
             var builder = new ContainerBuilder();
-            new RootInstaller(new FakeContentInitializer(), source, new FakeSceneLoader()).Install(builder);
+            new RootInstaller(new FakeContentInitializer(), new FakeContentDelivery(), source, new FakeSceneLoader())
+                .Install(builder);
             using IObjectResolver root = builder.Build();
             IScopedObjectResolver child = root.CreateScope();
 

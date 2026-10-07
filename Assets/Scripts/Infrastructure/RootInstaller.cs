@@ -10,12 +10,15 @@ namespace Game.Infrastructure
     public sealed class RootInstaller : IInstaller
     {
         private readonly IContentInitializer content;
+        private readonly IContentDelivery delivery;
         private readonly IAssetSource assets;
         private readonly ISceneLoader scenes;
 
-        public RootInstaller(IContentInitializer content, IAssetSource assets, ISceneLoader scenes)
+        public RootInstaller(IContentInitializer content, IContentDelivery delivery, IAssetSource assets,
+            ISceneLoader scenes)
         {
             this.content = content;
+            this.delivery = delivery;
             this.assets = assets;
             this.scenes = scenes;
         }
@@ -23,8 +26,10 @@ namespace Game.Infrastructure
         public void Install(IContainerBuilder builder)
         {
             builder.RegisterInstance(content);
+            builder.RegisterInstance(delivery);
             builder.RegisterInstance(assets);
             builder.RegisterInstance(scenes);
+            builder.Register<ContentUpdate>(Lifetime.Singleton);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();
             builder.RegisterEntryPoint<Bootstrapper>();
         }
