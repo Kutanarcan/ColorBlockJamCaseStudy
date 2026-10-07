@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-10/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-11/28_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -314,7 +314,7 @@ One phase per answer, following the production process. **Files touched** are de
 ### 🏛️ Stage B: Infrastructure
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| I0 | Packages & Root Scope | I0.1 VContainer, Addressables · I0.2 `Game.Infrastructure`, `Game.Meta` + test asmdefs · I0.3 Bootstrap scene + root `LifetimeScope` | `RootScope_ResolvesItsServices` | ⏳ |
+| I0 | Packages & Root Scope | I0.1 VContainer, Addressables · I0.2 `Game.Infrastructure`, `Game.Meta` + test asmdefs · I0.3 Bootstrap scene + root `LifetimeScope` | `RootScope_ResolvesItsServices` | ✅ |
 | I1 | Asset Loader & Scopes | I1.1 `IAssetLoader` over Addressables · I1.2 asset scope: register, release on dispose, open-handle count · I1.3 leak log in development | `AssetScope_ReleasesEveryHandle_OnDispose` | ⏳ |
 | I2 | Scene Loader | I2.1 `ISceneLoader` over Addressables scenes · I2.2 child scopes for Main / Gameplay · I2.3 scene unload disposes its scope | `SceneFlow_BootstrapToGameplay_AndBack` (PlayMode smoke) | ⏳ |
 | I3 | Addressables Setup | I3.1 groups and keys · I3.2 Local / Remote profiles · I3.3 content update flow (init → catalog → size → download) | `ContentUpdate_RunsEveryStep_WithNothingToDownload` | ⏳ |
@@ -442,3 +442,4 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D110 | Editor Play & palette (P9) | The Level Editor's **▶ Play** saves (rules first), stores the key through `PlayRequest` in `SessionState`, opens the Gameplay scene and enters play mode. The installer takes the request once and reads that level straight from `Assets/Levels/<key>.json` (`EditorFileLevelSource`, Editor only), so a new level plays without being added to any list; without a request it plays its own level. `Game.LevelEditor` references `Game.Runtime` for the request and the palette. The editor's colors come from the palette asset, and `PaletteColorRule` closes V1's deferred "colorId exists in the palette" rule. I5 moves Play behind the bootstrapper |
 | D111 | Early exit & selection | A block beside its door leans into it (the preview says `Exited`) and exits once the pointer pulls it `DragSettings.ExitThreshold` (0.3) of a cell toward the door, instead of at the half-cell where the pointer would round onto the door. Core still decides: the early exit only acts where `PreviewMove` says `Exited`. The held block gets the prototype's screen-space outline (`Game/SelectionOutline` through a camera command buffer, material in `PresentationAssets`), shown on select and hidden on release, exit and restart |
 | D112 | Root scope (I0) | Packages: VContainer 1.19.0 (git tag), Addressables 1.29.0 (last 1.x, Unity 2021.3+). The root scope's registrations live in a pure `RootInstaller` (Infrastructure, VContainer `IInstaller`) so a test builds them without a scene; `RootLifetimeScope` (Runtime) only calls it. I0 registers `IContentInitializer` (Addressables `InitializeAsync`) and the `Bootstrapper` entry point; later services join as their phases arrive. `Game.Meta` and `Game.Tests.Meta` open in M0, when they get code, not as empty assemblies in I0 |
+| D113 | Asset scope (I1) | `IAssetSource` is the raw Addressables door (a failed or cancelled load releases its own handle); `AssetScope : IAssetLoader` keeps every handle it loads and releases them all on `Dispose`. Registered `Lifetime.Scoped`, so each `LifetimeScope` owns one and VContainer disposes it with the scope. A **leak** is a handle that would outlive its scope: a load finishing after `Dispose` is released at once, logged as a warning in the Editor and development builds, and the caller sees a cancel. Assets are `UnityEngine.Object`; an unknown key throws (the level source turns it into a `Result` in I4) |

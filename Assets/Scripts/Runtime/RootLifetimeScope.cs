@@ -12,7 +12,10 @@ namespace Game.Runtime
     {
         protected override void Configure(IContainerBuilder builder)
         {
-            new RootInstaller(new AddressablesContentInitializer()).Install(builder);
+            new RootInstaller(
+                new AddressablesContentInitializer(),
+                new AddressablesAssetSource())
+                .Install(builder);
         }
     }
 }

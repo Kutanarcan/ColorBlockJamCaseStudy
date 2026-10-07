@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.Infrastructure;
 using NUnit.Framework;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -13,12 +16,32 @@ namespace Game.Tests.Infrastructure
         {
             var content = new FakeContentInitializer();
             var builder = new ContainerBuilder();
-            new RootInstaller(content).Install(builder);
+            new RootInstaller(content, new FakeAssetSource()).Install(builder);
 
             using IObjectResolver container = builder.Build();
 
             Assert.That(container.Resolve<IContentInitializer>(), Is.SameAs(content));
+            Assert.That(container.Resolve<IAssetLoader>(), Is.InstanceOf<AssetScope>());
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
+        }
+
+        [Test]
+        public void ChildScope_GetsItsOwnAssetScope_ReleasedWithIt()
+        {
+            var source = new FakeAssetSource();
+            var builder = new ContainerBuilder();
+            new RootInstaller(new FakeContentInitializer(), source).Install(builder);
+            using IObjectResolver root = builder.Build();
+            IScopedObjectResolver child = root.CreateScope();
+
+            var childAssets = (AssetScope)child.Resolve<IAssetLoader>();
+            childAssets.LoadAsync<TextAsset>("a", CancellationToken.None).Forget();
+            FakeAssetHandle handle = source.Finish("a");
+            child.Dispose();
+
+            Assert.That(root.Resolve<IAssetLoader>(), Is.Not.SameAs(childAssets));
+            Assert.That(handle.Releases, Is.EqualTo(1));
+            Object.DestroyImmediate(handle.Asset);
         }
     }
 }
