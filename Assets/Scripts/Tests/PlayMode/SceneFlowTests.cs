@@ -19,6 +19,7 @@ namespace Game.Tests.PlayMode
     /// Smoke test of the real scene flow through Addressables (Editor play mode script). Needs the Gameplay scene
     /// marked addressable under its key.
     /// </summary>
+    [PrebuildSetup(typeof(TestRunnerStartScene))]
     public sealed class SceneFlowTests
     {
         private const string BootstrapPath = "Assets/Scenes/Bootstrap.unity";

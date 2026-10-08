@@ -26,7 +26,7 @@ namespace Game.Tests.Infrastructure
             Assert.That(container.Resolve<IAssetLoader>(), Is.InstanceOf<AssetScope>());
             Assert.That(container.Resolve<ISceneLoader>(), Is.SameAs(scenes));
             Assert.That(container.Resolve<ILevelSource>(), Is.InstanceOf<AssetLevelSource>());
-            Assert.That(container.Resolve<LoadedConfig>(), Is.Not.Null);
+            Assert.That(container.Resolve<SelectedLevel>(), Is.Not.Null);
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
         }
 

@@ -1,6 +1,6 @@
-using Game.Runtime;
+using Game.Infrastructure;
 
-namespace Game.Tests.Runtime
+namespace Game.Tests.Infrastructure
 {
     /// <summary>Holds the request in a field, as SessionState would across entering play mode.</summary>
     internal sealed class FakePlayRequestStore : IPlayRequestStore

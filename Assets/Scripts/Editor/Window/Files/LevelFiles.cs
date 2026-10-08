@@ -1,14 +1,16 @@
 using System;
 using System.IO;
-using Game.Runtime;
 using UnityEditor;
 
 namespace Game.LevelEditor
 {
-    /// <summary>Level files on disk: Assets/Levels/&lt;key&gt;.json. The key is the file name and the address.</summary>
+    /// <summary>
+    /// Level files on disk: Assets/Levels/&lt;key&gt;.json. The key is the file name and the address; every written
+    /// level is made addressable under it (D118).
+    /// </summary>
     internal static class LevelFiles
     {
-        public const string Folder = EditorFileLevelSource.Folder;
+        public const string Folder = "Assets/Levels";
 
         public static string PathOf(string key) => $"{Folder}/{key}.json";
 
@@ -62,6 +64,7 @@ namespace Game.LevelEditor
             Directory.CreateDirectory(Folder);
             File.WriteAllText(PathOf(key), json);
             AssetDatabase.ImportAsset(PathOf(key));
+            LevelAddressables.Register(PathOf(key), key);
         }
     }
 }

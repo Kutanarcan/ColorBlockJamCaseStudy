@@ -9,13 +9,17 @@ namespace Game.Tests.Infrastructure
     public sealed class BootstrapperTests
     {
         private GameConfig config;
-        private FakeAssetLoader assets;
+        private LoadedConfig loaded;
+        private FakePlayRequestStore requests;
+        private SelectedLevel level;
 
         [SetUp]
         public void SetUp()
         {
             config = ScriptableObject.CreateInstance<GameConfig>();
-            assets = new FakeAssetLoader().Add(GameConfig.Key, config);
+            loaded = new LoadedConfig(new FakeAssetLoader().Add(GameConfig.Key, config));
+            requests = new FakePlayRequestStore();
+            level = new SelectedLevel(loaded, new PlayRequest(requests));
         }
 
         [TearDown]
@@ -26,7 +30,7 @@ namespace Game.Tests.Infrastructure
         {
             var content = new FakeContentInitializer();
 
-            Start(content, new FakeContentDelivery(), new LoadedConfig(), new FakeSceneLoader());
+            Start(content, new FakeContentDelivery(), new FakeSceneLoader());
 
             Assert.That(content.Calls, Is.EqualTo(1));
         }
@@ -36,10 +40,9 @@ namespace Game.Tests.Infrastructure
         {
             var content = new FakeContentInitializer(held: true);
             var delivery = new FakeContentDelivery();
-            var loaded = new LoadedConfig();
             var scenes = new FakeSceneLoader();
 
-            Start(content, delivery, loaded, scenes);
+            Start(content, delivery, scenes);
             Assert.That(delivery.Log, Is.Empty);
             Assert.That(scenes.Log, Is.Empty);
 
@@ -49,10 +52,27 @@ namespace Game.Tests.Infrastructure
             Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }));
         }
 
-        private void Start(
-            FakeContentInitializer content, FakeContentDelivery delivery, LoadedConfig loaded,
-            FakeSceneLoader scenes) =>
-            new Bootstrapper(content, new ContentUpdate(delivery), assets, loaded, scenes)
+        [Test]
+        public void Bootstrapper_OpensTheRequestedLevel_WhenOneIsStored()
+        {
+            new PlayRequest(requests).Store("Level_3");
+
+            Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
+
+            Assert.That(level.Key, Is.EqualTo("Level_3"));
+            Assert.That(requests.Value, Is.Empty, "The request is taken once.");
+        }
+
+        [Test]
+        public void Bootstrapper_OpensTheFirstConfiguredLevel_WithoutARequest()
+        {
+            Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
+
+            Assert.That(level.Key, Is.EqualTo(config.LevelKeys[0]));
+        }
+
+        private void Start(FakeContentInitializer content, FakeContentDelivery delivery, FakeSceneLoader scenes) =>
+            new Bootstrapper(content, new ContentUpdate(delivery), loaded, level, scenes)
                 .StartAsync(CancellationToken.None)
                 .Forget();
     }

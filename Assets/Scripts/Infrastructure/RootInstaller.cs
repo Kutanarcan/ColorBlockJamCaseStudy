@@ -34,6 +34,9 @@ namespace Game.Infrastructure
             builder.RegisterInstance(new LevelJson(ModifierCatalog.Default()));
             builder.Register<ContentUpdate>(Lifetime.Singleton);
             builder.Register<LoadedConfig>(Lifetime.Singleton);
+            builder.Register<EditorPlayRequestStore>(Lifetime.Singleton).As<IPlayRequestStore>();
+            builder.Register<PlayRequest>(Lifetime.Singleton);
+            builder.Register<SelectedLevel>(Lifetime.Singleton);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();
             builder.Register<AssetLevelSource>(Lifetime.Scoped).As<ILevelSource>();
             builder.RegisterEntryPoint<Bootstrapper>();

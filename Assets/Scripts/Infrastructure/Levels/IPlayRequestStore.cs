@@ -1,4 +1,4 @@
-namespace Game.Runtime
+namespace Game.Infrastructure
 {
     /// <summary>Where a <see cref="PlayRequest"/> waits while the Editor enters play mode. Empty means none.</summary>
     public interface IPlayRequestStore

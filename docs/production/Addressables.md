@@ -57,13 +57,14 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 ## 3. Keys
 - Every addressable asset has a stable string key; code holds keys, never asset references.
 - **Level key = the JSON's file name** (`Level_1`), the same key the Level Editor saves (V1 D52).
+- **The Level Editor makes every saved level addressable** (D118): `Levels` group, key = file name, label `remote`. A new level plays and ships with no step in the Addressables window.
 - The ordered level list is in `GameConfig` (I4), so no label is needed to find "all levels".
 - Key names for prefabs, palette and popups are fixed when each phase adds them (§10).
 
 | Key | Asset | Group | Constant |
 |---|---|---|---|
 | `Gameplay` | `Assets/Scenes/Gameplay.unity` | `Gameplay` | `SceneKeys.Gameplay` |
-| `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor) |
+| `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor), `SelectedLevel` |
 | `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
 | `PresentationAssets` | `Assets/ScriptableObjects/Presentation/PresentationAssets.asset` (pulls in its prefabs, meshes, materials, palette, modifier views) | `Gameplay` | `PresentationAssets.Key` |
 
@@ -187,6 +188,7 @@ Done by hand once (D115); the result is committed under `Assets/AddressableAsset
 
 ## 9. How to add content
 1. Put the asset in the group matching its lifetime (§2). Create the group if it is the first asset of that lifetime.
+   Levels need nothing: the Level Editor adds them to `Levels` when it saves.
 2. Give it a key; add the key where code reads it (config, a key constant set by its phase).
 3. Load it through the `IAssetLoader` injected in the scope that should own it. Never release it by hand.
 4. If it should be downloadable later, give it the `remote` label and put it in a group with `Remote` paths.
@@ -199,10 +201,11 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
    └── Bootstrapper (entry point)
          1. IContentInitializer   InitializeAsync
          2. ContentUpdate         catalogs → (update + clean) → size(remote) → download(remote)
-         3. IAssetLoader          GameConfig → LoadedConfig   (root AssetScope, lives for the run)
-         4. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  additive, active
+         3. LoadedConfig          GameConfig by key (root AssetScope, lives for the run)
+         4. SelectedLevel         the Level Editor's request, else GameConfig.LevelKeys[0]
+         5. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  additive, active
                                      └── GameplayLifetimeScope (child of root, own AssetScope)
-                                           GameplayEntry: PresentationAssets + level (LevelKeys[0]) by key → session, views, play; ticks through VContainer
+                                           GameplayEntry: PresentationAssets + SelectedLevel.Key by key → session, views, play; ticks through VContainer
 ```
 
 | Phase | What | State |
@@ -211,5 +214,6 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I1 | `IAssetLoader`, `AssetScope`, `AddressablesAssetSource`, leak report | ✅ |
 | I2 | `ISceneLoader`, Gameplay child scope (Main in M2), scene unload disposes scope | ✅ |
 | I3 | `Gameplay` and `Levels` groups, `remote` label, Local / Remote profiles, content update flow | ✅ |
-| I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | a: ✅ · b: ✅ code · setup & tests pending |
+| I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | ✅ |
+| I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ code · tests pending |
 | I6 | Event Viewer round trip, first APK | ⏳ |

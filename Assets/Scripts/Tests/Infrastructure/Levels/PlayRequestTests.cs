@@ -1,8 +1,8 @@
 using System;
-using Game.Runtime;
+using Game.Infrastructure;
 using NUnit.Framework;
 
-namespace Game.Tests.Runtime
+namespace Game.Tests.Infrastructure
 {
     public class PlayRequestTests
     {

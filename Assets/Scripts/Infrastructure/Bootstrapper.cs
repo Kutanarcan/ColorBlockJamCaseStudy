@@ -6,23 +6,24 @@ namespace Game.Infrastructure
 {
     /// <summary>
     /// The root scope's entry point: runs the start-up flow once per run (§4 Bootstrapper flow). Content, the content
-    /// update, the config, then the first scene; the save (M0) and the editor's level (I5) join it.
+    /// update, the config, the first level (the Level Editor's request wins), then the first scene; the save (M0)
+    /// joins it.
     /// </summary>
     public sealed class Bootstrapper : IAsyncStartable
     {
         private readonly IContentInitializer content;
         private readonly ContentUpdate update;
-        private readonly IAssetLoader assets;
         private readonly LoadedConfig config;
+        private readonly SelectedLevel level;
         private readonly ISceneLoader scenes;
 
-        public Bootstrapper(IContentInitializer content, ContentUpdate update, IAssetLoader assets, LoadedConfig config,
+        public Bootstrapper(IContentInitializer content, ContentUpdate update, LoadedConfig config, SelectedLevel level,
             ISceneLoader scenes)
         {
             this.content = content;
             this.update = update;
-            this.assets = assets;
             this.config = config;
+            this.level = level;
             this.scenes = scenes;
         }
 
@@ -30,7 +31,8 @@ namespace Game.Infrastructure
         {
             await content.InitializeAsync(cancellation);
             await update.RunAsync(cancellation);
-            config.Set(await assets.LoadAsync<GameConfig>(GameConfig.Key, cancellation));
+            await config.LoadAsync(cancellation);
+            level.SelectFirst();
             await scenes.ReplaceContentSceneAsync(SceneKeys.Gameplay, cancellation);
         }
     }

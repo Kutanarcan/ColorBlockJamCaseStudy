@@ -1,14 +1,7 @@
 {
-    "name": "Game.LevelEditor",
-    "rootNamespace": "Game.LevelEditor",
-    "references": [
-        "Game.Core",
-        "Game.LevelIO",
-        "Game.Runtime",
-        "Game.Infrastructure",
-        "Unity.Addressables",
-        "Unity.Addressables.Editor"
-    ],
+    "name": "Game.Infrastructure.Editor",
+    "rootNamespace": "Game.Infrastructure.Editor",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

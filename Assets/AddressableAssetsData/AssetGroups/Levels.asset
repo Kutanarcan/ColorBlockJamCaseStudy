@@ -53,6 +53,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - remote
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7b508fe61e0676419ff2ca1a248bbed
+    m_Address: Level_7
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - remote
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 60b992dcacead6a4f938e548cfbd458a, type: 2}
   m_SchemaSet:

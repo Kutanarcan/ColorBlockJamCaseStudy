@@ -1,10 +1,10 @@
 using System;
 
-namespace Game.Runtime
+namespace Game.Infrastructure
 {
     /// <summary>
     /// The level the Level Editor asked to play (D75), handed from the Editor to the game across entering play mode.
-    /// It is taken once: a later plain Play starts the scene's own level again.
+    /// It is taken once, by the bootstrapper (D118): a later plain Play starts the game's own level again.
     /// </summary>
     public sealed class PlayRequest
     {

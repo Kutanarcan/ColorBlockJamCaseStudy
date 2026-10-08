@@ -20,6 +20,7 @@ namespace Game.Runtime
         private readonly IAssetLoader assets;
         private readonly ILevelSource levels;
         private readonly LoadedConfig config;
+        private readonly SelectedLevel selected;
         private readonly CameraRig cameraRig;
         private readonly DragSettings dragSettings;
         private readonly ExitSettings exitSettings;
@@ -32,12 +33,13 @@ namespace Game.Runtime
         private SelectionOutline outline;
         private GameplayLoop loop;
 
-        public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, CameraRig cameraRig,
-            DragSettings dragSettings, ExitSettings exitSettings, Transform root)
+        public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
+            CameraRig cameraRig, DragSettings dragSettings, ExitSettings exitSettings, Transform root)
         {
             this.assets = assets;
             this.levels = levels;
             this.config = config;
+            this.selected = selected;
             this.cameraRig = cameraRig;
             this.dragSettings = dragSettings;
             this.exitSettings = exitSettings;
@@ -58,8 +60,7 @@ namespace Game.Runtime
 
         private async UniTask BuildAsync(CancellationToken cancellation)
         {
-            // Until progression (M0) the game plays the first level in the config's order.
-            string key = config.Value.LevelKeys[0];
+            string key = selected.Key;
             presentation = await assets.LoadAsync<PresentationAssets>(PresentationAssets.Key, cancellation);
             Result<LevelData> level = await levels.LoadAsync(key).AsUniTask().AttachExternalCancellation(cancellation);
 

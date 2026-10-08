@@ -1,24 +1,17 @@
-using Game.Runtime;
+using Game.Infrastructure;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 
 namespace Game.LevelEditor
 {
     /// <summary>
-    /// Plays a saved level from the Level Editor (D75): leaves the key for the game, opens the Gameplay scene and
-    /// enters play mode. From I5 it opens the Bootstrap scene instead.
+    /// Plays a saved level from the Level Editor (D75, D118): leaves the key for the bootstrapper and enters play mode,
+    /// which always starts from the Bootstrap scene. The level is already addressable, saved just before.
     /// </summary>
     internal static class PlayLauncher
     {
-        private const string GameplayScene = "Assets/Scenes/Gameplay.unity";
-
         public static void Play(string levelKey)
         {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                return;
-
-            new PlayRequest(new SessionStatePlayRequestStore()).Store(levelKey);
-            EditorSceneManager.OpenScene(GameplayScene);
+            new PlayRequest(new EditorPlayRequestStore()).Store(levelKey);
             EditorApplication.EnterPlaymode();
         }
     }
