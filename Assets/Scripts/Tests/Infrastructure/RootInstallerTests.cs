@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Infrastructure;
+using Game.Meta;
 using NUnit.Framework;
 using UnityEngine;
 using VContainer;
@@ -19,7 +20,7 @@ namespace Game.Tests.Infrastructure
             var scenes = new FakeSceneLoader();
             var builder = new ContainerBuilder();
             new RootInstaller(content, new FakeContentDelivery(), new FakeAssetSource(), scenes,
-                new FakePlayRequestStore()).Install(builder);
+                new FakePlayRequestStore(), new FakeSaveStore()).Install(builder);
 
             using IObjectResolver container = builder.Build();
 
@@ -28,6 +29,8 @@ namespace Game.Tests.Infrastructure
             Assert.That(container.Resolve<ISceneLoader>(), Is.SameAs(scenes));
             Assert.That(container.Resolve<ILevelSource>(), Is.InstanceOf<AssetLevelSource>());
             Assert.That(container.Resolve<SelectedLevel>(), Is.Not.Null);
+            Assert.That(container.Resolve<Progression>(), Is.Not.Null);
+            Assert.That(container.Resolve<Settings>(), Is.Not.Null);
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
         }
 
@@ -37,7 +40,7 @@ namespace Game.Tests.Infrastructure
             var source = new FakeAssetSource();
             var builder = new ContainerBuilder();
             new RootInstaller(new FakeContentInitializer(), new FakeContentDelivery(), source, new FakeSceneLoader(),
-                new FakePlayRequestStore())
+                new FakePlayRequestStore(), new FakeSaveStore())
                 .Install(builder);
             using IObjectResolver root = builder.Build();
             IScopedObjectResolver child = root.CreateScope();

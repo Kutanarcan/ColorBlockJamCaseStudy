@@ -1,13 +1,8 @@
 {
-    "name": "Game.Tests.Infrastructure",
-    "rootNamespace": "Game.Tests.Infrastructure",
+    "name": "Game.Tests.Meta",
+    "rootNamespace": "Game.Tests.Meta",
     "references": [
-        "Game.Core",
-        "Game.LevelIO",
         "Game.Meta",
-        "Game.Infrastructure",
-        "UniTask",
-        "VContainer",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

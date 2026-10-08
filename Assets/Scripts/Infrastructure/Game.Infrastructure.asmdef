@@ -4,6 +4,7 @@
     "references": [
         "Game.Core",
         "Game.LevelIO",
+        "Game.Meta",
         "UniTask",
         "UniTask.Addressables",
         "VContainer",

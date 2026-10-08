@@ -1,7 +1,9 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Infrastructure;
+using Game.Meta;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game.Tests.Infrastructure
@@ -11,15 +13,18 @@ namespace Game.Tests.Infrastructure
         private GameConfig config;
         private LoadedConfig loaded;
         private FakePlayRequestStore requests;
+        private FakeSaveStore saves;
         private SelectedLevel level;
 
         [SetUp]
         public void SetUp()
         {
             config = ScriptableObject.CreateInstance<GameConfig>();
+            SetLevelKeys(config, "Level_1", "Level_2", "Level_3");
             loaded = new LoadedConfig(new FakeAssetLoader().Add(GameConfig.Key, config));
             requests = new FakePlayRequestStore();
-            level = new SelectedLevel(loaded, new PlayRequest(requests));
+            saves = new FakeSaveStore();
+            level = new SelectedLevel(loaded, new PlayRequest(requests), new Progression(saves));
         }
 
         [TearDown]
@@ -55,25 +60,48 @@ namespace Game.Tests.Infrastructure
         [Test]
         public void Bootstrapper_OpensTheRequestedLevel_WhenOneIsStored()
         {
-            new PlayRequest(requests).Store("Level_3");
+            saves.Save(Progression.SaveKey, new ProgressionData { levelsCompleted = 1 });
+            new PlayRequest(requests).Store("Level_6");
 
             Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
 
-            Assert.That(level.Key, Is.EqualTo("Level_3"));
+            Assert.That(level.Key, Is.EqualTo("Level_6"), "The Level Editor's request wins over progression.");
             Assert.That(requests.Value, Is.Empty, "The request is taken once.");
         }
 
         [Test]
-        public void Bootstrapper_OpensTheFirstConfiguredLevel_WithoutARequest()
+        public void Bootstrapper_OpensTheFirstConfiguredLevel_InAFreshSave()
         {
             Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
 
-            Assert.That(level.Key, Is.EqualTo(config.LevelKeys[0]));
+            Assert.That(level.Key, Is.EqualTo("Level_1"));
+        }
+
+        [Test]
+        public void Bootstrapper_OpensTheLevelProgressionStandsOn_WrappingTheConfiguredList()
+        {
+            saves.Save(Progression.SaveKey, new ProgressionData { levelsCompleted = 4 });
+
+            Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
+
+            Assert.That(level.Key, Is.EqualTo("Level_2"));
         }
 
         private void Start(FakeContentInitializer content, FakeContentDelivery delivery, FakeSceneLoader scenes) =>
             new Bootstrapper(content, new ContentUpdate(delivery), loaded, level, scenes)
                 .StartAsync(CancellationToken.None)
                 .Forget();
+
+        private static void SetLevelKeys(GameConfig target, params string[] keys)
+        {
+            var serialized = new SerializedObject(target);
+            SerializedProperty list = serialized.FindProperty("levelKeys");
+            list.arraySize = keys.Length;
+
+            for (int i = 0; i < keys.Length; i++)
+                list.GetArrayElementAtIndex(i).stringValue = keys[i];
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
     }
 }

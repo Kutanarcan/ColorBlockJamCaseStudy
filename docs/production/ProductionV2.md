@@ -186,7 +186,7 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 ### Bootstrapper flow
 1. Initialize Addressables.
 2. Content update check (§4.4): catalog → download size → download (all no-ops locally).
-3. Load config and save.
+3. Load config (save sections load on first use, D128).
 4. Open Main, or Gameplay when the editor asked to play a level (I5).
 
 ### Asset lifetime (D66)
@@ -223,7 +223,7 @@ A run is either **Live** (the game) or **LevelTest** (the Level Editor's ▶ Pla
 
 | Service | Live | LevelTest |
 |---|---|---|
-| Save storage | `JsonSaveStorage` (`persistentDataPath/save.json`) | `LevelTestSaveStorage`: in memory, seeded once from a **copy** of the live save's settings; it has no way to write the live file |
+| Save store | `JsonSaveStore` (`persistentDataPath/Save/<key>.json`) | `LevelTestSaveStore`: in memory, starts with a **copy** of the live `settings` section only; it has no way to write the live files |
 | Starting coins | `GameConfig` | `LevelTestConfig` (D130) |
 | Level to play | Progression over `GameConfig.LevelKeys` | Always the tested level: start, Continue after a win, Play from Home |
 | Analytics and later services (none yet) | Real implementation | Null implementation |
@@ -277,7 +277,7 @@ A run is either **Live** (the game) or **LevelTest** (the Level Editor's ▶ Pla
 - **Placeholders:** lives (a fixed count and `00:00`) are shown, never taken (D125).
 
 ### Save
-- `ISaveStorage` (Meta) → JSON in `persistentDataPath` (Infrastructure). Saved on change and on pause / quit.
+- `ISaveStore` (Meta) → one JSON file per section in `persistentDataPath/Save/` (Infrastructure). Each feature owns its section (data class + key) and writes it on every change; there is no shared save model (D128).
 - A win is saved at once: reward and next level are kept even if the player quits on the LevelComplete popup (D123).
 - Brief criterion "coins stay correct after leaving and returning" is a test on wallet + storage.
 
@@ -315,7 +315,7 @@ Recorded in [`Performance.md`](Performance.md): draw calls 183 → 15, no alloca
 |---|---|---|
 | `Game.Core` (V1) | Logic + `ISessionObserver` seam | — |
 | `Game.LevelIO` (V1) | JSON | Core, Newtonsoft |
-| `Game.Meta` | Progression, wallet, settings, save model, `ISaveStorage`. **No UnityEngine** | — |
+| `Game.Meta` | Progression, wallet, settings, each with its save section; `ISaveStore`. **No UnityEngine** | — |
 | `Game.Runtime` | Presentation (director, sequencer, views, input, camera), UI, scopes | Core, LevelIO, Meta, Infrastructure, UniTask, DOTween, VContainer |
 | `Game.Infrastructure` | Asset loader & scopes, scene loader, Addressables flow, save storage, config loading | Core, LevelIO, Meta, UniTask, VContainer, Addressables |
 | `Game.LevelEditor` (V1) | Editor; gains Play (P9, I5) | Core, LevelIO |
@@ -371,9 +371,9 @@ One phase per answer, following the production process. **Files touched** are de
 ### 🪙 Stage C: Meta
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| M0 | Save, Progression & Settings | M0.1 `Game.Meta` + `Game.Tests.Meta` asmdefs · M0.2 save model + `ISaveStorage` + JSON storage · M0.3 progression with wrap; the bootstrapper selects its level (the Level Editor's request still wins) · M0.4 settings flags | `Progression_WrapsToTheFirstLevel_AfterTheLast` | ✅ |
-| M0b | Launch Modes | M0b.1 `Launch` (`Live` / `LevelTest(key)`) built in `RootLifetimeScope.Configure` from the play request · M0b.2 `LiveServicesInstaller` / `LevelTestServicesInstaller` beside `RootInstaller` · M0b.3 `LevelTestSaveStorage` (memory, settings copied from the live save, never written back) · M0b.4 `LevelTestConfig` asset, Editor only, outside every Addressables group · M0b.5 `SelectedLevel` reads the `Launch`; LevelTest always plays its level · M0b.6 "LEVEL TEST" badge (shown from U0, when the canvas exists) | `LevelTestLaunch_KeepsTheLiveSaveUntouched` | ⏳ |
-| M1 | Wallet & Continue Price | M1.1 wallet: start coins, earn, spend only when covered · M1.2 config: reward, start coins, continue base / step / seconds · M1.3 a win adds the reward, advances progression and saves at once (D123) · M1.4 continue price per level start (D124) | `Coins_StayCorrect_AfterLeavingAndReturning` | ⏳ |
+| M0 | Save, Progression & Settings | M0.1 `Game.Meta` + `Game.Tests.Meta` asmdefs · M0.2 `ISaveStore` + per-feature sections + `JsonSaveStore` · M0.3 progression with wrap; the bootstrapper selects its level (the Level Editor's request still wins) · M0.4 settings flags | `Progression_WrapsToTheFirstLevel_AfterTheLast` | ✅ |
+| M0b | Launch Modes | M0b.1 `Launch` (`Live` / `LevelTest(key)`) built in `RootLifetimeScope.Configure` from the play request · M0b.2 `LiveServicesInstaller` / `LevelTestServicesInstaller` beside `RootInstaller` · M0b.3 `LevelTestSaveStore` (memory; only the live `settings` section copied in, never written back) · M0b.4 `LevelTestConfig` asset, Editor only, outside every Addressables group · M0b.5 `SelectedLevel` reads the `Launch`; LevelTest always plays its level · M0b.6 "LEVEL TEST" badge (shown from U0, when the canvas exists) | `LevelTestLaunch_KeepsTheLiveSaveUntouched` | ⏳ |
+| M1 | Wallet & Continue Price | M1.0 `Meta/` passes 6 files: settings move to `Preferences/`, wallet and continue price go to `Economy/` (D100) · M1.1 wallet (`Wallet` + `WalletData` section): start coins, earn, spend only when covered · M1.2 config: reward, start coins, continue base / step / seconds · M1.3 a win adds the reward, advances progression and saves at once (D123) · M1.4 continue price per level start (D124) | `Coins_StayCorrect_AfterLeavingAndReturning` | ⏳ |
 
 ### 🖼️ Stage D: Gameplay UI
 | # | Phase | Sub-steps | Done when | Status |
@@ -458,7 +458,7 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D74 | Materials | One shared material per palette color; colors come from the palette asset, never `new Material` per block — for blocks superseded by D108 |
 | D75 | Editor Play | Level Editor Play saves, stores the key in `SessionState` and enters play mode; from I5 always through the bootstrapper |
 | D76 | UI | uGUI, `CanvasScaler` 1080×1920, `SafeArea` on every screen root, one shared button feedback |
-| D77 | Meta | Progression, wallet and settings are pure C# in `Game.Meta`; storage behind `ISaveStorage`, JSON in `persistentDataPath` |
+| D77 | Meta | Progression, wallet and settings are pure C# in `Game.Meta`; storage behind `ISaveStorage`, JSON in `persistentDataPath` — storage shape refined by D128 (`ISaveStore`, one section per feature) |
 | D78 | Progression | After the last level the game wraps to the first |
 | D79 | Coins | A win adds a fixed reward read from config |
 | D80 | Boosters | FreezeTime and Hammer, only after Delivery is secured |
@@ -509,6 +509,6 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D125 | Placeholders | Lives (a fixed count and `00:00`, on LevelFail and Home) and boosters (HUD bar, Play popup) are visual only; Retry and Leave take no life. Booster function stays in Stage G |
 | D126 | Settings | All three toggles are saved and show distinct on / off. Only SFX acts (mutes the SFX player); vibration and music are visual (no music asset). Gameplay variant has a Home button (→ LoseLife Leave) and X resumes; Home variant has no Home button and X closes. Other buttons are static with feedback |
 | D127 | Scene changes | Restart stays in the scene (D71); the next level and Home ↔ Gameplay reopen the content scene through `ISceneLoader` under the loading cover (D119) |
-| D128 | Save (M0) | `SaveData` is one flat DTO (`levelsCompleted`, three setting flags, `version`); `SaveFile` loads it once in the bootstrapper (after the config, before the level is chosen) and writes it whole on every change, so no pause / quit hook is needed. Progression stores a **completed-level counter**: the key is `count % levelCount` over the config's list (wraps, D78, and a shorter list never points past its end), the shown number is `count + 1` and keeps counting. `JsonSaveStorage` (Infrastructure) writes `persistentDataPath/save.json` through `JsonUtility` (flat DTO, no reflection stripping risk under IL2CPP, unlike Newtonsoft), via a temporary file; an unreadable file warns and starts fresh. `Settings` keeps the flags by a `Setting` enum, so one toggle view serves all three |
+| D128 | Save (M0) | **No shared save model.** Meta's `ISaveStore` (`Load<T>(key)`, `Save<T>(key, data)`) knows no feature; each feature owns its section: a `[Serializable]` data class with its own `version` and a `SaveKey` constant beside the feature (`Progression` + `ProgressionData` `"progression"`, `Settings` + `SettingsData` `"settings"`; `Wallet` + `WalletData` in M1). A new feature adds a section and touches no existing class. A feature reads its section on first use and writes only that section on every change, so no pause / quit hook and no load step in the bootstrapper. `JsonSaveStore` (Infrastructure) keeps one file per section, `persistentDataPath/Save/<key>.json`, through `JsonUtility` (flat classes, no reflection stripping risk under IL2CPP, unlike Newtonsoft), via a temporary file; an unreadable section warns and starts fresh alone, the others are untouched. Rejected: one file with sections inside (`JsonUtility` has no dictionaries, so nested JSON strings, and one bad byte would still cost every section). Progression stores a **completed-level counter**: the key is `count % levelCount` over the config's list (wraps, D78, and a shorter list never points past its end), the shown number is `count + 1` and keeps counting. `Settings` keeps the flags by a `Setting` enum, so one toggle view serves all three |
 | D129 | Launch modes (M0b) | A run is `Live` or `LevelTest(key)`, decided once in `RootLifetimeScope.Configure` from the play request, before the container is built (the bootstrapper no longer takes the request). `RootInstaller` keeps the shared services; a `LiveServicesInstaller` or `LevelTestServicesInstaller` adds what differs (save storage, starting coins, later analytics and live events, each with a real and a null / in-memory implementation). No service checks the mode. Meta logic runs the same in both; LevelTest keeps it in memory, so Home, continue and coins work in a test without reaching live data (future live-event tests ride on this). A LevelTest run shows a "LEVEL TEST" badge. Supersedes the request handling of D118 |
-| D130 | Level test data | Test values never sit in the live `GameConfig`: a separate `LevelTestConfig` asset (starting coins) lives under an Editor folder, outside every Addressables group, and is loaded and injected only by the Editor-only composition code (like `EditorPlayRequestStore`), so it cannot reach a build. `LevelTestSaveStorage` starts from a copy of the live save's settings flags (progression 0, coins from `LevelTestConfig`) and keeps every write in memory; it holds no writer for the live file. In LevelTest, Continue after a win and Play from Home replay the tested level |
+| D130 | Level test data | Test values never sit in the live `GameConfig`: a separate `LevelTestConfig` asset (starting coins) lives under an Editor folder, outside every Addressables group, and is loaded and injected only by the Editor-only composition code (like `EditorPlayRequestStore`), so it cannot reach a build. `LevelTestSaveStore` keeps every section in memory: it starts with a copy of the live `settings` section only (every other section starts fresh: progression 0, coins from `LevelTestConfig`), and it holds no writer for the live files. A section added later starts fresh in a test without any change to the test store. In LevelTest, Continue after a win and Play from Home replay the tested level |

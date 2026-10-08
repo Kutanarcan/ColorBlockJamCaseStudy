@@ -6,8 +6,8 @@ namespace Game.Infrastructure
 {
     /// <summary>
     /// The root scope's entry point: runs the start-up flow once per run (§4 Bootstrapper flow). Content, the content
-    /// update, the config, the first level (the Level Editor's request wins), then the first scene; the save (M0)
-    /// joins it.
+    /// update, the config, the first level (the Level Editor's request wins over progression; meta sections load on
+    /// first use), then the first scene.
     /// </summary>
     public sealed class Bootstrapper : IAsyncStartable
     {

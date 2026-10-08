@@ -1,3 +1,4 @@
+using System.IO;
 using Cysharp.Threading.Tasks;
 using Game.Infrastructure;
 using UnityEngine;
@@ -12,6 +13,8 @@ namespace Game.Runtime
     /// </summary>
     public sealed class RootLifetimeScope : LifetimeScope
     {
+        private const string SaveFolder = "Save";
+
         protected override void Configure(IContainerBuilder builder)
         {
             new RootInstaller(
@@ -19,7 +22,8 @@ namespace Game.Runtime
                 new AddressablesContentDelivery(),
                 new AddressablesAssetSource(),
                 new AddressablesSceneLoader(this),
-                PlayRequests())
+                PlayRequests(),
+                new JsonSaveStore(Path.Combine(Application.persistentDataPath, SaveFolder)))
                 .Install(builder);
         }
 
