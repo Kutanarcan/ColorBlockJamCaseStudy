@@ -224,7 +224,7 @@ With the Android build target the scene is **pink** under Use Existing Build: th
 3. **Development Build** ✓ (logs and Profiler connection); build and install the APK.
 4. On the device: the game opens on `Level_1`, blocks drag and exit, the timer runs.
 5. If it fails: `adb logcat -s Unity` and paste the output. A `VContainerException` about a missing constructor means IL2CPP stripping; fixed then with `link.xml` or VContainer's source generator, not before.
-6. The device check is "opens and plays". A bundle round trip on the device needs a button that unloads the scene; it comes with navigation (M4).
+6. The device check is "opens and plays". A bundle round trip on the device needs a button that unloads the scene; it comes with navigation (M3).
 
 **Results**
 
