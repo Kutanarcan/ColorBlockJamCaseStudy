@@ -246,7 +246,7 @@ Game (Infrastructure, Runtime, Meta)        Level test (Game.LevelTest, Editor o
 ---
 
 ## 🖼️ 5. Gameplay UI
-- **Canvas:** uGUI, `CanvasScaler` reference 1080×1920, match tuned for 20:9; a `SafeArea` component on every screen root (D76). Art from `Assets/Art/UI`, font LilitaOne (TMP).
+- **Canvas:** uGUI, `CanvasScaler` reference 1080×1920, match 0.5 (D137); a `SafeArea` component on every screen root (D76). Art from `Assets/Art/UI`, font LilitaOne (TMP).
 - Every button gives visual feedback (brief): one shared button feedback component.
 - A pointer over the UI never starts a block drag.
 
@@ -271,6 +271,7 @@ Content scenes (Main, Gameplay) — one UIRoot prefab in each
   UIRoot: Canvas (1080×1920, SafeArea on the screen roots)
    ├ ScreenLayer   — HUD / Home
    └ ModalLayer    — dim + one slot: the shown panel or popup
+  EventSystem (in UIRoot: one content scene is open at a time, D114)
 For the whole run — made by code, never placed in a start scene
   LoadingCover     — prefab in the Boot group, made by the shared root code (both starts), above everything (D119)
   LEVEL TEST badge — made by LevelTestServicesInstaller, prefab from LevelTestConfig (level test only, D131)
@@ -298,6 +299,8 @@ For the whole run — made by code, never placed in a start scene
 
 ### View contracts
 Filled in U0.6: per view, its kind (screen / panel / popup), prefab or scene object, root component, parts used and serialized references.
+
+- **Stretch, not fixed width (D137):** with match 0.5 a 20:9 screen is about 966 reference units wide, not 1080, so panels and popups are laid out with stretch anchors from the edges, never a fixed full width.
 
 ### HUD (Gameplay screen)
 - **Top:** level number · remaining time, counting down as `mm:ss` · coins (wallet) · **Restart** → LoseLife (Retry) · **Pause** → Settings. Both stop the time (D122).
@@ -576,3 +579,4 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D134 | UI kinds | UI splits by who opens it and who owns it. **Screen:** always there while its scene is, placed by hand (HUD, Home). **Panel:** shown by the game flow, scene-specific, placed by hand in its scene and inactive until shown; its content comes from the session and the meta (LevelComplete, LevelFail in Gameplay). **Popup:** opened by the player, a shared prefab catalog any scene opens by key, MVP variants (Settings, LoseLife, Play / Retry). LoseLife is a popup although only Gameplay opens it: it is player-opened and X-closed. Narrows D121 to popups; panels keep its view / content / presenter split |
 | D135 | Modal layer & prefabs | Nothing visual is placed by hand in a start scene (two starts would mean two copies). Each content scene (Main, Gameplay) holds one `UIRoot` prefab: canvas, `ScreenLayer`, `ModalLayer`; Gameplay is the same scene in the game and a level test, so no copy appears. The loading cover is a `Boot` prefab made by the shared root code for both starts; the "LEVEL TEST" badge is made by `LevelTestServicesInstaller` from a prefab in `LevelTestConfig`, so live code never makes or checks it. The one center is the code (modal host, popup service, catalog), not a place: where a canvas lives decides only its lifetime. Rejected: the UI in Bootstrap (copied into LevelTest, panels moved across scenes, popups cleaned by hand) and an additive UI scene (Bootstrap is already the scene that stays; panels and lifetime same problems). The `ModalLayer` host owns the dim, the open / close steps, one slot (the next replaces the current), the input block and the pause hook; panels and popups carry none of it, and the popup service only adds the catalog. Prefabs are built in three levels: behaviour in code on the layer; visual parts (`Window`, `Header`, `CloseButton`, `PrimaryButton`, `CoinCounter`, `LivesCounter`) as small nested prefabs dragged into any view; prefab variants only for looks of one part. Behaviour variants are data plus actions, never prefab variants. View contracts are written first (U0.6) and the user builds the prefabs from them. Rejected: one base popup prefab with a variant chain (hidden overrides pile up, a base change reaches unexpected places, every popup would carry its own dim, and a different layout fights the base's) |
 | D136 | Tabs | `TabBar` binds each `TabButton` to a tab target through a small interface (show / hide); selecting shows the target and hides the last. A new tab is a new binding, no enum or switch. In V2 every tab is a placeholder whose target only gives the button feedback and is never selected (brief: placeholders) |
+| D137 | Canvas scaler & EventSystem (U0.1) | `CanvasScaler`: Scale With Screen Size, reference 1080×1920, match **0.5**. 16:9 is 1080×1920 at any match; on 20:9 (1080×2400) the canvas is about 966×2147 reference units, so panels and popups use stretch anchors from the edges, never a fixed full width. The `EventSystem` (`StandaloneInputModule`, the project uses the old Input Manager) sits in `UIRoot`: one content scene is open at a time (D114), and nothing is placed by hand in a start scene (D135) |
