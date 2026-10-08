@@ -15,7 +15,7 @@ from an existing 3D model kit — prototype first, production later.
 ![Prototype](https://img.shields.io/badge/Prototype-✅_Done_in_10h-2ea043)
 ![Marketing](https://img.shields.io/badge/Marketing_Video-✅_Done-2ea043)
 ![Production V1](https://img.shields.io/badge/Production_V1-✅_Logic_·_Levels_·_Additive-2ea043)
-![Production V2](https://img.shields.io/badge/Production_V2-🚧_10/28_phases-1f6feb)
+![Production V2](https://img.shields.io/badge/Production_V2-🚧_17/28_phases-1f6feb)
 
 </div>
 
@@ -42,7 +42,7 @@ flowchart LR
 | 🧪 **Prototype** | Prove the core loop with the existing model kit, as fast as possible. Code is written to be read and studied, not shipped. | ✅ Done |
 | ✨ **Light Polish** | A small, fast pass so the mechanic reads well on video: exit animation, particles, sounds, selection outline. | ✅ Done |
 | 🎬 **Marketing Video** | Check that the mechanic sells itself in a short clip before investing in production. | ✅ Done |
-| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 V2 vertical slice (presentation done, infrastructure next) |
+| 🏗️ **Production** | Rebuild the game cleanly on top of what the prototype proved. | ✅ V1 (logic, levels, additive) · 🚧 V2 vertical slice (presentation and infrastructure done, gameplay UI next) |
 
 **From prototype to production**
 - Production carries over **knowledge, not code**: settled rules, tuning values, data shapes and rejected ideas, all recorded in [`FINDINGS.md`](docs/prototype/FINDINGS.md).
@@ -254,7 +254,8 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 | **Resize** | Grow or shrink each side; the frame moves, the inside stays, a cut asks first |
 | **Modifiers** | Listed from the catalog, fields edited generically: a new modifier needs no editor change |
 | **Rules** | Edge cells, edge doors, straight doors, connected blocks, door width, time limit, Core validation, palette colors (V2); broken cells are outlined |
-| **▶ Play** (V2) | Saves the level, opens the Gameplay scene and plays it: a new level needs no list or code change |
+| **▶ Play** (V2) | Saves the level and plays it in the game through the Bootstrap scene, like a real start: a new level needs no list or code change |
+| **Addressable on save** (V2) | Saving puts the level in the `Levels` Addressables group under its key, so the editor and the build load it the same way |
 | **Colors** (V2) | Swatches and grid colors come from the game's palette asset, so the editor shows what the game shows |
 
 ### 🔌 Additive
@@ -287,25 +288,32 @@ Planning came first on purpose: the design, the phase plan and the decision log 
 |---|---|
 | `Game.Core` | Logic and level data model, no `UnityEngine` |
 | `Game.LevelIO` | JSON serialization, shared by Runtime and the Editor |
-| `Game.LevelEditor` | Editor-only level editor; plays a level in the game and reads the palette through `Game.Runtime` (V2) |
-| `Game.Runtime` | Presentation (V2): board, blocks, modifier looks, drag, director and sequencer, exit, camera fit |
+| `Game.LevelEditor` | Editor-only level editor; reads the palette through `Game.Runtime`, makes saved levels addressable and plays them through `Game.Infrastructure` (V2) |
+| `Game.Infrastructure` | Infrastructure (V2): root installer, bootstrapper, Addressables content flow, asset scopes, scene loader, config, level source |
+| `Game.Infrastructure.Editor` | Editor-only: every Play starts from the Bootstrap scene (V2) |
+| `Game.Runtime` | Presentation (V2): board, blocks, modifier looks, drag, director and sequencer, exit, camera fit; the root and Gameplay `LifetimeScope`s |
 | `Game.Tests.Runtime` | EditMode tests of Runtime's pure parts (V2) |
+| `Game.Tests.Infrastructure` | EditMode tests of Infrastructure with fakes: installer, bootstrapper, asset scope, content update, config, level source (V2) |
+| `Game.Tests.PlayMode` | One smoke test of the real scene flow through Addressables (V2) |
 
 ## 🎬 V2: Vertical Slice
 
 > [!IMPORTANT]
 > **V2 goal:** the case brief's vertical slice — a playable level flow (Home → Gameplay → Win / Fail), five levels made with the Level Editor, coins and progress that survive a restart, an APK and a video.
-> **Status:** ✅ Presentation stage done (P0–P9) · 🚧 Infrastructure next (I0 Packages & Root Scope). Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
+> **Status:** ✅ Presentation (P0–P9) · ✅ Infrastructure (I0–I6) · 🚧 Gameplay UI next (U0 Canvas, Safe Area & Loading Cover). Plan: [`ProductionV2.md`](docs/production/ProductionV2.md).
 
 ### ⏱️ Time Spent
 
-The presentation stage (P0–P9) took **8 hours of hands-on work** over **2 working sessions**:
+V2 so far took **12 hours of hands-on work** over **3 working sessions**:
 
-| Session | Duration |
-|---|:---:|
-| Session 1 | 4 h |
-| Session 2 | 4 h |
-| **Total** | **8 h** |
+| Session | Stage | Duration |
+|---|---|:---:|
+| Session 1 | 🎨 Presentation | 4 h |
+| Session 2 | 🎨 Presentation | 4 h |
+| Session 3 | 🏛️ Infrastructure (I0–I6) | 4 h |
+| **Total** | | **12 h** |
+
+### 🎨 Presentation
 
 | # | Phase | Result |
 |---|---|---|
@@ -320,7 +328,7 @@ The presentation stage (P0–P9) took **8 hours of hands-on work** over **2 work
 | P8 | Polish & Performance | Draw calls 183 → 15 through instancing; no allocation per frame (see **Performance** below) |
 | P9 | Five Levels & Editor Play | **▶ Play** in the Level Editor saves and plays the level in the game; editor colors come from the game's palette, with a rule for ids outside it; levels 1–6 built in the editor |
 
-**Tests:** 43 EditMode test methods in `Game.Tests.Runtime` (sequencer, draw rules, camera fit, drag, exit path, restart, allocation on hot paths), plus the V1 suites extended for move preview, axis lock and editor play.
+**Tests:** 43 EditMode test methods in `Game.Tests.Runtime` at the end of the stage (sequencer, draw rules, camera fit, drag, exit path, restart, allocation on hot paths), plus the V1 suites extended for move preview, axis lock and editor play.
 
 **Decisions worth knowing**
 - **The V1 core is not rewritten.** Presentation sits on top through one observer seam; Core only gained that seam.
@@ -340,11 +348,49 @@ The presentation stage (P0–P9) took **8 hours of hands-on work** over **2 work
 
 The captures, what each allocation is, the known fixes and why they were not applied yet are in [`Performance.md`](docs/production/Performance.md).
 
+### 🏛️ Infrastructure
+
+The game now starts like a shipped one: one Bootstrap scene, dependency injection through VContainer scopes, and every scene, level, config and presentation asset loaded **by key** through Addressables. Presentation did not change: it was built refactor-ready, so only the wiring and the loading moved.
+
+```
+Bootstrap scene ── RootLifetimeScope (lives for the run)
+   └── Bootstrapper
+         1. Addressables.InitializeAsync
+         2. Content update: catalogs → clean old bundles → download size → download (all empty locally)
+         3. GameConfig by key
+         4. First level: the Level Editor's request, else the config's first key
+         5. Gameplay scene, additive ── GameplayLifetimeScope (child scope, own asset scope)
+                                          GameplayEntry: presentation assets + level by key → session, views, play
+```
+
+| # | Phase | Result |
+|---|---|---|
+| I0 | Packages & Root Scope | VContainer 1.19.0, Addressables 1.29.0; `Game.Infrastructure`; Bootstrap scene with a root scope whose registrations live in a pure, testable installer |
+| I1 | Asset Loader & Scopes | One door to Addressables (`IAssetLoader`); every `LifetimeScope` owns an asset scope that releases all its handles when the scope closes; a load that finishes after its scope closed is released and reported |
+| I2 | Scene Loader | Bootstrap stays loaded; one content scene at a time is loaded additively and becomes a child scope; unloading it releases its assets |
+| I3 | Addressables Setup | Groups by lifetime (`Boot`, `Gameplay`, `Levels`), `remote` label, Default / Remote profiles; the server-side content update flow runs at start-up and finds nothing locally |
+| I4 | Config & Level Source | `GameConfig` (level order, popup timing) by key; levels by key through the scope's asset loader; the manual installer became `GameplayLifetimeScope` + `GameplayEntry` |
+| I5 | Editor Play via Bootstrap | Every Editor Play starts from Bootstrap; Level Editor ▶ Play hands its key to the bootstrapper; saved levels become addressable automatically |
+| I6 | Release Check & Android Smoke | Profiler round trip with real bundles: after unloading Gameplay only `Boot` stays, also on a second round trip; first APK runs, wins and fails on a device |
+
+**Tests:** 17 EditMode test methods in `Game.Tests.Infrastructure` (installer, bootstrapper order, asset scope release and leaks, content update, config, level source, play request) and 1 PlayMode smoke test of the real scene flow (Bootstrap → Gameplay → back, nothing left behind).
+
+**Decisions worth knowing**
+- **Groups pack, keys load, labels download.** Groups follow lifetime so closing a scope really empties its bundles; game code loads one asset at a time by key; the `remote` label is only for the download step.
+- **Callers never release.** An asset lives as long as the scope that loaded it; the scope releases everything when its scene closes.
+- **A server is a profile change.** Groups use the profile's Remote location; the Default profile points it at the build, the Remote profile at a server path. The download flow already runs on every start.
+- **No empty structure.** Groups, assemblies and scenes appear when their first content does (`Main`, `Popups`, `Game.Meta` come with their phases).
+- **Editor-only stays editor-only.** The Level Editor's play request is stored in `SessionState`; the root scope picks that store in the Editor and a null store in a player, so no editor type reaches a build.
+- **Found on the device:** cleaning the bundle cache inside the catalog update failed on Android before the cache was ready and stopped the start-up. Cleaning now runs after it, waits for the cache and only warns on failure.
+
+Everything about groups, keys, the download flow, profiles, the editor setup checklist and the release check is in [`Addressables.md`](docs/production/Addressables.md).
+
 ## 📚 Production Docs
 
 - [`ProductionV2.md`](docs/production/ProductionV2.md) — **active:** vertical slice plan: presentation, infrastructure, UI, meta, delivery; decision log D61+
 - [`ProductionV1.md`](docs/production/ProductionV1.md) — scope, game rules, data model, modifiers, level pipeline, phase plan, decision log
 - [`Performance.md`](docs/production/Performance.md) — measurements, profiler captures, accepted costs and their known fixes
+- [`Addressables.md`](docs/production/Addressables.md) — groups, keys, loading and release, download flow, profiles, editor setup, release check
 - [`LevelFormat.md`](docs/production/LevelFormat.md) — level JSON format and the **mandatory** checklists for changing level data, modifiers or LevelIO
 - [`Extending.md`](docs/production/Extending.md) — how to add a mechanic, the Turn Based Arrow example, edit points
 - [`ColorBlockJamMechanics.md`](docs/production/ColorBlockJamMechanics.md) — the mechanics reference the architecture is built for
