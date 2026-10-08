@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using Game.Infrastructure;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -30,5 +32,16 @@ namespace Game.Runtime
             return new NoPlayRequests();
 #endif
         }
+
+        // Development hooks for the I6 release check, until navigation (M4) does the round trip: right-click the
+        // component in play mode.
+        [ContextMenu("Unload Content Scene")]
+        private void UnloadContentScene() =>
+            Container?.Resolve<ISceneLoader>().UnloadContentSceneAsync(destroyCancellationToken).Forget();
+
+        [ContextMenu("Load Gameplay")]
+        private void LoadGameplay() =>
+            Container?.Resolve<ISceneLoader>().ReplaceContentSceneAsync(SceneKeys.Gameplay, destroyCancellationToken)
+                .Forget();
     }
 }

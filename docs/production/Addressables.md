@@ -6,7 +6,7 @@
 
 ![Packages](https://img.shields.io/badge/Addressables-1.29.0-1f6feb)
 ![DI](https://img.shields.io/badge/VContainer-1.19.0-8250df)
-![Status](https://img.shields.io/badge/Built-I0_–_I3-d29922)
+![Status](https://img.shields.io/badge/Built-I0_–_I6-2ea043)
 
 <sub>[README](../../README.md) · [ProductionV2 §4](ProductionV2.md#-4-infrastructure) · [Decision Log](ProductionV2.md#-14-decision-log)</sub>
 
@@ -26,7 +26,8 @@
 | 7 | [Profiles](#7-profiles) |
 | 8 | [Editor setup](#8-editor-setup) |
 | 9 | [How to add content](#9-how-to-add-content) |
-| 10 | [Status](#10-status) |
+| 10 | [Release check (I6)](#10-release-check-i6) |
+| 11 | [Status](#11-status) |
 
 ---
 
@@ -113,7 +114,7 @@ The bootstrapper runs the server path even without a server (D65). `ContentUpdat
 |---|---|---|---|
 | 1 | `Addressables.InitializeAsync` (`IContentInitializer`) | loads the local catalog | ✅ I0 |
 | 2 | `CheckForCatalogUpdates` | no changed catalog | ✅ I3 |
-| 3 | `UpdateCatalogs` — only when step 2 found some; `autoCleanBundleCache: true` | skipped | ✅ I3 |
+| 3 | `UpdateCatalogs` — only when step 2 found some; then `CleanBundleCache` once `Caching.ready`, a failure only warns | skipped | ✅ I3 · I6 |
 | 4 | `GetDownloadSizeAsync(remote)` | 0 | ✅ I3 |
 | 5 | `DownloadDependenciesAsync(remote)` — always runs | nothing to fetch | ✅ I3 |
 
@@ -128,7 +129,7 @@ The bootstrapper runs the server path even without a server (D65). `ContentUpdat
 - So a load downloads on its own when it must. **`DownloadDependenciesAsync` is only a pre-download**: the wait happens at start-up with progress, not in the middle of a level.
 - **`GetDownloadSizeAsync` counts only what is not cached yet**: once everything is downloaded it returns 0.
 - **New content arrives through the catalog.** A content update publishes a new catalog with new hashes; until the app takes that catalog, it keeps asking for the old hashes and sees the old content. With `Only update catalogs manually` the bootstrapper's steps 2–3 are what take it.
-- **Old versions are cleaned** when the catalog is updated (`autoCleanBundleCache: true`): cached bundles the new catalog no longer uses are deleted, so every update does not leave the previous levels on the device.
+- **Old versions are cleaned** after the catalog is updated (`CleanBundleCache`): cached bundles the new catalog no longer uses are deleted, so every update does not leave the previous levels on the device. Cleaning waits for `Caching.ready` and a failure only warns: on Android the cache is ready late, and `autoCleanBundleCache: true` made the whole catalog update fail there (I6).
 - **Local bundles** (`Built-In` location, inside the player's StreamingAssets) are never downloaded or cached; they are read straight from the APK. Our `Default` profile points Remote at `Built-In`, so today the `Levels` bundles are local: size 0, download empty.
 
 ## 7. Profiles
@@ -194,7 +195,47 @@ Done by hand once (D115); the result is committed under `Assets/AddressableAsset
 4. If it should be downloadable later, give it the `remote` label and put it in a group with `Remote` paths.
 5. Building a player: build Addressables content first (`Build → New Build → Default Build Script`), then the player.
 
-## 10. Status
+## 10. Release check (I6)
+Goal: after a full Gameplay round trip only the `Boot` bundle is still loaded, and the APK runs on a device.
+
+**Tools in Addressables 1.29**
+
+| Tool | Where | Needs | Use |
+|---|---|---|---|
+| **Addressables Profiler module** | `Window → Analysis → Profiler` → module `Addressable Assets` | `com.unity.profiling.core` (in the project), Unity 2022.2+, **Debug Build Layout** on before the content build | ✅ the check: bundles, assets and reference counts per frame; also on a connected development player |
+| Event Viewer (older) | `Window → Asset Management → Addressables → Event Viewer` | `Send Profiler Events` ✓ in the settings | Backup only |
+
+**A. Bundle round trip in the Editor**
+1. `Edit → Preferences → Addressables` → **Debug Build Layout** ✓.
+2. Groups window → `Build → New Build → Default Build Script` (content build).
+3. Groups window → `Play Mode Script` → **Use Existing Build**.
+4. Open the Profiler, add the `Addressable Assets` module, keep recording.
+5. Play (starts from Bootstrap). Wait until `Level_1` is on screen. Note the loaded bundles → row **Gameplay open**.
+6. Hierarchy → `RootScope` → `RootLifetimeScope` → right click → **Unload Content Scene**. Wait a second. Note the bundles → row **After unload**.
+7. Right click → **Load Gameplay**, then **Unload Content Scene** again → row **Second round trip** (nothing piles up).
+8. Expected after each unload: only the `Boot` bundle (GameConfig, lives for the run) and the built-in/unity bundles; `Gameplay` and `Levels` at 0. The Console shows no `Asset leak avoided` warning.
+9. Set the Play Mode Script back to **Use Asset Database**.
+
+With the Android build target the scene is **pink** under Use Existing Build: the bundles hold shaders compiled for mobile graphics APIs, which the Windows Editor (DirectX) cannot draw. Expected; colors are checked on the device (B4). Pink with a Windows target would mean a shader or its instancing variants missing from the bundles.
+
+**B. First APK**
+1. `File → Build Settings` → Android → only `Bootstrap` in the scene list.
+2. Content build again (step A2) — Addressables is built for the active platform; switching to Android needs its own content build.
+3. **Development Build** ✓ (logs and Profiler connection); build and install the APK.
+4. On the device: the game opens on `Level_1`, blocks drag and exit, the timer runs.
+5. If it fails: `adb logcat -s Unity` and paste the output. A `VContainerException` about a missing constructor means IL2CPP stripping; fixed then with `link.xml` or VContainer's source generator, not before.
+6. The device check is "opens and plays". A bundle round trip on the device needs a button that unloads the scene; it comes with navigation (M4).
+
+**Results**
+
+| Moment | Loaded bundles | Ref counts | Notes |
+|---|---|---|---|
+| Gameplay open | `Boot` + the Gameplay bundles | — | Editor, Use Existing Build, Android target |
+| After unload | 1: `Boot` | — | ✅ Gameplay and Levels released |
+| Second round trip | 1: `Boot` | — | ✅ nothing piles up |
+| APK on device | — | — | ✅ opens on `Level_1`, plays, win and fail work; the level is seen building (no loading cover yet) |
+
+## 11. Status
 **What runs today** (Bootstrap → Play):
 ```
 Bootstrap scene ── RootLifetimeScope (RootInstaller)
@@ -215,5 +256,5 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I2 | `ISceneLoader`, Gameplay child scope (Main in M2), scene unload disposes scope | ✅ |
 | I3 | `Gameplay` and `Levels` groups, `remote` label, Local / Remote profiles, content update flow | ✅ |
 | I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | ✅ |
-| I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ code · tests pending |
-| I6 | Event Viewer round trip, first APK | ⏳ |
+| I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ |
+| I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
