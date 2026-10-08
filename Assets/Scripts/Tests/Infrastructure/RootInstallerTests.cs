@@ -31,6 +31,7 @@ namespace Game.Tests.Infrastructure
             Assert.That(container.Resolve<SelectedLevel>(), Is.Not.Null);
             Assert.That(container.Resolve<Progression>(), Is.Not.Null);
             Assert.That(container.Resolve<Settings>(), Is.Not.Null);
+            Assert.That(container.Resolve<Wallet>(), Is.Not.Null);
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
         }
 

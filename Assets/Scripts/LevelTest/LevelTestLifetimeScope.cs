@@ -1,6 +1,7 @@
 using System;
 using Game.Infrastructure;
 using Game.Runtime;
+using UnityEngine;
 using VContainer;
 
 namespace Game.LevelTest
@@ -11,13 +12,19 @@ namespace Game.LevelTest
     /// </summary>
     public sealed class LevelTestLifetimeScope : RootScope
     {
+        [SerializeField] private LevelTestConfig config;
+
         protected override void InstallStartServices(IContainerBuilder builder)
         {
+            if (config == null)
+                throw new InvalidOperationException("The LevelTest scene's scope has no LevelTestConfig assigned.");
+
             if (!new PlayRequest(new EditorPlayRequestStore()).TryTake(out string levelKey))
                 throw new InvalidOperationException(
                     "The LevelTest scene was played without a level; start it from the Level Editor's ▶ Play.");
 
-            new LevelTestServicesInstaller(levelKey, new JsonSaveStore(JsonSaveStore.PlayerFolder)).Install(builder);
+            new LevelTestServicesInstaller(levelKey, new JsonSaveStore(JsonSaveStore.PlayerFolder), config)
+                .Install(builder);
         }
     }
 }

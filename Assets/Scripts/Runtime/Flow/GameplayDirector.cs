@@ -1,4 +1,5 @@
 using Game.Core;
+using Game.Meta;
 
 namespace Game.Runtime
 {
@@ -14,15 +15,17 @@ namespace Game.Runtime
         private readonly Sequencer exits;
         private readonly Sequencer flow;
         private readonly float winPopupDelay;
+        private readonly LevelCompletion completion;
 
         public GameplayDirector(IExitSteps exitSteps, InputLock input, Sequencer exits, Sequencer flow,
-            float winPopupDelay)
+            float winPopupDelay, LevelCompletion completion)
         {
             this.exitSteps = exitSteps;
             this.input = input;
             this.exits = exits;
             this.flow = flow;
             this.winPopupDelay = winPopupDelay;
+            this.completion = completion;
         }
 
         /// <summary>Restart and home: nothing from the last attempt keeps playing or flying (D71).</summary>
@@ -49,6 +52,8 @@ namespace Game.Runtime
             switch (state)
             {
                 case GameState.Won:
+                    // The win is kept the moment it happens, before anything plays (D123).
+                    completion.Record();
                     input.Lock(InputLockReason.Flow);
                     flow.Run(new StepSequence(
                         new WaitForIdleStep(exits),

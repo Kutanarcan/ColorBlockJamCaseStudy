@@ -35,7 +35,8 @@ namespace Game.Tests.Runtime
             var inputLock = new InputLock();
             exits = new Sequencer();
             flow = new Sequencer();
-            var director = new GameplayDirector(new FakeExitSteps(null), inputLock, exits, flow, 0f);
+            var director = new GameplayDirector(new FakeExitSteps(null), inputLock, exits, flow, 0f,
+                new TestMeta().Completion);
             session.Observer = director;
 
             var blocks = new FakeBlocksView();

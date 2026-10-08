@@ -37,6 +37,7 @@ namespace Game.Infrastructure
             builder.RegisterInstance(new LevelJson(ModifierCatalog.Default()));
             builder.Register<Progression>(Lifetime.Singleton);
             builder.Register<Settings>(Lifetime.Singleton);
+            builder.Register<Wallet>(Lifetime.Singleton);
             builder.Register<ContentUpdate>(Lifetime.Singleton);
             builder.Register<LoadedConfig>(Lifetime.Singleton);
             builder.Register<SelectedLevel>(Lifetime.Singleton);

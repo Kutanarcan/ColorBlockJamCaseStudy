@@ -18,6 +18,7 @@ namespace Game.Tests.Runtime
         private Sequencer exits;
         private Sequencer flow;
         private GameplayLoop loop;
+        private TestMeta meta;
 
         /// <summary>One block beside its door: a single move exits it and wins the level.</summary>
         [SetUp]
@@ -39,7 +40,8 @@ namespace Game.Tests.Runtime
             exits = new Sequencer();
             flow = new Sequencer();
 
-            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, 0f);
+            meta = new TestMeta(startCoins: 100, reward: 50);
+            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, 0f, meta.Completion);
             session.Observer = director;
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, new DragResolver(session),
                 new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
@@ -97,6 +99,16 @@ namespace Game.Tests.Runtime
             loop.Resume();
 
             Assert.That(inputLock.IsLocked, "the win still holds the lock");
+        }
+
+        [Test]
+        public void Win_IsRecorded_TheMomentItHappens_BeforeThePopup()
+        {
+            session.TryMove(block, Direction.Left);
+
+            Assert.That(flow.IsIdle, Is.False, "precondition: the win popup is still waiting for the exit");
+            Assert.That(meta.Wallet.Coins, Is.EqualTo(150), "the reward is in");
+            Assert.That(meta.Progression.LevelNumber, Is.EqualTo(2), "the next level is set");
         }
     }
 }

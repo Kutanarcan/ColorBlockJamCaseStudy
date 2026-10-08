@@ -5,6 +5,7 @@
         "Game.Core",
         "Game.LevelIO",
         "Game.Runtime",
+        "Game.Meta",
         "UniTask",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

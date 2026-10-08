@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Game.Core;
 using Game.Infrastructure;
+using Game.Meta;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -21,6 +22,8 @@ namespace Game.Runtime
         private readonly ILevelSource levels;
         private readonly LoadedConfig config;
         private readonly SelectedLevel selected;
+        private readonly Wallet wallet;
+        private readonly Progression progression;
         private readonly CameraRig cameraRig;
         private readonly DragSettings dragSettings;
         private readonly ExitSettings exitSettings;
@@ -34,12 +37,15 @@ namespace Game.Runtime
         private GameplayLoop loop;
 
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
-            CameraRig cameraRig, DragSettings dragSettings, ExitSettings exitSettings, Transform root)
+            Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
+            ExitSettings exitSettings, Transform root)
         {
             this.assets = assets;
             this.levels = levels;
             this.config = config;
             this.selected = selected;
+            this.wallet = wallet;
+            this.progression = progression;
             this.cameraRig = cameraRig;
             this.dragSettings = dragSettings;
             this.exitSettings = exitSettings;
@@ -132,7 +138,9 @@ namespace Game.Runtime
 
             outline = new SelectionOutline(cameraRig.SceneCamera, presentation.SelectionOutline, blocks);
             var inputLock = new InputLock();
-            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, config.Value.WinPopupDelay);
+            var completion = new LevelCompletion(wallet, progression, config.Value.WinReward);
+            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, config.Value.WinPopupDelay,
+                completion);
             session.Observer = director;
 
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,

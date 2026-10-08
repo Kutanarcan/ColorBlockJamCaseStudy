@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoRun: 1
+  config: {fileID: 11400000, guid: e75d4888e9ee4b47a177c5d8867e650e, type: 2}
 --- !u!4 &1000000003
 Transform:
   m_ObjectHideFlags: 0
