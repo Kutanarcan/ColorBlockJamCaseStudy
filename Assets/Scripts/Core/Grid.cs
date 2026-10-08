@@ -18,6 +18,8 @@ namespace Game.Core
                 cells[i] = Empty;
         }
 
+        public bool Contains(Cell cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;
+
         public int IndexOf(Cell cell) => cell.Y * Width + cell.X;
         public Cell CellOf(int index) => new Cell(index % Width, index / Width);
 

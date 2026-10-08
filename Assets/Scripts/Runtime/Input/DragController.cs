@@ -65,7 +65,10 @@ namespace Game.Runtime
             if (!BoardRaycast.TryGetCellPoint(pointer.PointerRay, out Vector2 cellPoint))
                 return;
 
-            if (!(session.Board.EntityAt(BoardRaycast.ToCell(cellPoint)) is Block block))
+            // A press off the board selects nothing; outside the grid a row-major index wraps or overruns.
+            Cell cell = BoardRaycast.ToCell(cellPoint);
+
+            if (!session.Board.Grid.Contains(cell) || !(session.Board.EntityAt(cell) is Block block))
                 return;
 
             draggedBlock = block;
