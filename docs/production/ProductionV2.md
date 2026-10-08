@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-19/30_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-20/30_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -383,7 +383,7 @@ One phase per answer, following the production process. **Files touched** are de
 |---|---|---|---|---|
 | M0 | Save, Progression & Settings | M0.1 `Game.Meta` + `Game.Tests.Meta` asmdefs · M0.2 `ISaveStore` + per-feature sections + `JsonSaveStore` · M0.3 progression with wrap; the bootstrapper selects its level (the Level Editor's request still wins) · M0.4 settings flags | `Progression_WrapsToTheFirstLevel_AfterTheLast` | ✅ |
 | M0b | Level Test Start | M0b.1 `RootScope` (Runtime): shared root wiring + `InstallStartServices`; `RootLifetimeScope` installs `LiveServicesInstaller` · M0b.2 `Game.LevelTest` assembly (Editor only, `UNITY_EDITOR`) with `LevelTestLifetimeScope`, `LevelTestServicesInstaller`, `MemorySaveStore` (only the live `settings` section copied in), `FixedLevelChoice`, the play request · M0b.3 `LevelTest.unity` start scene; Level Editor ▶ Play → `LevelTestLauncher` · M0b.4 `ILevelChoice` behind `SelectedLevel`. `LevelTestConfig` moves to M1 and the badge to U0, where they first have a reader | `LevelTestLaunch_KeepsTheLiveSaveUntouched` | ✅ |
-| M1 | Wallet & Continue Price | M1.0 `Meta/` passes 6 files: `Progress/` (progression, level completion) and `Economy/` (wallet, continue price, starting coins); settings stay at the root (D100, D133) · M1.1 wallet (`Wallet` + `WalletData` section): start coins, earn, spend only when covered · M1.2 config: reward, start coins, continue base / step / seconds; `LevelTestConfig` (Editor only, D130) gives the LevelTest start coins · M1.3 a win adds the reward, advances progression and saves at once (D123) · M1.4 continue price per level start (D124) · M1.5 `StartServices_RegisterTheSameContracts`: both start installers resolve the same contract list (`ISaveStore`, `ILevelChoice`, the wallet's start coins), so a contract added to only one turns the test red (architecture.md § Start services) | `Coins_StayCorrect_AfterLeavingAndReturning` | ⏳ |
+| M1 | Wallet & Continue Price | M1.0 `Meta/` passes 6 files: `Progress/` (progression, level completion) and `Economy/` (wallet, continue price, starting coins); settings stay at the root (D100, D133) · M1.1 wallet (`Wallet` + `WalletData` section): start coins, earn, spend only when covered · M1.2 config: reward, start coins, continue base / step / seconds; `LevelTestConfig` (Editor only, D130) gives the LevelTest start coins · M1.3 a win adds the reward, advances progression and saves at once (D123) · M1.4 continue price per level start (D124) · M1.5 `StartServices_RegisterTheSameContracts`: both start installers resolve the same contract list (`ISaveStore`, `ILevelChoice`, the wallet's start coins), so a contract added to only one turns the test red (architecture.md § Start services) | `Coins_StayCorrect_AfterLeavingAndReturning` | ✅ |
 
 ### 🖼️ Stage D: Gameplay UI
 | # | Phase | Sub-steps | Done when | Status |
