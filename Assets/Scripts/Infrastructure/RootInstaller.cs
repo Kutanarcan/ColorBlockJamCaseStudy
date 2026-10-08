@@ -15,14 +15,16 @@ namespace Game.Infrastructure
         private readonly IContentDelivery delivery;
         private readonly IAssetSource assets;
         private readonly ISceneLoader scenes;
+        private readonly IPlayRequestStore requests;
 
         public RootInstaller(IContentInitializer content, IContentDelivery delivery, IAssetSource assets,
-            ISceneLoader scenes)
+            ISceneLoader scenes, IPlayRequestStore requests)
         {
             this.content = content;
             this.delivery = delivery;
             this.assets = assets;
             this.scenes = scenes;
+            this.requests = requests;
         }
 
         public void Install(IContainerBuilder builder)
@@ -31,10 +33,10 @@ namespace Game.Infrastructure
             builder.RegisterInstance(delivery);
             builder.RegisterInstance(assets);
             builder.RegisterInstance(scenes);
+            builder.RegisterInstance(requests);
             builder.RegisterInstance(new LevelJson(ModifierCatalog.Default()));
             builder.Register<ContentUpdate>(Lifetime.Singleton);
             builder.Register<LoadedConfig>(Lifetime.Singleton);
-            builder.Register<EditorPlayRequestStore>(Lifetime.Singleton).As<IPlayRequestStore>();
             builder.Register<PlayRequest>(Lifetime.Singleton);
             builder.Register<SelectedLevel>(Lifetime.Singleton);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();

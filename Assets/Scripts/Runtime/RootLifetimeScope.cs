@@ -16,8 +16,19 @@ namespace Game.Runtime
                 new AddressablesContentInitializer(),
                 new AddressablesContentDelivery(),
                 new AddressablesAssetSource(),
-                new AddressablesSceneLoader(this))
+                new AddressablesSceneLoader(this),
+                PlayRequests())
                 .Install(builder);
+        }
+
+        /// <summary>Only the Level Editor asks for a level (D118); a player build has no request to read.</summary>
+        private static IPlayRequestStore PlayRequests()
+        {
+#if UNITY_EDITOR
+            return new EditorPlayRequestStore();
+#else
+            return new NoPlayRequests();
+#endif
         }
     }
 }
