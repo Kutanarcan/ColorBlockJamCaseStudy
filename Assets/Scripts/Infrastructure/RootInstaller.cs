@@ -1,3 +1,5 @@
+using Game.Core;
+using Game.LevelIO;
 using VContainer;
 using VContainer.Unity;
 
@@ -5,7 +7,7 @@ namespace Game.Infrastructure
 {
     /// <summary>
     /// The root scope's registrations, kept out of the <c>LifetimeScope</c> so a test can build them without a scene.
-    /// The asset loader is scoped: every child scope gets its own <see cref="AssetScope"/>, released with it (D66).
+    /// The asset loader and the level source are scoped: every child scope gets its own, released with it (D66).
     /// </summary>
     public sealed class RootInstaller : IInstaller
     {
@@ -29,8 +31,11 @@ namespace Game.Infrastructure
             builder.RegisterInstance(delivery);
             builder.RegisterInstance(assets);
             builder.RegisterInstance(scenes);
+            builder.RegisterInstance(new LevelJson(ModifierCatalog.Default()));
             builder.Register<ContentUpdate>(Lifetime.Singleton);
+            builder.Register<LoadedConfig>(Lifetime.Singleton);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();
+            builder.Register<AssetLevelSource>(Lifetime.Scoped).As<ILevelSource>();
             builder.RegisterEntryPoint<Bootstrapper>();
         }
     }

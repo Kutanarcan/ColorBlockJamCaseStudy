@@ -2,6 +2,8 @@
     "name": "Game.Infrastructure",
     "rootNamespace": "Game.Infrastructure",
     "references": [
+        "Game.Core",
+        "Game.LevelIO",
         "UniTask",
         "UniTask.Addressables",
         "VContainer",

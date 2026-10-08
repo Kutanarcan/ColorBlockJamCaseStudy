@@ -9,11 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dea69d41f90c6ea4fa55c27c1d60c145, type: 3}
-  m_Name: AddressableAssetGroupSortSettings
+  m_Script: {fileID: 11500000, guid: 9436b950de834094a9bf8a49dca1a199, type: 3}
+  m_Name: GameConfig
   m_EditorClassIdentifier: 
-  sortOrder:
-  - 5920740d6dfa6804999454a3af8ec303
-  - 41babee4f7a84a04da43d9225585004c
-  - a10865d2e8c5a1445aa4febe9d8aeb24
-  - 51d1c5dfac820294c90a75059583f69e
+  levelKeys:
+  - Level_1
+  - Level_2
+  - Level_3
+  - Level_4
+  - Level_5
+  winPopupDelay: 0.5

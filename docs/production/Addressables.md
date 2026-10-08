@@ -42,7 +42,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 
 | Group | Holds | Lives as long as | Paths | Bundle mode | Created |
 |---|---|---|---|---|---|
-| `Boot` | `GameConfig`, palette | the whole run (root scope) | Local | Pack Together | I4 |
+| `Boot` | `GameConfig` | the whole run (root scope) | Local | Pack Together | ✅ I4 |
 | `Main` | Home and settings content, the Main scene | the Main scope | Local | Pack Together | M2 |
 | `Gameplay` | Presentation assets, prefabs, materials, the Gameplay scene | the Gameplay scope | Local | Pack Together | ✅ I3 (scene) |
 | `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_6` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
@@ -63,7 +63,8 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | Key | Asset | Group | Constant |
 |---|---|---|---|
 | `Gameplay` | `Assets/Scenes/Gameplay.unity` | `Gameplay` | `SceneKeys.Gameplay` |
-| `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | from `GameConfig` (I4) |
+| `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor) |
+| `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
 
 ## 4. Loading & lifetime
 ```
@@ -165,6 +166,10 @@ Done by hand once (D115); the result is committed under `Assets/AddressableAsset
 11. Catalog → `Build Remote Catalog` ✓, Build & Load Paths = `Remote` (locally it points to the local folder, §7).
 12. Play Mode Script: `Use Asset Database` while developing; `Use Existing Build` to test real bundles (needs a content build).
 
+**Boot group** (I4)
+13. Create `Boot` (`Create → Group → Packed Assets`). Paths: Local. Bundle mode: Pack Together.
+14. Drag `Assets/ScriptableObjects/Config/GameConfig.asset` into it and set its key to `GameConfig` (or `Simplify Addressable Names`).
+
 **Play Mode Script** (Groups window → `Play Mode Script`) decides where Addressables takes assets from when you press Play in the Editor. Game code is the same in every mode; only the loading path underneath changes.
 
 | Script | Takes assets from | Use it for |
@@ -192,9 +197,10 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
    └── Bootstrapper (entry point)
          1. IContentInitializer   InitializeAsync
          2. ContentUpdate         catalogs → (update + clean) → size(remote) → download(remote)
-         3. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  additive, active
+         3. IAssetLoader          GameConfig → LoadedConfig   (root AssetScope, lives for the run)
+         4. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  additive, active
                                      └── GameplayLifetimeScope (child of root, own AssetScope)
-                                           GameplayInstaller still wires the scene; levels from TextAsset[] until I4
+                                           ILevelSource = AssetLevelSource (scoped); GameplayInstaller still wires the scene until I4b
 ```
 
 | Phase | What | State |
@@ -203,5 +209,5 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I1 | `IAssetLoader`, `AssetScope`, `AddressablesAssetSource`, leak report | ✅ |
 | I2 | `ISceneLoader`, Gameplay child scope (Main in M2), scene unload disposes scope | ✅ |
 | I3 | `Gameplay` and `Levels` groups, `remote` label, Local / Remote profiles, content update flow | ✅ |
-| I4 | `GameConfig`, `Boot` group, Addressables level source, `PresentationAssets` from Addressables | ⏳ |
+| I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | a: ✅ code · setup & tests pending · b: ⏳ |
 | I6 | Event Viewer round trip, first APK | ⏳ |

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Core;
 using Game.Infrastructure;
 using NUnit.Framework;
 using UnityEngine;
@@ -24,6 +25,8 @@ namespace Game.Tests.Infrastructure
             Assert.That(container.Resolve<IContentInitializer>(), Is.SameAs(content));
             Assert.That(container.Resolve<IAssetLoader>(), Is.InstanceOf<AssetScope>());
             Assert.That(container.Resolve<ISceneLoader>(), Is.SameAs(scenes));
+            Assert.That(container.Resolve<ILevelSource>(), Is.InstanceOf<AssetLevelSource>());
+            Assert.That(container.Resolve<LoadedConfig>(), Is.Not.Null);
             Assert.That(container.Resolve<IReadOnlyList<IAsyncStartable>>(), Has.Some.InstanceOf<Bootstrapper>());
         }
 
