@@ -4,12 +4,14 @@ namespace Game.Runtime
 {
     /// <summary>
     /// The one door through which presentation gets its assets (D62). Views read from here and never know how
-    /// the assets were loaded; in I4 this content comes from Addressables instead of a scene reference.
+    /// the assets were loaded; the asset is Addressable under <see cref="Key"/> in the Gameplay group (D117).
     /// Pieces are the kit's prefabs; their variants are meshes swapped in through the piece's view (D99).
     /// </summary>
     [CreateAssetMenu(menuName = "Color Block Jam/Presentation Assets", fileName = "PresentationAssets")]
     public sealed class PresentationAssets : ScriptableObject
     {
+        public const string Key = "PresentationAssets";
+
         [Header("Colors")]
         [SerializeField] private Palette palette;
         [SerializeField] private Material blockTemplate;
