@@ -22,6 +22,7 @@
 | 4 | [Edit points](#4-edit-points) | Mechanics that need a known change, and where it stays |
 | 5 | [Before merging](#5-before-merging) | The checklist |
 | 6 | [Recipe: a new service or saved data (V2)](#6-recipe-a-new-service-or-saved-data-v2) | Cross-cutting services in the game and the level test; a new save section |
+| 7 | [Deliberate trade-offs & future services (V2)](#7-deliberate-trade-offs--future-services-v2) | What was left simple on purpose, what to watch when it grows: audio, live ops |
 
 ---
 
@@ -167,3 +168,48 @@ Forgetting step 3 is loud, not silent: the level test fails to resolve the contr
 - [ ] A new start service is registered in **both** start installers and listed in `StartServices_RegisterTheSameContracts`.
 - [ ] No cross-cutting service is created with `new` inside a child scope or its entry point.
 - [ ] A new save section is its own data class and key; no field was added to another feature's data.
+
+---
+
+## 7. Deliberate trade-offs & future services (V2)
+Choices made **on purpose** for the slice's scope, not open questions. Each says what it costs today, what triggers the change, and what to watch when it comes. ProductionV2 D132.
+
+### 7.1 Trade-offs taken
+| # | Today | Why it is fine now | Changes when | What to do then |
+|---|---|---|---|---|
+| T1 | `GameplayEntry` creates `AudioSfxPlayer` with `new` (breaks § Start services "child scopes never `new` a cross-cutting service") | Only gameplay plays sound; the clips come from `PresentationAssets` | Music, a second scene with sound, or the SFX toggle (U2) needs one owner | Root `AudioService` (§7.2); `GameplayEntry` takes it by injection |
+| T2 | The root scope has no Unity host for components | Nothing at the root needs an `AudioSource` or a coroutine yet | The first root service that needs a component | `RootScope` registers its own `transform` (as `GameplayLifetimeScope` does); the service builds its components under it |
+| T3 | No app lifecycle adapter (`OnApplicationPause`, `OnApplicationFocus`, quit) | Saves are written on every change (D128), nothing waits for pause / quit | Monotonic time, audio pausing in the background, a pending upload | `IAppLifecycle` (Infrastructure) + one dumb MonoBehaviour under the root that forwards the three calls |
+| T4 | No change notification from services to UI (D82: no bus) | Every value the UI shows changes on the player's own action | A value changes on its own (an event starts, a timer refills lives) | Decide once: a C# event on the service, or presenters reading on tick. V1's "no C# events" (D32) is a Core rule, Runtime may choose either |
+| T5 | `Bootstrapper` calls its start-up steps one by one | Four steps, all known | The third new async step (server time, audio bank, remote config) | `IStartupStep` list, ordered by the installer; the bootstrapper runs the list |
+| T6 | Content update and Addressables are shared (`RootInstaller`), so a level test runs them too | Locally they do nothing | A server exists and a test should skip downloads | Move `IContentDelivery` into the start installers; the test gets a no-op |
+
+### 7.2 Future: AudioService
+- **Lifetime:** root singleton in `RootInstaller`: no outside effect, behaves the same in a level test.
+- **Host:** `AudioSource`s under the root's transform (T2); Bootstrap never unloads, so music survives scene changes.
+- **Clips are not owned by the service.** Music loads in the root (`Boot` / `Main` group); gameplay SFX load in the Gameplay scope and are passed to `Play`. A scene closing releases its clips (D66); the service must not cache a clip past its scope.
+- **Settings:** reads `Settings` (Meta); `Sound` / `Music` off means it does not play. U2's SFX toggle then needs no audio code of its own.
+- **Lifecycle:** pauses with the app (T3).
+- **Watch:** one `AudioSource` per concurrent sound is pooled, never created per call (allocation rule); the `ISfxPlayer` contract stays small (ISP).
+
+### 7.3 Future: live service (UTC + monotonic time)
+- **Lifetime:** root singleton, registered in the **start installers**: it has an outside effect (server time, event schedule).
+- **Split:**
+
+| Part | Where | What |
+|---|---|---|
+| Schedule logic | Meta (pure C#) | Is an event active, how long is left; reads only `IClock` |
+| `IClock` | Meta | UTC now + monotonic elapsed |
+| Real clock | Infrastructure, `LiveServicesInstaller` | UTC from `DateTime.UtcNow` (later corrected by a server offset), monotonic from `Stopwatch` / `realtimeSinceStartupAsDouble`; the last known time in its own save section to notice a clock turned back |
+| Test clock | `Game.LevelTest`, `LevelTestServicesInstaller` | A clock the designer moves, so an event is tested on any date without touching the live save |
+
+- **Lifecycle:** needs T3: monotonic time does not run while the app is suspended on every platform; resume re-reads UTC and checks it against monotonic.
+- **UI:** needs T4 decided: an event starting on its own is the first value that changes without the player.
+- **Start-up:** a server time fetch is an async start-up step (T5).
+- **Watch:** never compare raw `DateTime.Now` (local) anywhere; never let a test clock reach a live store (§ Start services).
+
+### 7.4 The same pattern, any root service
+1. Same in the game and in a test → `RootInstaller`; differs or touches the outside → both start installers (§6.1).
+2. Unity components → under the root's host (T2); app pause / resume → `IAppLifecycle` (T3).
+3. Kept data → its own save section (§6.3).
+4. Used by a scene → injected from the root, never created there (T1).
