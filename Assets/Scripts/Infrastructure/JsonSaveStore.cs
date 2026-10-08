@@ -17,6 +17,9 @@ namespace Game.Infrastructure
 
         public JsonSaveStore(string folder) => this.folder = folder;
 
+        /// <summary>Where the player's save lives on this device.</summary>
+        public static string PlayerFolder => Path.Combine(Application.persistentDataPath, "Save");
+
         public T Load<T>(string key) where T : class, new()
         {
             string path = PathOf(key);

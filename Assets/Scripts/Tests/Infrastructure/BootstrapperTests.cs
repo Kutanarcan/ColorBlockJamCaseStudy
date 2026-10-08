@@ -12,7 +12,6 @@ namespace Game.Tests.Infrastructure
     {
         private GameConfig config;
         private LoadedConfig loaded;
-        private FakePlayRequestStore requests;
         private FakeSaveStore saves;
         private SelectedLevel level;
 
@@ -22,9 +21,8 @@ namespace Game.Tests.Infrastructure
             config = ScriptableObject.CreateInstance<GameConfig>();
             SetLevelKeys(config, "Level_1", "Level_2", "Level_3");
             loaded = new LoadedConfig(new FakeAssetLoader().Add(GameConfig.Key, config));
-            requests = new FakePlayRequestStore();
             saves = new FakeSaveStore();
-            level = new SelectedLevel(loaded, new PlayRequest(requests), new Progression(saves));
+            level = new SelectedLevel(new ProgressionLevelChoice(loaded, new Progression(saves)));
         }
 
         [TearDown]
@@ -55,18 +53,6 @@ namespace Game.Tests.Infrastructure
             Assert.That(delivery.Log, Is.Not.Empty);
             Assert.That(loaded.Value, Is.SameAs(config));
             Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }));
-        }
-
-        [Test]
-        public void Bootstrapper_OpensTheRequestedLevel_WhenOneIsStored()
-        {
-            saves.Save(Progression.SaveKey, new ProgressionData { levelsCompleted = 1 });
-            new PlayRequest(requests).Store("Level_6");
-
-            Start(new FakeContentInitializer(), new FakeContentDelivery(), new FakeSceneLoader());
-
-            Assert.That(level.Key, Is.EqualTo("Level_6"), "The Level Editor's request wins over progression.");
-            Assert.That(requests.Value, Is.Empty, "The request is taken once.");
         }
 
         [Test]

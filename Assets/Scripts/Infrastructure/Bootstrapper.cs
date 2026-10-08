@@ -6,7 +6,7 @@ namespace Game.Infrastructure
 {
     /// <summary>
     /// The root scope's entry point: runs the start-up flow once per run (§4 Bootstrapper flow). Content, the content
-    /// update, the config, the first level (the Level Editor's request wins over progression; meta sections load on
+    /// update, the config, the first level (the start scene's choice, D131; meta sections load on
     /// first use), then the first scene.
     /// </summary>
     public sealed class Bootstrapper : IAsyncStartable
@@ -32,7 +32,7 @@ namespace Game.Infrastructure
             await content.InitializeAsync(cancellation);
             await update.RunAsync(cancellation);
             await config.LoadAsync(cancellation);
-            level.SelectFirst();
+            level.Select();
             await scenes.ReplaceContentSceneAsync(SceneKeys.Gameplay, cancellation);
         }
     }

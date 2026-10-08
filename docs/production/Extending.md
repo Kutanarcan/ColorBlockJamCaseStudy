@@ -2,7 +2,7 @@
 
 # 🔌 Extending
 
-**How to add a mechanic: the recipe, a worked example, and the places where the design asks for an edit**
+**How to add a mechanic: the recipe, a worked example, and the places where the design asks for an edit; how to add a service or saved data (V2)**
 
 ![Criterion](https://img.shields.io/badge/New_mechanic-new_files_only-2ea043)
 ![Proof](https://img.shields.io/badge/Proof-Turn_Based_Arrow-1f6feb)
@@ -21,6 +21,7 @@
 | 3 | [Worked example: Turn Based Arrow](#3-worked-example-turn-based-arrow) | The Phase 13 proof, file by file |
 | 4 | [Edit points](#4-edit-points) | Mechanics that need a known change, and where it stays |
 | 5 | [Before merging](#5-before-merging) | The checklist |
+| 6 | [Recipe: a new service or saved data (V2)](#6-recipe-a-new-service-or-saved-data-v2) | Cross-cutting services in the game and the level test; a new save section |
 
 ---
 
@@ -124,3 +125,45 @@ Not built in V1. Each needs a change in a known place, so it is a choice, not a 
 - [ ] [Level Format §4.1](LevelFormat.md#41-adding-a-modifier) checklist done; [§6 review checklist](LevelFormat.md#6-review-checklist) passes.
 - [ ] Logic tests cover: before, after, and stacking with an existing modifier.
 - [ ] The modifier shows up in the Level Editor's "Add" list and its fields can be edited.
+
+---
+
+## 6. Recipe: a new service or saved data (V2)
+The game and the Level Editor's test are two starts that share the game's code (ProductionV2 D131). Rules: `.claude/rules/production/architecture.md` § Start services, § Saved data.
+
+```
+RootScope (Runtime) ── RootInstaller: shared, runs the same in the game and in a test
+   ├─ RootLifetimeScope       (Bootstrap)  ── LiveServicesInstaller       real implementations
+   └─ LevelTestLifetimeScope  (LevelTest)  ── LevelTestServicesInstaller  stand-ins (Game.LevelTest, Editor only)
+```
+
+### 6.1 Decide where it goes
+| The service… | Goes in | Example |
+|---|---|---|
+| Behaves the same in a test, has no outside effect | `RootInstaller` | Asset loader, scene loader, config, `Progression` / `Settings` logic |
+| Keeps data, talks to the outside, or must differ in a test | Both start installers | Save store, level choice, analytics, live events, ads, purchases, cloud save |
+| Unsure | Both start installers | A shared registration runs for real in every level test |
+
+### 6.2 A cross-cutting service (e.g. analytics)
+1. **Contract** in live code, where its users live (Meta if pure C#, else Infrastructure): `IAnalytics`, small (ISP).
+2. **Real implementation** in Infrastructure; register it in `LiveServicesInstaller`.
+3. **Stand-in** in `Game.LevelTest`: `NullAnalytics` (does nothing) or an in-memory one when the test should still see its effect; register it in `LevelTestServicesInstaller`.
+4. **Users** take the contract by constructor or `[Inject]`. In a child scope, it comes from the root by injection; never `new` it in `GameplayEntry` or a view.
+5. **Tests:**
+   - Unit tests use a hand-written fake in the test assembly (not the `Game.LevelTest` stand-in).
+   - Add the contract to the list in `StartServices_RegisterTheSameContracts` (from M1): it fails while only one start installer registers it.
+
+Forgetting step 3 is loud, not silent: the level test fails to resolve the contract when it starts. Registering in `RootInstaller` instead is silent: the test then runs the real service. That is why "unsure" means both start installers.
+
+### 6.3 Saved data for a feature (e.g. boosters)
+1. A data class beside the feature: `[Serializable] BoosterData { public int version = 1; … }`, public fields (the store writes fields), defaults as a fresh player has them.
+2. A `SaveKey` constant on the feature (`"boosters"`); the key is frozen once shipped.
+3. The feature takes `ISaveStore`, reads its section on first use (`Load<BoosterData>(SaveKey)`), writes only its section on change.
+4. Nothing else changes: `JsonSaveStore` writes `Save/boosters.json`; a level test starts the section fresh in memory. Only if the test should start from the player's data, copy the section in `LevelTestServicesInstaller`, as it does for `settings`.
+5. Tests: the Meta fake store keeps sections as JSON text, so "survives a restart" reads a copy.
+
+### 6.4 Before merging
+- [ ] Live code (Core, Meta, Infrastructure, Runtime) names no test type and checks no mode.
+- [ ] A new start service is registered in **both** start installers and listed in `StartServices_RegisterTheSameContracts`.
+- [ ] No cross-cutting service is created with `new` inside a child scope or its entry point.
+- [ ] A new save section is its own data class and key; no field was added to another feature's data.

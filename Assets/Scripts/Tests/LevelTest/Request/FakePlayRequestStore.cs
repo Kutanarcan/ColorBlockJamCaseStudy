@@ -1,6 +1,6 @@
-using Game.Infrastructure;
+using Game.LevelTest;
 
-namespace Game.Tests.Infrastructure
+namespace Game.Tests.LevelTest
 {
     /// <summary>Holds the request in a field, as SessionState would across entering play mode.</summary>
     internal sealed class FakePlayRequestStore : IPlayRequestStore

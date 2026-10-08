@@ -6,6 +6,7 @@
         "Game.LevelIO",
         "Game.Runtime",
         "Game.Infrastructure",
+        "Game.LevelTest",
         "Unity.Addressables",
         "Unity.Addressables.Editor"
     ],

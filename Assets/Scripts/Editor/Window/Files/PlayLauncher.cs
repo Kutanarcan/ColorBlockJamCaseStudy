@@ -1,18 +1,13 @@
-using Game.Infrastructure;
-using UnityEditor;
+using Game.LevelTest;
 
 namespace Game.LevelEditor
 {
     /// <summary>
-    /// Plays a saved level from the Level Editor (D75, D118): leaves the key for the bootstrapper and enters play mode,
-    /// which always starts from the Bootstrap scene. The level is already addressable, saved just before.
+    /// Plays a saved level from the Level Editor (D75, D131): a level test, in its own scene and on its own services,
+    /// so testing never touches the player's save. The level is already addressable, saved just before.
     /// </summary>
     internal static class PlayLauncher
     {
-        public static void Play(string levelKey)
-        {
-            new PlayRequest(new EditorPlayRequestStore()).Store(levelKey);
-            EditorApplication.EnterPlaymode();
-        }
+        public static void Play(string levelKey) => LevelTestLauncher.Play(levelKey);
     }
 }

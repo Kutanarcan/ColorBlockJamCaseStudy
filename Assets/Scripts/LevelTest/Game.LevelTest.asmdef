@@ -1,0 +1,21 @@
+{
+    "name": "Game.LevelTest",
+    "rootNamespace": "Game.LevelTest",
+    "references": [
+        "Game.Meta",
+        "Game.Infrastructure",
+        "Game.Runtime",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
