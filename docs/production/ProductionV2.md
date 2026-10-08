@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-17/28_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-17/29_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -20,11 +20,11 @@
 | # | Section | What is in it |
 |---|---|---|
 | 1 | [📋 Scope](#-1-scope) | What the brief requires, what is optional, what stays out |
-| 2 | [🗺️ Roadmap](#-2-roadmap) | Five stages and why in this order |
+| 2 | [🗺️ Roadmap](#-2-roadmap) | Six stages and why in this order |
 | 3 | [🎨 Presentation](#-3-presentation) | Layers, observer seam, director & sequencer, board, blocks, drag, exit, camera |
 | 4 | [🏛️ Infrastructure](#-4-infrastructure) | Scopes, scenes, Addressables, asset lifetime, config, async |
-| 5 | [🖼️ Gameplay UI](#-5-gameplay-ui) | HUD, pause, win and fail popups |
-| 6 | [🏠 Main Menu & Meta](#-6-main-menu--meta) | Home, settings, coins, save, progression |
+| 5 | [🖼️ Gameplay UI](#-5-gameplay-ui) | HUD, booster bar, popups (MVP), pause and continue flow |
+| 6 | [🏠 Main Menu & Meta](#-6-main-menu--meta) | Save, progression, wallet, settings, Home |
 | 7 | [🚀 Boosters (if time)](#-7-boosters-if-time) | FreezeTime, Hammer |
 | 8 | [⚡ Performance](#-8-performance) | Budget, allocation rules, how it is measured |
 | 9 | [📦 Assemblies & Tests](#-9-assemblies--tests) | New assemblies and what tests them |
@@ -41,9 +41,9 @@
 ### Required by the brief
 | Brief | Requirement | Acceptance criteria | Phase |
 |---|---|---|---|
-| 4.1 | **Home:** tab bar (placeholders), level button, top UI, settings button | Level button starts the current level · settings opens settings · layout correct at 1080×1920 and on 20:9 | M2, M4, U0 |
-| 4.2 | **Settings:** placeholder buttons with feedback; vibration, sound, music toggles | Each toggle shows on / off · the screen closes back to Home | M3 |
-| 4.3 | **Gameplay:** first 5 levels, timer, coins, fail popup, pause, restart, home. Boosters and lives may be placeholders | Complete a level and go to the next · timer stops the level at 0 · fail popup offers restart and home · restart leaves nothing from the last attempt · coins stay correct after leaving and returning | P1–P9, U1–U3, M0–M1, M4 |
+| 4.1 | **Home:** tab bar (placeholders), level button, top UI, settings button | Level button starts the current level · settings opens settings · layout correct at 1080×1920 and on 20:9 | U0, M2, M3 |
+| 4.2 | **Settings:** placeholder buttons with feedback; vibration, sound, music toggles | Each toggle shows on / off · the screen closes back to Home | M0, U2, M2 |
+| 4.3 | **Gameplay:** first 5 levels, timer, coins, fail popup, pause, restart, home. Boosters and lives may be placeholders | Complete a level and go to the next · timer stops the level at 0 · fail popup offers restart and home · restart leaves nothing from the last attempt · coins stay correct after leaving and returning | P1–P9, M0–M1, U0–U5, M3 |
 | 4.4 | **Level editor:** width, height, doors, blocks, timer; visual; one format the game reads | A designer makes, saves and **plays** a level without code or hand-edited files · the 5 levels come from the editor | ✅ V1, P9, I5 |
 
 ### Optional (brief §5)
@@ -68,7 +68,7 @@
 
 ```mermaid
 flowchart LR
-    P["🎨 Presentation"] --> I["🏛️ Infrastructure"] --> U["🖼️ Gameplay UI"] --> M["🏠 Main Menu & Meta"] --> D["📬 Delivery"]
+    P["🎨 Presentation"] --> I["🏛️ Infrastructure"] --> X["🪙 Meta"] --> U["🖼️ Gameplay UI"] --> M["🏠 Main Menu"] --> D["📬 Delivery"]
     D -.-> B["🚀 Boosters (if time)"]
 ```
 
@@ -76,8 +76,9 @@ flowchart LR
 |---|---|---|
 | 🎨 **Presentation** | The game is fully playable and polished in one scene: board, blocks, drag, exit, Ice / Arrow, camera fit, five levels | The slice's core; once loaded, gameplay does not change with the infrastructure (D61) |
 | 🏛️ **Infrastructure** | Bootstrap → Gameplay through VContainer scopes, Addressables, config, asset lifetime | Presentation is built refactor-ready, so this swaps wiring and loading only |
-| 🖼️ **Gameplay UI** | HUD, pause, win / fail popups driven by the director | Uses the infrastructure's popup and scene services |
-| 🏠 **Main Menu & Meta** | Home, settings, coins, save, progression, Home ↔ Gameplay | Small once save, config and scenes exist |
+| 🪙 **Meta** | Save, progression, settings flags, wallet (earn and spend), continue price | The HUD, the popups and the next level read or change it, so it comes before the UI (D120) |
+| 🖼️ **Gameplay UI** | HUD, booster bar, Settings / LoseLife / LevelComplete / LevelFail / Play popups, pause and continue | Uses the infrastructure's scopes and scene loader and the meta's state |
+| 🏠 **Main Menu** | Home (top UI, level button, tab bar), the shared popups' Home variants, Home ↔ Gameplay | Reuses the gameplay popups; only new variants and the Main scene |
 | 📬 **Delivery** | README per brief, APK, video | Android build tried early (I6), finished last |
 
 **Refactor-ready presentation (D62):** views never know how they were loaded. They receive dependencies through `Initialize(...)` from one installer; assets come through one door (`PresentationAssets`); the level comes through Core's `ILevelSource`. In Infrastructure, the installer becomes a `LifetimeScope`, the door loads from Addressables, and the level source reads Addressables; views do not change.
@@ -206,7 +207,7 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 - UniTask arrives in P0 (the sequencer needs it); VContainer and Addressables in I0.
 
 ### Config (D72)
-- `GameConfig` (Addressable, `Boot` group): ordered level keys, coin reward per win, popup delays.
+- `GameConfig` (Addressable, `Boot` group): ordered level keys, popup delays; from M1 the coin reward per win, the starting coins and the continue offer (base price, price step, seconds added) (D124).
 - Values that are not data stay out of code (brief: "not a plain number").
 
 ### Editor "Play" (D75)
@@ -217,13 +218,33 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 ---
 
 ## 🖼️ 5. Gameplay UI
-- **Canvas:** uGUI, `CanvasScaler` reference 1080×1920, match tuned for 20:9; a `SafeArea` component on every screen root (D76).
-- **HUD:** remaining time, level number, coins (M1), pause, restart.
-- **Popups:** a popup service loads popup prefabs through the gameplay asset scope and plays their open / close as sequencer steps.
-- **Pause popup:** resume, restart (home added in M4).
-- **Win popup:** coins earned (M1), next level.
-- **Fail popup:** restart, home (home wired in M4; until then restart only).
+- **Canvas:** uGUI, `CanvasScaler` reference 1080×1920, match tuned for 20:9; a `SafeArea` component on every screen root (D76). Art from `Assets/Art/UI`, font LilitaOne (TMP).
 - Every button gives visual feedback (brief): one shared button feedback component.
+- A pointer over the UI never starts a block drag.
+
+### HUD (Gameplay)
+- **Top:** level number · remaining time, counting down as `mm:ss` · coins (wallet) · **Restart** → LoseLife (Retry) · **Pause** → Settings. Both stop the time (D122).
+- **Bottom:** booster bar, visual only (D125); its function is Stage G.
+
+### Popups (MVP, D121)
+- **View:** a dumb MonoBehaviour (`SetTitle`, `SetButtonLabel`, …) that reports its buttons; no Core or Meta reference.
+- **Content:** the variant's data (title, icon, labels, amounts).
+- **Presenter:** pure C#, reads the meta / session and drives the view; what a button does comes through a small actions interface with one implementation per place (Home, Gameplay). A variant is new data plus actions, never a subclass.
+- **Popup service:** scope-owned; loads popup prefabs by key (`Popups` group) through its scope's asset loader; open / close as sequencer steps; one popup at a time, opening the next replaces the current one; black dim behind every popup.
+
+| Popup | Variant content | Buttons |
+|---|---|---|
+| **Settings** | Gameplay: with **Home** · Home: without | Vibration / SFX / Music toggles, saved, distinct on / off; only SFX acts (D126) · Home → LoseLife (Leave) · X: Gameplay resumes, Home closes · other buttons static with feedback |
+| **LoseLife** | "Level X" title; fixed icon and text · Retry or Leave | Retry → restart · Leave → Home · X → resume |
+| **LevelComplete** | "Level Complete", coin icon, reward amount | Continue (+ amount) → next level (D123, D127) |
+| **LevelFail** | Fail kind content: title, icon, `+N`, description (OutOfTime: "Out Of Time", clock, +20, "Get 20 seconds to keep playing!"); lives placeholder top left, coins top right | Continue (price) → spend and add time, or red label and nothing when the wallet cannot pay (D124) · X → Play (Retry) |
+| **Play** | Title, title icon, booster row (visual) · Gameplay: Retry · Home: Play | Gameplay: Retry → restart, X → Home · Home: Play → load the level, X → close |
+
+### Flow
+- Opening a popup during play stops the ticks and locks input; resuming restarts them (D70, D122).
+- Win: the director waits for the last exit and the delay, then LevelComplete (D89). The reward and the next level are saved at the win, before the popup (D123).
+- Fail: running exits finish, then LevelFail with the content of its kind; the kind is read in Runtime (`RemainingTime ≤ 0` → OutOfTime).
+- Restart stays in the scene (D71); next level and Home ↔ Gameplay reopen the content scene under the loading cover (D119, D127).
 
 ---
 
@@ -231,18 +252,22 @@ Input ── DragController ── LevelSession.TryMove / CommitMove   (logic fi
 
 ### Meta logic (pure C#, D77)
 - **Progression:** current level index over the config's key list; after the last level it **wraps to the first** (D78).
-- **Wallet:** coin balance; a win adds the reward from config (D79).
+- **Wallet:** coin balance, starting from config; a win adds the reward from config (D79); spending succeeds only when the balance covers it.
+- **Continue price:** starts at the config's base (900) at every level start, restart included, and rises by the config's step after each continue (900 → 1900 → …) (D124).
 - **Settings:** vibration, sound, music flags.
-- All three live in a pure C# assembly (`Game.Meta`) and are tested without Unity.
+- All of it lives in a pure C# assembly (`Game.Meta`) and is tested without Unity.
+- **Placeholders:** lives (a fixed count and `00:00`) are shown, never taken (D125).
 
 ### Save
 - `ISaveStorage` (Meta) → JSON in `persistentDataPath` (Infrastructure). Saved on change and on pause / quit.
+- A win is saved at once: reward and next level are kept even if the player quits on the LevelComplete popup (D123).
 - Brief criterion "coins stay correct after leaving and returning" is a test on wallet + storage.
 
-### Screens
-- **Home:** tab bar (placeholder tabs with feedback), top UI (coins, lives placeholder, settings), level button showing the current level.
-- **Settings:** three toggles with distinct on / off states, placeholder buttons with feedback, close back to Home.
-- **Navigation:** Home → Gameplay (level button), Gameplay → Home (fail popup, pause popup), Win → next level.
+### Home (Main scene)
+- **Top UI:** lives placeholder · coins (wallet) · **Settings** → Settings popup (Home variant).
+- **Level button:** "Level X" from progression → Play popup (Home variant): Play loads Gameplay, X closes.
+- **Tab bar:** placeholder tabs with feedback, no function.
+- **Navigation:** Home → Gameplay (Play) · Gameplay → Home (Leave, Play popup X) · LevelComplete → next level.
 
 ---
 
@@ -325,30 +350,35 @@ One phase per answer, following the production process. **Files touched** are de
 | I5 | Editor Play via Bootstrap | I5.1 Play enters play mode from Bootstrap · I5.2 bootstrapper honours the stored key | `Bootstrapper_OpensTheRequestedLevel_WhenOneIsStored` | ✅ |
 | I6 | Release Check & Android Smoke | I6.1 Event Viewer: no bundle left after Gameplay → Bootstrap · I6.2 first APK on a device | Zero open handles after a full scene round trip + APK runs | ✅ |
 
-### 🖼️ Stage C: Gameplay UI
+### 🪙 Stage C: Meta
+| # | Phase | Sub-steps | Done when | Status |
+|---|---|---|---|---|
+| M0 | Save, Progression & Settings | M0.1 `Game.Meta` + `Game.Tests.Meta` asmdefs · M0.2 save model + `ISaveStorage` + JSON storage · M0.3 progression with wrap; the bootstrapper selects its level (the Level Editor's request still wins) · M0.4 settings flags | `Progression_WrapsToTheFirstLevel_AfterTheLast` | ⏳ |
+| M1 | Wallet & Continue Price | M1.1 wallet: start coins, earn, spend only when covered · M1.2 config: reward, start coins, continue base / step / seconds · M1.3 a win adds the reward, advances progression and saves at once (D123) · M1.4 continue price per level start (D124) | `Coins_StayCorrect_AfterLeavingAndReturning` | ⏳ |
+
+### 🖼️ Stage D: Gameplay UI
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
 | U0 | Canvas & Safe Area | U0.1 canvas setup 1080×1920 · U0.2 `SafeArea` · U0.3 shared button feedback · U0.4 loading cover over every content scene change, lifted when the scene is ready (D119) | `SafeArea_FitsTheRect_ForA20x9Notch` | ⏳ |
-| U1 | HUD | U1.1 timer, level number · U1.2 pause and restart buttons | `TimerText_ShowsMinutesAndSeconds_AndStopsAtZero` | ⏳ |
-| U2 | Popup Service & Pause | U2.1 popup service (scope-owned, open / close as steps) · U2.2 pause popup: resume, restart | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ⏳ |
-| U3 | Win & Fail | U3.1 win popup → next level · U3.2 fail popup → restart (home in M4) · U3.3 director sequences use them | `Director_ShowsWin_AfterTheLastExitStep` | ⏳ |
+| U1 | HUD | U1.1 level number, `mm:ss` countdown, coins · U1.2 restart and pause buttons (they open their popups from U2 / U3) · U1.3 booster bar, visual only · U1.4 a pointer over the UI starts no drag | `TimerText_ShowsMinutesAndSeconds_AndStopsAtZero` | ⏳ |
+| U2 | Popup Service & Settings | U2.1 popup service (scope-owned, `Popups` group, open / close as steps, dim, one at a time) · U2.2 a popup stops the ticks and locks input; resume restarts them (D122) · U2.3 Settings popup, Gameplay variant: three saved toggles, SFX mutes the SFX player, X resumes (D126) | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ⏳ |
+| U3 | LoseLife & Restart | U3.1 LoseLife popup (MVP): "Level X", Retry / Leave variants, X resumes · U3.2 HUD restart → Retry → restart in the scene · U3.3 Settings Home → Leave (goes Home from M3) | `LoseLifePresenter_RunsItsVariantsAction` | ⏳ |
+| U4 | Level Complete | U4.1 LevelComplete popup: title, coin icon, reward on Continue · U4.2 director shows it after the last exit step and the delay · U4.3 Continue → next level, scene reopened under the cover (D127) | `Director_ShowsWin_AfterTheLastExitStep` | ⏳ |
+| U5 | Level Fail & Play Popup | U5.1 fail kinds as content, OutOfTime first · U5.2 Continue: spend the price and `AddTime`, or red label and no action · U5.3 lives placeholder and coins · U5.4 X → Play popup, Gameplay variant: Retry restarts, X → Home (from M3), boosters visual | `FailPresenter_Continues_OnlyWhenTheWalletCanPay` | ⏳ |
 
-### 🏠 Stage D: Main Menu & Meta
+### 🏠 Stage E: Main Menu
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| M0 | Save & Progression | M0.1 save model + `ISaveStorage` + JSON storage · M0.2 progression with wrap | `Progression_WrapsToTheFirstLevel_AfterTheLast` | ⏳ |
-| M1 | Wallet | M1.1 wallet + reward from config · M1.2 coins in HUD and win popup | `Coins_StayCorrect_AfterLeavingAndReturning` | ⏳ |
-| M2 | Home | M2.1 tab bar placeholders · M2.2 top UI · M2.3 level button | `LevelButton_ShowsAndStartsTheCurrentLevel` | ⏳ |
-| M3 | Settings | M3.1 toggles saved, distinct on / off · M3.2 placeholder buttons · M3.3 close to Home | `SettingsToggles_PersistAcrossARestart` | ⏳ |
-| M4 | Navigation | M4.1 Home → Gameplay · M4.2 fail / pause → Home · M4.3 win → next level | `SceneFlow_HomeLevelWinNextFailHome` (PlayMode smoke) | ⏳ |
+| M2 | Home | M2.1 Main scene + `MainLifetimeScope` (`Main` group); the bootstrapper opens Main, the Level Editor's request still opens Gameplay · M2.2 top UI: lives placeholder, coins, Settings popup (Home variant) · M2.3 level button → Play popup (Home variant) · M2.4 tab bar placeholders | `LevelButton_ShowsAndStartsTheCurrentLevel` | ⏳ |
+| M3 | Navigation | M3.1 Leave and Play popup X → Home · M3.2 Home → Gameplay → win → next → fail → Home | `SceneFlow_HomeLevelWinNextFailHome` (PlayMode smoke) | ⏳ |
 
-### 📬 Stage E: Delivery
+### 📬 Stage F: Delivery
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
 | R1 | README | R1.1 every brief §7 item · R1.2 asset feedback · R1.3 known problems | Every brief §7 point present | ⏳ |
 | R2 | APK & Video | R2.1 Addressables + Android build · R2.2 full-flow recording ≤ 3 min | APK installed and played; video uploaded | ⏳ |
 
-### 🚀 Stage F: Boosters (if time)
+### 🚀 Stage G: Boosters (if time)
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
 | B1 | FreezeTime | B1.1 tick pause for N s · B1.2 HUD button + cost | `FreezeTime_StopsTheTimer_ForItsDuration` | ⏳ |
@@ -362,8 +392,8 @@ One phase per answer, following the production process. **Files touched** are de
 | Day | Stages | Estimate |
 |---|---|---|
 | 1 | 🎨 Presentation P0–P9 | 14–15 h |
-| 2 | 🏛️ Infrastructure I0–I6 · 🖼️ U0–U1 | 14–15 h |
-| 3 | 🖼️ U2–U3 · 🏠 M0–M4 · 📬 R1–R2 | 14–15 h |
+| 2 | 🏛️ Infrastructure I0–I6 | 14–15 h |
+| 3 | 🪙 M0–M1 · 🖼️ U0–U5 · 🏠 M2–M3 · 📬 R1–R2 | 14–15 h |
 
 **Cut list, first to go:**
 1. 🚀 Boosters.
@@ -393,7 +423,7 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 
 | # | Topic | Decision |
 |---|---|---|
-| D61 | Stage order | Presentation → Infrastructure → Gameplay UI → Main Menu & Meta → Delivery. Boosters only if time |
+| D61 | Stage order | Presentation → Infrastructure → Gameplay UI → Main Menu & Meta → Delivery. Boosters only if time — order after Infrastructure revised by D120 |
 | D62 | Refactor-ready presentation | Views know nothing about loading: `Initialize(...)` from one installer, assets through one door (`PresentationAssets`), the level through `ILevelSource`. Infrastructure swaps the installer for a `LifetimeScope` and the door for Addressables |
 | D63 | Scenes | Minimal scenes that carry a `LifetimeScope` and hand-made layout; data-driven content is created from code. Only Bootstrap is in Build Settings |
 | D64 | DI | VContainer. Root scope in Bootstrap for the whole run; Main and Gameplay are child scopes. A `LifetimeScope` is the composition root (replaces V1's manual `GameInstaller` rule) |
@@ -451,4 +481,12 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D116 | Config & level source (I4) | `GameConfig` (Infrastructure, Addressable `GameConfig` in the new `Boot` group) holds the level keys in play order (`Level_1`–`Level_5`; `Level_6` stays playable through the Level Editor only) and the win popup delay; coins join in M1. The root container is built before the config can load, so a root singleton `LoadedConfig` is set once by the bootstrapper (after the content update, before the first scene) and throws if read earlier. Levels come through `AssetLevelSource` (scoped, over the scope's `IAssetLoader`), an unknown key is a failed `Result`. Until M0 the game plays the first key. I4 is written in two steps: 4a config and level source, 4b `GameplayInstaller` → `GameplayLifetimeScope` and `PresentationAssets` from Addressables. Level Editor Play stops working after 4b until I5 moves it behind the bootstrapper |
 | D117 | Gameplay scope (I4b) | `GameplayInstaller` is gone. `GameplayLifetimeScope` carries the scene's references and settings (camera rig, drag and exit settings) and runs `GameplayEntry` (`IAsyncStartable`, VContainer `ITickable`, `IDisposable`): it loads `PresentationAssets` (Addressable in the `Gameplay` group; its prefabs, meshes, materials and palette come as dependencies, so the palette stays out of `Boot`) and the level by key, then builds the session, views and play objects by hand, because they depend on loaded data. Everything it creates is parented under the scope's object, so it lives and dies with the scene whatever the active scene is. VContainer's tick replaces `FrameTicker`; `TextAssetLevelSource` is removed. `EditorFileLevelSource` stays for I5 |
 | D118 | Editor Play via Bootstrap (I5) | Every Play in the Editor starts from the Bootstrap scene (`EditorSceneManager.playModeStartScene`, set by `BootstrapPlayMode` in a new `Game.Infrastructure.Editor` assembly), whatever scene is open. The Level Editor's ▶ Play stores the key (`PlayRequest`, moved to Infrastructure; the composition root `RootLifetimeScope` picks its store: `EditorPlayRequestStore` over `SessionState`, compiled only in the Editor, or `NoPlayRequests` in a player, so no editor type reaches a build) and enters play mode; the bootstrapper's `SelectedLevel.SelectFirst()` takes the request, else `GameConfig.LevelKeys[0]`, and `GameplayEntry` plays `SelectedLevel.Key`. Saving a level in the Level Editor makes it addressable (`Levels` group, key = file name, label `remote`), so one load path serves the editor and the build; `EditorFileLevelSource` is removed. `LoadedConfig` now loads itself through the root asset loader. Supersedes the file source of D110 |
-| D119 | Loading cover (U0.4) | A full-screen cover lives in Bootstrap for the whole run and fades in before `ISceneLoader` changes the content scene; it fades out when the new scene says it is built (`GameplayEntry` at the end of `BuildAsync`), and also when that build is cancelled or fails, so the cover never stays down. One mechanism for Bootstrap → Gameplay now and every Home ↔ Gameplay and next-level change in M4. Found in I6: on the device the level is seen building |
+| D119 | Loading cover (U0.4) | A full-screen cover lives in Bootstrap for the whole run and fades in before `ISceneLoader` changes the content scene; it fades out when the new scene says it is built (`GameplayEntry` at the end of `BuildAsync`), and also when that build is cancelled or fails, so the cover never stays down. One mechanism for Bootstrap → Gameplay now and every Home ↔ Gameplay and next-level change (U4, M2–M3). Found in I6: on the device the level is seen building |
+| D120 | Stage order after Infrastructure | Meta (M0–M1) → Gameplay UI (U0–U5) → Main Menu (M2–M3) → Delivery → Boosters (if time). The HUD, every popup and the next level read or change the meta, so it comes first; Home reuses the gameplay popups, so it comes last. Supersedes D61's order from Stage C on |
+| D121 | Popups (MVP) | Each popup is a dumb view (setters, reports its buttons; no Core / Meta reference), its content as data, and a pure C# presenter. What a button does comes through a small actions interface with one implementation per place (Home, Gameplay), so Settings and Play are shared popups whose variants are data plus actions, never subclasses. Follows D104. A popup service per scope loads them by key (`Popups` group), opens / closes them as steps, shows one at a time (the next replaces the current) over a black dim |
+| D122 | Popups and time | During play, HUD Restart (→ LoseLife Retry), Pause (→ Settings) and every other popup stop the ticks and lock input (D70); X on Settings and LoseLife resumes, also when LoseLife came from Settings → Home |
+| D123 | Win is saved at once | On Won the reward is added, progression moves to the next level and the save is written before LevelComplete shows; its Continue only changes the scene. Quitting on the popup keeps the win |
+| D124 | Continue offer | LevelFail's Continue spends the price and calls `LevelSession.AddTime` (Failed → Playing). The price starts at the config's base (900) at every level start, restart included, and rises by the config's step after each continue (900 → 1900 → …); the seconds (20) are config too. When the wallet cannot pay, the price label turns red and the button does nothing. The fail kind is read in Runtime (`RemainingTime ≤ 0` → OutOfTime) and picks its content (title, icon, `+N`, description); a new kind is new content. No deadlock kind: detecting one needs the solver, out of V2 |
+| D125 | Placeholders | Lives (a fixed count and `00:00`, on LevelFail and Home) and boosters (HUD bar, Play popup) are visual only; Retry and Leave take no life. Booster function stays in Stage G |
+| D126 | Settings | All three toggles are saved and show distinct on / off. Only SFX acts (mutes the SFX player); vibration and music are visual (no music asset). Gameplay variant has a Home button (→ LoseLife Leave) and X resumes; Home variant has no Home button and X closes. Other buttons are static with feedback |
+| D127 | Scene changes | Restart stays in the scene (D71); the next level and Home ↔ Gameplay reopen the content scene through `ISceneLoader` under the loading cover (D119) |
