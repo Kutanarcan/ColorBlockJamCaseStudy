@@ -402,7 +402,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4104f4b6ed0d4be2bc0773fe0e6311b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
   autoRun: 1
+  autoInjectGameObjects: []
   cameraRig: {fileID: 308788634}
   dragSettings:
     liftHeight: 0.3
@@ -429,11 +432,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bdc411dd9ad84eaea74f31f9b6479872, type: 3}
---- !u!4 &1200000002 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7100000000000000002, guid: bdc411dd9ad84eaea74f31f9b6479872, type: 3}
-  m_PrefabInstance: {fileID: 1200000001}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
