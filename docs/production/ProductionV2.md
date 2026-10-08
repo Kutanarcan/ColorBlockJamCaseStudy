@@ -298,9 +298,43 @@ For the whole run — made by code, never placed in a start scene
 - **Contracts first.** U0 lists every view's contract below; the prefabs are built from it before the phase that wires them.
 
 ### View contracts
-Filled in U0.6: per view, its kind (screen / panel / popup), prefab or scene object, root component, parts used and serialized references.
+What each prefab or scene object must hold so the code can wire it. The prefabs are built from this before the phase that wires them; the phase adds the root component and drags the references.
 
+**Rules for every view**
 - **Stretch, not fixed width (D137):** with match 0.5 a 20:9 screen is about 966 reference units wide, not 1080, so panels and popups are laid out with stretch anchors from the edges, never a fixed full width.
+- **Safe area:** `SafeArea` goes on a view's content root, never on its dim or a full-screen backdrop (§5 Canvas).
+- **Every button is a `PressButton` part** (U0.3); a button with no function (placeholders, boosters, tabs) is still one, with no reference.
+- **Static content needs no reference:** fixed icons, fixed texts and placeholders (lives `5` and `00:00`, boosters) are set in the prefab and never touched by code.
+- **Texts are TextMeshPro** (`TMP_Text`, font LilitaOne).
+
+**Parts** (`Assets/Prefabs/UI/Parts/`, nested into the views)
+
+| Part | Built from | Component on its root | References |
+|---|---|---|---|
+| `PressButton` | Empty object · `Background` image · `Raycast` image (U0.3) | `PressButton` | `background`, `raycast` |
+| `PopupButton` | `PressButton` with a `Label` text on `Background` (`Btn_popup_green` / `Btn_popup_blue` as variants) | — | — |
+| `PriceButton` | `PopupButton` variant with a coin icon and an amount text (LevelFail's Continue) | — | — |
+| `IconButton` | `PressButton` with an icon on `Background` (restart, pause, settings, home) | — | — |
+| `CloseButton` | `PressButton` with `Popup_Close_Button` | — | — |
+| `Toggle` | `PressButton` with an on look and an off look | `ToggleView` | `button` (`PressButton`), `onLook`, `offLook` (`GameObject`) |
+| `CoinCounter` | `bg_home_coin_holder`, `Coin_Single`, an amount text | — | — |
+| `LivesCounter` | `Heart`, a count text, a time text (static placeholder) | — | — |
+| `Window` | `bg_popup` frame; `Header` (`bg_popup_header` + title text) | — | — |
+
+**Views**
+
+| View | Kind · where | Root component | References (type) |
+|---|---|---|---|
+| HUD | Screen · Gameplay, `ScreenLayer` | `HudView` | `levelLabel`, `timerLabel`, `coinLabel` (`TMP_Text`) · `restartButton`, `pauseButton` (`PressButton`) · booster bar static |
+| LevelComplete | Panel · Gameplay, under `ModalLayer`, inactive | `LevelCompleteView` | `rewardLabel` (`TMP_Text`) · `continueButton` (`PressButton`) |
+| LevelFail | Panel · Gameplay, under `ModalLayer`, inactive | `LevelFailView` | `titleLabel`, `bonusLabel`, `descriptionLabel`, `priceLabel`, `coinLabel` (`TMP_Text`) · `icon` (`Image`) · `continueButton`, `closeButton` (`PressButton`) · `priceColor`, `priceShortColor` (`Color`, red when the wallet cannot pay) · lives static |
+| Settings | Popup · `Popups` group | `SettingsView` | `vibration`, `sound`, `music` (`ToggleView`) · `homeButton`, `closeButton` (`PressButton`; Home hidden in the Home variant) |
+| LoseLife | Popup · `Popups` group | `LoseLifeView` | `titleLabel`, `actionLabel` (`TMP_Text`) · `actionButton`, `closeButton` (`PressButton`) · icon and text static |
+| Play | Popup · `Popups` group | `PlayView` | `titleLabel`, `actionLabel` (`TMP_Text`) · `titleIcon` (`Image`) · `actionButton`, `closeButton` (`PressButton`) · booster row static |
+| Home | Screen · Main, `ScreenLayer` (M2) | `HomeView` | `coinLabel`, `levelLabel` (`TMP_Text`) · `levelButton`, `settingsButton` (`PressButton`) · `tabBar` (`TabBar`) · lives static |
+| Tab bar | Part of Home (M2) | `TabBar`; each tab a `TabButton` | `TabBar.tabs` (`TabButton[]`) · `TabButton`: `button` (`PressButton`), `selectedLook` (`GameObject`, `ActiveTab`) |
+| Loading cover | Made by code for the whole run · `Boot` group (U0.4) | `LoadingCover` | own `Canvas` (sort order above `UIRoot`) + `CanvasScaler` as `UIRoot` · `group` (`CanvasGroup`) · full-screen image, no `SafeArea` |
+| LEVEL TEST badge | Made by the level test · referenced by `LevelTestConfig` (U0.5) | — | own `Canvas` (sort order above `UIRoot`, under the cover) + `CanvasScaler` as `UIRoot` · text in a `SafeArea` root · no raycast |
 
 ### HUD (Gameplay screen)
 - **Top:** level number · remaining time, counting down as `mm:ss` · coins (wallet) · **Restart** → LoseLife (Retry) · **Pause** → Settings. Both stop the time (D122).
