@@ -250,27 +250,74 @@ Game (Infrastructure, Runtime, Meta)        Level test (Game.LevelTest, Editor o
 - Every button gives visual feedback (brief): one shared button feedback component.
 - A pointer over the UI never starts a block drag.
 
-### HUD (Gameplay)
+### UI kinds (D134)
+What separates them is **who opens it and who owns it**, not how it looks.
+
+| Kind | Opened by | Lives in | Examples |
+|---|---|---|---|
+| **Screen** | Nobody: it is there while its scene is | Placed by hand in its scene | Gameplay HUD, Home and its tab bar |
+| **Panel** | The game flow (the director) | Placed by hand in the Gameplay scene, inactive until shown | LevelComplete, LevelFail |
+| **Popup** | The player, through a button | A shared catalog of prefabs; any scene opens one by key | Settings, LoseLife, Play (Retry in Gameplay) |
+
+- A panel belongs to its scene's flow: its content comes from the session and the meta (fail kind, reward, continue price) and it has no free X that closes it. LevelFail's X opens the Play popup in its place.
+- A popup is shared and MVP: one prefab and one view per popup, its variants are data plus actions (D121). Play and Retry are the same popup.
+- Panels and popups share the modal layer below; there is no second modal system.
+
+### Canvas & modal layer (D135)
+Nothing visual is placed by hand in a start scene (`Bootstrap.unity`, `LevelTest.unity`): two start scenes would mean two copies to keep in step.
+
+```
+Content scenes (Main, Gameplay) — one UIRoot prefab in each
+  UIRoot: Canvas (1080×1920, SafeArea on the screen roots)
+   ├ ScreenLayer   — HUD / Home
+   └ ModalLayer    — dim + one slot: the shown panel or popup
+For the whole run — made by code, never placed in a start scene
+  LoadingCover     — prefab in the Boot group, made by the shared root code (both starts), above everything (D119)
+  LEVEL TEST badge — made by LevelTestServicesInstaller, prefab from LevelTestConfig (level test only, D131)
+```
+
+- **One center is the code, not a place.** The modal host, the popup service and the catalog are written once; every scene asks them for its popups and disposes them when it closes. Where the canvas lives decides only the lifetime.
+- **`UIRoot` sits in the content scenes.** Gameplay is the same scene in the game and in a level test, so no copy appears; Main and Gameplay use the same prefab. Panels share their scene with the modal layer, and popups die with the content scope (D113).
+- **The loading cover** comes from `Boot` by key, so it can show only after Addressables has initialized; during that short start the camera's background shows, as today.
+- **The badge** is a level test start service, like the other stand-ins: live code neither makes it nor checks for it.
+
+- **Behaviour is code, once per canvas.** The `ModalLayer` host owns the dim, the open / close animation (sequencer steps), one modal at a time (the next replaces the current), blocking input behind it, and the pause hook: shown during play it stops the ticks and locks input; closed with resume it restarts them (D70, D122). No popup or panel prefab carries a dim or an animation.
+- **Popup service** (scope-owned) sits on the modal layer: it loads a popup prefab by key (`Popups` group) through its scope's asset loader, puts it in the slot, and releases it with its scope. Panels skip the catalog: the director hands the scene's panel to the same layer.
+
+### Building the prefabs (D135)
+| Level | Tool | Examples |
+|---|---|---|
+| Behaviour | Code on the canvas's `ModalLayer`, set up once per scene | Dim, animation, one slot, input block, pause |
+| Visual parts | Small **nested prefabs**, dragged into any panel, popup or screen | `Window`, `Header` (title + icon), `CloseButton`, `PrimaryButton` (label + feedback), `CoinCounter`, `LivesCounter` |
+| Looks of one part | **Prefab variants** of that part only | `PrimaryButton` green / yellow, `Window` large / small |
+
+- A panel or popup prefab is built from the parts; its root carries its View component, whose serialized references point at the parts. Changing a part changes it everywhere it is used.
+- Behaviour variants are never prefab variants: Play / Retry and Settings' Home / Gameplay are one prefab each, told apart by content and actions.
+- **Contracts first.** U0 lists every view's contract below; the prefabs are built from it before the phase that wires them.
+
+### View contracts
+Filled in U0.6: per view, its kind (screen / panel / popup), prefab or scene object, root component, parts used and serialized references.
+
+### HUD (Gameplay screen)
 - **Top:** level number · remaining time, counting down as `mm:ss` · coins (wallet) · **Restart** → LoseLife (Retry) · **Pause** → Settings. Both stop the time (D122).
 - **Bottom:** booster bar, visual only (D125); its function is Stage G.
 
-### Popups (MVP, D121)
+### Panels and popups (MVP, D121)
 - **View:** a dumb MonoBehaviour (`SetTitle`, `SetButtonLabel`, …) that reports its buttons; no Core or Meta reference.
 - **Content:** the variant's data (title, icon, labels, amounts).
 - **Presenter:** pure C#, reads the meta / session and drives the view; what a button does comes through a small actions interface with one implementation per place (Home, Gameplay). A variant is new data plus actions, never a subclass.
-- **Popup service:** scope-owned; loads popup prefabs by key (`Popups` group) through its scope's asset loader; open / close as sequencer steps; one popup at a time, opening the next replaces the current one; black dim behind every popup.
 
-| Popup | Variant content | Buttons |
-|---|---|---|
-| **Settings** | Gameplay: with **Home** · Home: without | Vibration / SFX / Music toggles, saved, distinct on / off; only SFX acts (D126) · Home → LoseLife (Leave) · X: Gameplay resumes, Home closes · other buttons static with feedback |
-| **LoseLife** | "Level X" title; fixed icon and text · Retry or Leave | Retry → restart · Leave → Home · X → resume |
-| **LevelComplete** | "Level Complete", coin icon, reward amount | Continue (+ amount) → next level (D123, D127) |
-| **LevelFail** | Fail kind content: title, icon, `+N`, description (OutOfTime: "Out Of Time", clock, +20, "Get 20 seconds to keep playing!"); lives placeholder top left, coins top right | Continue (price) → spend and add time, or red label and nothing when the wallet cannot pay (D124) · X → Play (Retry) |
-| **Play** | Title, title icon, booster row (visual) · Gameplay: Retry · Home: Play | Gameplay: Retry → restart, X → Home · Home: Play → load the level, X → close |
+| Name | Kind | Variant content | Buttons |
+|---|---|---|---|
+| **Settings** | Popup | Gameplay: with **Home** · Home: without | Vibration / SFX / Music toggles, saved, distinct on / off; only SFX acts (D126) · Home → LoseLife (Leave) · X: Gameplay resumes, Home closes · other buttons static with feedback |
+| **LoseLife** | Popup (opened only in Gameplay) | "Level X" title; fixed icon and text · Retry or Leave | Retry → restart · Leave → Home · X → resume |
+| **Play** | Popup | Title, title icon, booster row (visual) · Gameplay: Retry · Home: Play | Gameplay: Retry → restart, X → Home · Home: Play → load the level, X → close |
+| **LevelComplete** | Panel | "Level Complete", coin icon, reward amount | Continue (+ amount) → next level (D123, D127) |
+| **LevelFail** | Panel | Fail kind content: title, icon, `+N`, description (OutOfTime: "Out Of Time", clock, +20, "Get 20 seconds to keep playing!"); lives placeholder top left, coins top right | Continue (price) → spend and add time, or red label and nothing when the wallet cannot pay (D124) · X → Play popup (Retry) in its place |
 
 ### Flow
-- Opening a popup during play stops the ticks and locks input; resuming restarts them (D70, D122).
-- Win: the director waits for the last exit and the delay, then LevelComplete (D89). The reward and the next level are saved at the win, before the popup (D123).
+- Showing a panel or popup during play stops the ticks and locks input; resuming restarts them (D70, D122).
+- Win: the director waits for the last exit and the delay, then shows LevelComplete (D89). The reward and the next level are saved at the win, before the panel (D123).
 - Fail: running exits finish, then LevelFail with the content of its kind; the kind is read in Runtime (`RemainingTime ≤ 0` → OutOfTime).
 - Restart stays in the scene (D71); next level and Home ↔ Gameplay reopen the content scene under the loading cover (D119, D127).
 
@@ -288,13 +335,13 @@ Game (Infrastructure, Runtime, Meta)        Level test (Game.LevelTest, Editor o
 
 ### Save
 - `ISaveStore` (Meta) → one JSON file per section in `persistentDataPath/Save/` (Infrastructure). Each feature owns its section (data class + key) and writes it on every change; there is no shared save model (D128).
-- A win is saved at once: reward and next level are kept even if the player quits on the LevelComplete popup (D123).
+- A win is saved at once: reward and next level are kept even if the player quits on the LevelComplete panel (D123).
 - Brief criterion "coins stay correct after leaving and returning" is a test on wallet + storage.
 
 ### Home (Main scene)
 - **Top UI:** lives placeholder · coins (wallet) · **Settings** → Settings popup (Home variant).
 - **Level button:** "Level X" from progression → Play popup (Home variant): Play loads Gameplay, X closes.
-- **Tab bar:** placeholder tabs with feedback, no function.
+- **Tab bar (D136):** a `TabBar` of `TabButton`s, each bound to a tab target through a small interface (show / hide); selecting a tab shows its target and hides the last. A new tab is a new target bound to a button, no enum or switch. In V2 every tab is a placeholder: its target only plays the button feedback and is never selected.
 - **Navigation:** Home → Gameplay (Play) · Gameplay → Home (Leave, Play popup X) · LevelComplete → next level.
 
 ---
@@ -388,17 +435,17 @@ One phase per answer, following the production process. **Files touched** are de
 ### 🖼️ Stage D: Gameplay UI
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| U0 | Canvas & Safe Area | U0.1 canvas setup 1080×1920 · U0.2 `SafeArea` · U0.3 shared button feedback · U0.4 loading cover over every content scene change, lifted when the scene is ready (D119) · U0.5 "LEVEL TEST" badge in level tests (D131) | `SafeArea_FitsTheRect_ForA20x9Notch` | ⏳ |
+| U0 | Canvas, Safe Area & Contracts | U0.1 `UIRoot` prefab in Gameplay: 1080×1920 scaler, `ScreenLayer` / `ModalLayer` (D135) · U0.2 `SafeArea` · U0.3 shared button feedback · U0.4 loading cover over every content scene change, lifted when the scene is ready (D119); a `Boot` prefab made by the shared root code, so both starts get it without a copy in their scene (D135) · U0.5 "LEVEL TEST" badge in level tests, made by `LevelTestServicesInstaller` from a prefab in `LevelTestConfig`; live code never makes or checks it (D131, D135) · U0.6 view contracts (§5): every screen, panel, popup and part with its root component and serialized references, so the prefabs are built before the phase that wires them (D135) | `SafeArea_FitsTheRect_ForA20x9Notch` | ⏳ |
 | U1 | HUD | U1.1 level number, `mm:ss` countdown, coins · U1.2 restart and pause buttons (they open their popups from U2 / U3) · U1.3 booster bar, visual only · U1.4 a pointer over the UI starts no drag | `TimerText_ShowsMinutesAndSeconds_AndStopsAtZero` | ⏳ |
-| U2 | Popup Service & Settings | U2.1 popup service (scope-owned, `Popups` group, open / close as steps, dim, one at a time) · U2.2 a popup stops the ticks and locks input; resume restarts them (D122) · U2.3 Settings popup, Gameplay variant: three saved toggles, SFX mutes the SFX player, X resumes (D126) | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ⏳ |
-| U3 | LoseLife & Restart | U3.1 LoseLife popup (MVP): "Level X", Retry / Leave variants, X resumes · U3.2 HUD restart → Retry → restart in the scene · U3.3 Settings Home → Leave (goes Home from M3) | `LoseLifePresenter_RunsItsVariantsAction` | ⏳ |
-| U4 | Level Complete | U4.1 LevelComplete popup: title, coin icon, reward on Continue · U4.2 director shows it after the last exit step and the delay · U4.3 Continue → next level, scene reopened under the cover (D127) | `Director_ShowsWin_AfterTheLastExitStep` | ⏳ |
-| U5 | Level Fail & Play Popup | U5.1 fail kinds as content, OutOfTime first · U5.2 Continue: spend the price and `AddTime`, or red label and no action · U5.3 lives placeholder and coins · U5.4 X → Play popup, Gameplay variant: Retry restarts, X → Home (from M3), boosters visual | `FailPresenter_Continues_OnlyWhenTheWalletCanPay` | ⏳ |
+| U2 | Modal Layer, Popups & Settings | U2.1 `ModalLayer`: dim, one slot (the next replaces the current), open / close as sequencer steps, input blocked behind it (D135) · U2.2 shown during play it stops the ticks and locks input; closed with resume it restarts them (D122) · U2.3 popup service on the modal layer: scope-owned catalog by key (`Popups` group), released with its scope · U2.4 Settings popup, Gameplay variant: three saved toggles, SFX mutes the SFX player, X resumes (D126) | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ⏳ |
+| U3 | LoseLife & Restart | U3.1 LoseLife popup (MVP, opened only in Gameplay, D134): "Level X", Retry / Leave variants, X resumes · U3.2 HUD restart → Retry → restart in the scene · U3.3 Settings Home → Leave (goes Home from M3) | `LoseLifePresenter_RunsItsVariantsAction` | ⏳ |
+| U4 | Level Complete Panel | U4.1 LevelComplete panel, placed in the Gameplay scene (D134): title, coin icon, reward on Continue · U4.2 director shows it through the modal layer after the last exit step and the delay · U4.3 Continue → next level, scene reopened under the cover (D127) | `Director_ShowsWin_AfterTheLastExitStep` | ⏳ |
+| U5 | Level Fail Panel & Play Popup | U5.1 LevelFail panel, placed in the Gameplay scene; fail kinds as content, OutOfTime first (D134) · U5.2 Continue: spend the price and `AddTime`, or red label and no action · U5.3 lives placeholder and coins · U5.4 X → Play popup in the panel's slot, Gameplay variant: Retry restarts, X → Home (from M3), boosters visual | `FailPresenter_Continues_OnlyWhenTheWalletCanPay` | ⏳ |
 
 ### 🏠 Stage E: Main Menu
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| M2 | Home | M2.1 Main scene + `MainLifetimeScope` (`Main` group); the bootstrapper opens Main, the Level Editor's request still opens Gameplay · M2.2 top UI: lives placeholder, coins, Settings popup (Home variant) · M2.3 level button → Play popup (Home variant) · M2.4 tab bar placeholders | `LevelButton_ShowsAndStartsTheCurrentLevel` | ⏳ |
+| M2 | Home | M2.1 Main scene + `MainLifetimeScope` (`Main` group) with the canvas skeleton of U0; the bootstrapper opens Main; a level test starts in Gameplay (D131), and Home reached from a level test shows the test's values, never the live ones (D130) · M2.2 top UI: lives placeholder, coins, Settings popup (Home variant) · M2.3 level button → Play popup (Home variant) · M2.4 tab bar: `TabBar`, `TabButton`, tab target; every tab a placeholder that only gives feedback (D136) | `LevelButton_ShowsAndStartsTheCurrentLevel` | ⏳ |
 | M3 | Navigation | M3.1 Leave and Play popup X → Home · M3.2 Home → Gameplay → win → next → fail → Home | `SceneFlow_HomeLevelWinNextFailHome` (PlayMode smoke) | ⏳ |
 
 ### 📬 Stage F: Delivery
@@ -510,9 +557,9 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D116 | Config & level source (I4) | `GameConfig` (Infrastructure, Addressable `GameConfig` in the new `Boot` group) holds the level keys in play order (`Level_1`–`Level_5`; `Level_6` stays playable through the Level Editor only) and the win popup delay; coins join in M1. The root container is built before the config can load, so a root singleton `LoadedConfig` is set once by the bootstrapper (after the content update, before the first scene) and throws if read earlier. Levels come through `AssetLevelSource` (scoped, over the scope's `IAssetLoader`), an unknown key is a failed `Result`. Until M0 the game plays the first key. I4 is written in two steps: 4a config and level source, 4b `GameplayInstaller` → `GameplayLifetimeScope` and `PresentationAssets` from Addressables. Level Editor Play stops working after 4b until I5 moves it behind the bootstrapper |
 | D117 | Gameplay scope (I4b) | `GameplayInstaller` is gone. `GameplayLifetimeScope` carries the scene's references and settings (camera rig, drag and exit settings) and runs `GameplayEntry` (`IAsyncStartable`, VContainer `ITickable`, `IDisposable`): it loads `PresentationAssets` (Addressable in the `Gameplay` group; its prefabs, meshes, materials and palette come as dependencies, so the palette stays out of `Boot`) and the level by key, then builds the session, views and play objects by hand, because they depend on loaded data. Everything it creates is parented under the scope's object, so it lives and dies with the scene whatever the active scene is. VContainer's tick replaces `FrameTicker`; `TextAssetLevelSource` is removed. `EditorFileLevelSource` stays for I5 |
 | D118 | Editor Play via Bootstrap (I5) | Every Play in the Editor starts from the Bootstrap scene (`EditorSceneManager.playModeStartScene`, set by `BootstrapPlayMode` in a new `Game.Infrastructure.Editor` assembly), whatever scene is open. The Level Editor's ▶ Play stores the key (`PlayRequest`, moved to Infrastructure; the composition root `RootLifetimeScope` picks its store: `EditorPlayRequestStore` over `SessionState`, compiled only in the Editor, or `NoPlayRequests` in a player, so no editor type reaches a build) and enters play mode; the bootstrapper's `SelectedLevel.SelectFirst()` takes the request, else `GameConfig.LevelKeys[0]`, and `GameplayEntry` plays `SelectedLevel.Key`. Saving a level in the Level Editor makes it addressable (`Levels` group, key = file name, label `remote`), so one load path serves the editor and the build; `EditorFileLevelSource` is removed. `LoadedConfig` now loads itself through the root asset loader. Supersedes the file source of D110. Request handling superseded by D131 |
-| D119 | Loading cover (U0.4) | A full-screen cover lives in Bootstrap for the whole run and fades in before `ISceneLoader` changes the content scene; it fades out when the new scene says it is built (`GameplayEntry` at the end of `BuildAsync`), and also when that build is cancelled or fails, so the cover never stays down. One mechanism for Bootstrap → Gameplay now and every Home ↔ Gameplay and next-level change (U4, M2–M3). Found in I6: on the device the level is seen building |
+| D119 | Loading cover (U0.4) | A full-screen cover lives for the whole run (made by the shared root code, not placed in Bootstrap: D135) and fades in before `ISceneLoader` changes the content scene; it fades out when the new scene says it is built (`GameplayEntry` at the end of `BuildAsync`), and also when that build is cancelled or fails, so the cover never stays down. One mechanism for Bootstrap → Gameplay now and every Home ↔ Gameplay and next-level change (U4, M2–M3). Found in I6: on the device the level is seen building |
 | D120 | Stage order after Infrastructure | Meta (M0–M1) → Gameplay UI (U0–U5) → Main Menu (M2–M3) → Delivery → Boosters (if time). The HUD, every popup and the next level read or change the meta, so it comes first; Home reuses the gameplay popups, so it comes last. Supersedes D61's order from Stage C on |
-| D121 | Popups (MVP) | Each popup is a dumb view (setters, reports its buttons; no Core / Meta reference), its content as data, and a pure C# presenter. What a button does comes through a small actions interface with one implementation per place (Home, Gameplay), so Settings and Play are shared popups whose variants are data plus actions, never subclasses. Follows D104. A popup service per scope loads them by key (`Popups` group), opens / closes them as steps, shows one at a time (the next replaces the current) over a black dim |
+| D121 | Popups (MVP) | Each popup is a dumb view (setters, reports its buttons; no Core / Meta reference), its content as data, and a pure C# presenter. What a button does comes through a small actions interface with one implementation per place (Home, Gameplay), so Settings and Play are shared popups whose variants are data plus actions, never subclasses. Follows D104. A popup service per scope loads them by key (`Popups` group), opens / closes them as steps, shows one at a time (the next replaces the current) over a black dim — narrowed to popups by D134; panels keep the view / content / presenter split and share the modal layer (D135) |
 | D122 | Popups and time | During play, HUD Restart (→ LoseLife Retry), Pause (→ Settings) and every other popup stop the ticks and lock input (D70); X on Settings and LoseLife resumes, also when LoseLife came from Settings → Home |
 | D123 | Win is saved at once | On Won the reward is added, progression moves to the next level and the save is written before LevelComplete shows; its Continue only changes the scene. Quitting on the popup keeps the win |
 | D124 | Continue offer | LevelFail's Continue spends the price and calls `LevelSession.AddTime` (Failed → Playing). The price starts at the config's base (900) at every level start, restart included, and rises by the config's step after each continue (900 → 1900 → …); the seconds (20) are config too. When the wallet cannot pay, the price label turns red and the button does nothing. The fail kind is read in Runtime (`RemainingTime ≤ 0` → OutOfTime) and picks its content (title, icon, `+N`, description); a new kind is new content. No deadlock kind: detecting one needs the solver, out of V2 |
@@ -525,3 +572,6 @@ V1 decisions (D1–D60) still hold; see [ProductionV1 §16](ProductionV1.md#-16-
 | D131 | Level test start (M0b) | The game and the level test are separate starts: `Bootstrap.unity` + `RootLifetimeScope` and the Editor-only `LevelTest.unity` + `LevelTestLifetimeScope`, both deriving from `RootScope` (Runtime), which installs the shared services (`RootInstaller`, the bootstrapper, meta) and asks its subclass for the start scene's services. The game's scope always installs `LiveServicesInstaller`; nothing in live code checks a mode or names a test type. The test side is the `Game.LevelTest` assembly (`defineConstraints: UNITY_EDITOR`, never in a player; references Infrastructure, Runtime, Meta, which cannot reference it back): its scope, `LevelTestServicesInstaller`, `MemorySaveStore`, `FixedLevelChoice` and the play request (`PlayRequest` over `SessionState`, taken once by the test's scope). The level comes through `ILevelChoice` (`ProgressionLevelChoice` in live code); `SelectedLevel.Select()` asks it at start and, from U4, after a win. The Level Editor's ▶ Play calls `LevelTestLauncher.Play(key)`, which makes `LevelTest.unity` the start scene for that one Play; `BootstrapPlayMode` puts Bootstrap back when play mode ends (and leaves the choice alone during the domain reload of entering play mode). Supersedes D129 and the request handling of D118 |
 | D132 | Deliberate trade-offs | Six simplifications are kept on purpose, not open questions, each with its trigger and its fix in [Extending §7](Extending.md#7-deliberate-trade-offs--future-services-v2): T1 `AudioSfxPlayer` built in `GameplayEntry` · T2 no Unity host at the root · T3 no app lifecycle adapter · T4 no service → UI change notification · T5 start-up steps hard-wired in `Bootstrapper` · T6 content update shared with the level test. The same section sketches how a root `AudioService` and a live service (UTC + monotonic `IClock`, a movable clock in the level test) fit the current scopes. T1 is revisited in U2 (SFX toggle) |
 | D133 | Wallet & win (M1) | `Wallet` (Meta) gives the starting coins once to a fresh save (`WalletData.granted`), adds positive amounts, and spends only what it covers; every change saves its section. The starting coins are a start service, `IStartingCoins`: `ConfigStartingCoins` (game, `GameConfig.startCoins`) or `LevelTestConfig` (level test, `Assets/ScriptableObjects/LevelTest/`, referenced only by the LevelTest scene). `LevelCompletion` (Meta) adds the reward and completes the level; `GameplayEntry` builds it from root `Wallet` / `Progression` and `GameConfig.winReward`, and `GameplayDirector` calls it on Won before anything plays (D123); the two sections are written one after the other. `ContinuePrice` (base, step; `TryPay(wallet)`, `Reset()`) is built here and wired by U3 / U5, as are `GameConfig.continueSeconds` and the HUD. `GameConfig` economy values start at 1000 coins, 50 per win, continue 900 + 1000 per step, 20 s; they are data and tuned in the asset. Meta splits into `Progress/` and `Economy/`; settings stay at the root, so no single-file test folder appears |
+| D134 | UI kinds | UI splits by who opens it and who owns it. **Screen:** always there while its scene is, placed by hand (HUD, Home). **Panel:** shown by the game flow, scene-specific, placed by hand in its scene and inactive until shown; its content comes from the session and the meta (LevelComplete, LevelFail in Gameplay). **Popup:** opened by the player, a shared prefab catalog any scene opens by key, MVP variants (Settings, LoseLife, Play / Retry). LoseLife is a popup although only Gameplay opens it: it is player-opened and X-closed. Narrows D121 to popups; panels keep its view / content / presenter split |
+| D135 | Modal layer & prefabs | Nothing visual is placed by hand in a start scene (two starts would mean two copies). Each content scene (Main, Gameplay) holds one `UIRoot` prefab: canvas, `ScreenLayer`, `ModalLayer`; Gameplay is the same scene in the game and a level test, so no copy appears. The loading cover is a `Boot` prefab made by the shared root code for both starts; the "LEVEL TEST" badge is made by `LevelTestServicesInstaller` from a prefab in `LevelTestConfig`, so live code never makes or checks it. The one center is the code (modal host, popup service, catalog), not a place: where a canvas lives decides only its lifetime. Rejected: the UI in Bootstrap (copied into LevelTest, panels moved across scenes, popups cleaned by hand) and an additive UI scene (Bootstrap is already the scene that stays; panels and lifetime same problems). The `ModalLayer` host owns the dim, the open / close steps, one slot (the next replaces the current), the input block and the pause hook; panels and popups carry none of it, and the popup service only adds the catalog. Prefabs are built in three levels: behaviour in code on the layer; visual parts (`Window`, `Header`, `CloseButton`, `PrimaryButton`, `CoinCounter`, `LivesCounter`) as small nested prefabs dragged into any view; prefab variants only for looks of one part. Behaviour variants are data plus actions, never prefab variants. View contracts are written first (U0.6) and the user builds the prefabs from them. Rejected: one base popup prefab with a variant chain (hidden overrides pile up, a base change reaches unexpected places, every popup would carry its own dim, and a different layout fights the base's) |
+| D136 | Tabs | `TabBar` binds each `TabButton` to a tab target through a small interface (show / hide); selecting shows the target and hides the last. A new tab is a new binding, no enum or switch. In V2 every tab is a placeholder whose target only gives the button feedback and is never selected (brief: placeholders) |
