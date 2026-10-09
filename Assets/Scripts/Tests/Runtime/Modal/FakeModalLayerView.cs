@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Tests.Runtime
 {
-    /// <summary>Animates nothing; writes each call to a log ("show A", "pop A open", "dim on"…), in call order.</summary>
+    /// <summary>Animates nothing; writes each call to a log ("show A", "pop A open", "dim on"), in order.</summary>
     internal sealed class FakeModalLayerView : IModalLayerView
     {
         public List<string> Log { get; } = new List<string>();

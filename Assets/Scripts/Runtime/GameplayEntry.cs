@@ -30,6 +30,7 @@ namespace Game.Runtime
         private readonly Transform root;
         private readonly ILoadingCover cover;
         private readonly HudView hudView;
+        private readonly ModalLayer modals;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -41,7 +42,7 @@ namespace Game.Runtime
 
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
-            ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView)
+            ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals)
         {
             this.assets = assets;
             this.levels = levels;
@@ -55,6 +56,7 @@ namespace Game.Runtime
             this.root = root;
             this.cover = cover;
             this.hudView = hudView;
+            this.modals = modals;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
@@ -166,6 +168,7 @@ namespace Game.Runtime
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
                 new DragResolver(session), dragSettings, sfx, outline);
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            modals.PauseWhileShown(loop);
             hud = new HudPresenter(hudView, session, wallet, progression.LevelNumber, loop.Restart, TogglePause);
         }
 

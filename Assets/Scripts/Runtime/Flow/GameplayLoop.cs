@@ -8,7 +8,7 @@ namespace Game.Runtime
     /// Restart cancels every step, drops the drag, rebuilds the views from the restarted session: nothing of the last
     /// attempt stays.
     /// </summary>
-    public sealed class GameplayLoop : ITickable
+    public sealed class GameplayLoop : ITickable, IPausable
     {
         private readonly LevelSession session;
         private readonly GameplayDirector director;

@@ -33,7 +33,7 @@ namespace Game.Tests.Runtime
         {
             Play(layer.Open(first));
             Play(layer.Open(second));
-            Play(layer.Close());
+            Play(layer.Close(resume: true));
 
             Assert.That(view.Log, Is.EqualTo(new[]
             {
@@ -47,12 +47,28 @@ namespace Game.Tests.Runtime
         [Test]
         public void ModalLayer_IgnoresOpeningTheShownModal_AndClosingAnEmptySlot()
         {
-            Play(layer.Close());
+            Play(layer.Close(resume: true));
             Play(layer.Open(first));
             Play(layer.Open(first));
 
             Assert.That(view.Log, Is.EqualTo(new[] { "show A", "dim on", "pop A open" }));
             Assert.That(layer.IsOpen, Is.True);
+        }
+
+        [Test]
+        public void ModalLayer_PausesPlayWhileShown_AndResumesOnlyWhenAsked()
+        {
+            layer.PauseWhileShown(new FakePausable(view.Log));
+
+            Play(layer.Open(first));
+            Play(layer.Open(second));
+            Play(layer.Close(resume: false));
+            Assert.That(view.Log, Has.None.EqualTo("resume"), "A close that restarts or leaves does not resume.");
+
+            Play(layer.Open(first));
+            Play(layer.Close(resume: true));
+            Assert.That(view.Log[0], Is.EqualTo("pause"), "Play stops before the modal shows.");
+            Assert.That(view.Log[view.Log.Count - 1], Is.EqualTo("resume"), "Play restarts once the modal is gone.");
         }
 
         private static void Play(IStep step) => step.Play(CancellationToken.None).GetAwaiter().GetResult();
