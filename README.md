@@ -59,7 +59,7 @@ Each stage ran in small phases: a plan first, one phase per step, a review and a
 
 <!-- Production full-flow video (portrait): replace PRODUCTION_VIDEO_URL with the uploaded asset link. The APK link goes under it. -->
 <div align="center">
-  <video src="PRODUCTION_VIDEO_URL" width="300" controls muted></video>
+  <video src="https://github.com/user-attachments/assets/d848b45c-44fa-4f59-ae43-f8e75e23fbae" width="300" controls muted></video>
 </div>
 
 </details>
