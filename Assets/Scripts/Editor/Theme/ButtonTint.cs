@@ -26,6 +26,9 @@ namespace Game.LevelEditor
         /// <summary>Removes something: delete, remove, shrink.</summary>
         public static ButtonTint Danger() => new ButtonTint(new Color(1f, 0.50f, 0.45f));
 
+        /// <summary>Starts the game: ▶ Play.</summary>
+        public static ButtonTint Play() => new ButtonTint(new Color(1f, 0.85f, 0.30f));
+
         /// <summary>No tint; for a choice that is not active.</summary>
         public static ButtonTint None() => new ButtonTint(Color.white);
 

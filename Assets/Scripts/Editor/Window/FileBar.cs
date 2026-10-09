@@ -98,13 +98,16 @@ namespace Game.LevelEditor
         private void DrawPlay()
         {
             using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
+            using (ButtonTint.Play())
             {
                 if (GUILayout.Button("▶ Play", EditorStyles.toolbarButton) && Save())
                     PlayLauncher.Play(Document.Key);
             }
         }
 
-        /// <summary>Colors the bar from the last drawn control (Play) to its end; Open, Save and Play keep the plain toolbar.</summary>
+        /// <summary>
+        /// Colors the bar from the last drawn control (Play) to its end; Open, Save and Play keep their own look.
+        /// </summary>
         private static void DrawBarColorAfterLastControl(Rect bar)
         {
             if (Event.current.type != EventType.Repaint)
