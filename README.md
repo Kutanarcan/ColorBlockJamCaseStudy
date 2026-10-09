@@ -48,6 +48,13 @@ Each stage ran in small phases: a plan first, one phase per step, a review and a
   <video src="https://github.com/user-attachments/assets/8a9dca3f-37b8-452a-8c32-e50bf642923f" width="100%" controls muted></video>
 </div>
 
+**Level Editor -2 - Ice&Arrow**
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/c91c7077-19a0-4f6f-92d4-ff029eff044f" width="100%" controls muted></video>
+</div>
+
+
 **Production: full flow**
 
 <!-- Production full-flow video (portrait): replace PRODUCTION_VIDEO_URL with the uploaded asset link. The APK link goes under it. -->
