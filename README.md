@@ -19,7 +19,7 @@ and a level editor a designer can use without code.
 > [!NOTE]
 > A case study assigned by Rollic. Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
 
-<details>
+<details open>
 <summary><b>🎬 Videos and how the project was built: prototype → production</b></summary>
 <br>
 
