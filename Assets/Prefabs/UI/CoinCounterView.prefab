@@ -85,7 +85,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6317840577869773577}
   m_Layer: 5
-  m_Name: CoinView
+  m_Name: CoinCounterView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
