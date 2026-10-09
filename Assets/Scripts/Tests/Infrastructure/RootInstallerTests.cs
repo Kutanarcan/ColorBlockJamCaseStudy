@@ -19,14 +19,16 @@ namespace Game.Tests.Infrastructure
             var content = new FakeContentInitializer();
             var scenes = new FakeSceneLoader();
             var builder = new ContainerBuilder();
-            new RootInstaller(content, new FakeContentDelivery(), new FakeAssetSource(), scenes).Install(builder);
+            new RootInstaller(content, new FakeContentDelivery(), new FakeAssetSource(), scenes, null)
+                .Install(builder);
             new LiveServicesInstaller(new FakeSaveStore()).Install(builder);
 
             using IObjectResolver container = builder.Build();
 
             Assert.That(container.Resolve<IContentInitializer>(), Is.SameAs(content));
             Assert.That(container.Resolve<IAssetLoader>(), Is.InstanceOf<AssetScope>());
-            Assert.That(container.Resolve<ISceneLoader>(), Is.SameAs(scenes));
+            Assert.That(container.Resolve<ISceneLoader>(), Is.InstanceOf<CoveredSceneLoader>());
+            Assert.That(container.Resolve<ILoadingCover>(), Is.InstanceOf<LoadedCover>());
             Assert.That(container.Resolve<ILevelSource>(), Is.InstanceOf<AssetLevelSource>());
             Assert.That(container.Resolve<SelectedLevel>(), Is.Not.Null);
             Assert.That(container.Resolve<Progression>(), Is.Not.Null);
@@ -40,7 +42,8 @@ namespace Game.Tests.Infrastructure
         {
             var source = new FakeAssetSource();
             var builder = new ContainerBuilder();
-            new RootInstaller(new FakeContentInitializer(), new FakeContentDelivery(), source, new FakeSceneLoader())
+            new RootInstaller(new FakeContentInitializer(), new FakeContentDelivery(), source, new FakeSceneLoader(),
+                    null)
                 .Install(builder);
             new LiveServicesInstaller(new FakeSaveStore()).Install(builder);
             using IObjectResolver root = builder.Build();

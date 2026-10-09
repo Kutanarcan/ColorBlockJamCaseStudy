@@ -28,6 +28,7 @@ namespace Game.Runtime
         private readonly DragSettings dragSettings;
         private readonly ExitSettings exitSettings;
         private readonly Transform root;
+        private readonly ILoadingCover cover;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -38,7 +39,7 @@ namespace Game.Runtime
 
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
-            ExitSettings exitSettings, Transform root)
+            ExitSettings exitSettings, Transform root, ILoadingCover cover)
         {
             this.assets = assets;
             this.levels = levels;
@@ -50,6 +51,7 @@ namespace Game.Runtime
             this.dragSettings = dragSettings;
             this.exitSettings = exitSettings;
             this.root = root;
+            this.cover = cover;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
@@ -60,8 +62,18 @@ namespace Game.Runtime
             }
             catch (OperationCanceledException)
             {
-                // The scene closed while it was loading: nothing is left to build, and that is not an error.
+                // The scene closed while it was loading: nothing is left to build, and that is not an error. The
+                // cover stays: whoever closed the scene owns it (D119).
+                return;
             }
+            catch
+            {
+                cover.Hide();
+                throw;
+            }
+
+            // Built, or a level that failed to load and logged why: either way the scene is ready to be seen.
+            cover.Hide();
         }
 
         private async UniTask BuildAsync(CancellationToken cancellation)

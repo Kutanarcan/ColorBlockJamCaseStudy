@@ -20,7 +20,8 @@ namespace Game.Runtime
                 new AddressablesContentInitializer(),
                 new AddressablesContentDelivery(),
                 new AddressablesAssetSource(),
-                new AddressablesSceneLoader(this))
+                new AddressablesSceneLoader(this),
+                transform)
                 .Install(builder);
 
             InstallStartServices(builder);

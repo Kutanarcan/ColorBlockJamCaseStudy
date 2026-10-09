@@ -43,7 +43,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 
 | Group | Holds | Lives as long as | Paths | Bundle mode | Created |
 |---|---|---|---|---|---|
-| `Boot` | `GameConfig` | the whole run (root scope) | Local | Pack Together | ✅ I4 |
+| `Boot` | `GameConfig`, `LoadingCover` | the whole run (root scope) | Local | Pack Together | ✅ I4 · U0.4 (cover) |
 | `Main` | Home and settings content, the Main scene | the Main scope | Local | Pack Together | M2 |
 | `Gameplay` | The Gameplay scene; `PresentationAssets` and, through it, prefabs, meshes, materials and the palette | the Gameplay scope | Local | Pack Together | ✅ I3 (scene) · I4 (presentation) |
 | `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_6` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
@@ -67,6 +67,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | `Gameplay` | `Assets/Scenes/Gameplay.unity` | `Gameplay` | `SceneKeys.Gameplay` |
 | `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor), `SelectedLevel` |
 | `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
+| `LoadingCover` | `Assets/Prefabs/UI/LoadingCover.prefab` (the loading cover, made once on the first scene change) | `Boot` | `LoadedCover.Key` |
 | `PresentationAssets` | `Assets/ScriptableObjects/Presentation/PresentationAssets.asset` (pulls in its prefabs, meshes, materials, palette, modifier views) | `Gameplay` | `PresentationAssets.Key` |
 
 ## 4. Loading & lifetime
@@ -244,9 +245,9 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
          2. ContentUpdate         catalogs → (update + clean) → size(remote) → download(remote)
          3. LoadedConfig          GameConfig by key (root AssetScope, lives for the run)
          4. SelectedLevel         the Level Editor's request, else GameConfig.LevelKeys[0]
-         5. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  additive, active
+         5. ISceneLoader          ReplaceContentSceneAsync("Gameplay")  CoveredSceneLoader: the cover (LoadingCover, Boot) goes up, then additive, active
                                      └── GameplayLifetimeScope (child of root, own AssetScope)
-                                           GameplayEntry: PresentationAssets + SelectedLevel.Key by key → session, views, play; ticks through VContainer
+                                           GameplayEntry: PresentationAssets + SelectedLevel.Key by key → session, views, play; lifts the cover; ticks through VContainer
 ```
 
 | Phase | What | State |
@@ -258,3 +259,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | ✅ |
 | I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ |
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
+| U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ⏳ Editor check |
