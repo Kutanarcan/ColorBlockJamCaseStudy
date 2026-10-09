@@ -57,7 +57,6 @@ Each stage ran in small phases: a plan first, one phase per step, a review and a
 
 **Production: full flow**
 
-<!-- Production full-flow video (portrait): replace PRODUCTION_VIDEO_URL with the uploaded asset link. The APK link goes under it. -->
 <div align="center">
   <video src="https://github.com/user-attachments/assets/d848b45c-44fa-4f59-ae43-f8e75e23fbae" width="300" controls muted></video>
 </div>
@@ -67,6 +66,7 @@ Each stage ran in small phases: a plan first, one phase per step, a review and a
 | Section | |
 |---|---|
 | [▶️ Open and run](#️-open-and-run) | Unity version, first Play, Android build |
+| [✅ Requirement coverage](#-requirement-coverage) | Each brief requirement and its status |
 | [🛠️ Make a level](#️-make-a-level) | Level Editor, step by step |
 | [🏛️ Architecture decisions](#️-architecture-decisions) | What was decided and why |
 | [📌 Decisions on unclear requirements](#-decisions-on-unclear-requirements) | Brief §8 |
@@ -91,6 +91,19 @@ Each stage ran in small phases: a plan first, one phase per step, a review and a
 
 **The flow**
 Home → level button → Play popup → level → win → LevelComplete → next level · fail (time out) → LevelFail → Continue for coins, or X → Play popup (Retry / Home) · HUD Pause → Settings · HUD Restart → LoseLife (Retry).
+
+## ✅ Requirement coverage
+
+| Brief | Requirement | Status |
+|---|---|:---:|
+| 4.1 | Home: tab bar, level button, top UI, settings; 1080×1920 and 20:9 | ✅ |
+| 4.2 | Settings: three toggles with on / off states, close back to Home | ✅ |
+| 4.3 | Gameplay: five levels, timer, coins, fail popup, pause / restart / home | ✅ fail → home is X → Play popup → X |
+| 4.4 | Level editor: visual, one format, make → save → play, the five levels made with it | ✅ |
+| 5 | Optional: Ice blocker, Arrow block | ✅ |
+| 5 | Optional: functional boosters, unsolvable-level warning | ❌ not done |
+| 3 | Deliverables: README | ✅ |
+| 3 | Deliverables: APK / video | ✅ |
 
 ## 🛠️ Make a level
 
@@ -180,6 +193,8 @@ About **47 hours** of hands-on work.
 | [`Performance.md`](docs/production/Performance.md) | Profiler captures, draw calls, allocations, accepted costs |
 | [`Extending.md`](docs/production/Extending.md) | How to add a mechanic; deliberate trade-offs |
 | [`LevelFormat.md`](docs/production/LevelFormat.md) | Level JSON format and change checklists |
+| [`TechnologyUsed.md`](docs/production/TechnologyUsed.md) | Every engine feature, package, technique and tool, and why it was chosen |
+| [`FutureImprovements.md`](docs/production/FutureImprovements.md) | What a live title would add next, by industry standard, and where each piece plugs in |
 | [`FINDINGS.md`](docs/prototype/FINDINGS.md) · [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md) | What the prototype proved, and how its algorithms work |
 
 ---
