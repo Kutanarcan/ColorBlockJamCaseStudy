@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-21/30_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-22/30_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -306,7 +306,7 @@ What each prefab or scene object must hold so the code can wire it. The prefabs 
 - **Safe area:** `SafeArea` goes on a view's content root, never on its dim or a full-screen backdrop (§5 Canvas).
 - **Every button is built as the `PressButton` part** (U0.3); a button with no function (placeholders, boosters, tabs) is still one, with no reference.
 - **Static content needs no reference:** fixed icons, fixed texts and placeholders (lives `5` and `00:00`, boosters) are set in the prefab or scene object and never touched by code.
-- **Texts are TextMeshPro** (`TMP_Text`, font LilitaOne).
+- **Texts are TextMeshPro UI** (`TextMeshProUGUI`, font LilitaOne); a text reference is named `…Text` (`levelText`, `titleText`).
 
 **Parts** (the same structure wherever built; only `CoinCounter` is a prefab, D139)
 
@@ -326,13 +326,13 @@ What each prefab or scene object must hold so the code can wire it. The prefabs 
 
 | View | Kind · where | Root component | References (type) |
 |---|---|---|---|
-| HUD | Screen · Gameplay, `ScreenLayer` | `HudView` | `levelLabel`, `timerLabel`, `coinLabel` (`TMP_Text`) · `restartButton`, `pauseButton` (`PressButton`) · booster bar static |
-| LevelComplete | Panel · Gameplay, under `ModalLayer`, inactive | `LevelCompleteView` | `rewardLabel` (`TMP_Text`) · `continueButton` (`PressButton`) |
-| LevelFail | Panel · Gameplay, under `ModalLayer`, inactive | `LevelFailView` | `titleLabel`, `bonusLabel`, `descriptionLabel`, `priceLabel`, `coinLabel` (`TMP_Text`) · `icon` (`Image`) · `continueButton`, `closeButton` (`PressButton`) · `priceColor`, `priceShortColor` (`Color`, red when the wallet cannot pay) · `holdArea` (`HoldArea`: reports press and release, U5.5) · `group` (`CanvasGroup` on the panel root, faded by the hold) · lives static |
+| HUD | Screen · Gameplay, `ScreenLayer` | `HudView` | `levelText`, `timerText`, `coinText` (`TextMeshProUGUI`) · `restartButton`, `pauseButton` (`PressButton`) · booster bar static |
+| LevelComplete | Panel · Gameplay, under `ModalLayer`, inactive | `LevelCompleteView` | `rewardText` (`TextMeshProUGUI`) · `continueButton` (`PressButton`) |
+| LevelFail | Panel · Gameplay, under `ModalLayer`, inactive | `LevelFailView` | `titleText`, `bonusText`, `descriptionText`, `priceText`, `coinText` (`TextMeshProUGUI`) · `icon` (`Image`) · `continueButton`, `closeButton` (`PressButton`) · `priceColor`, `priceShortColor` (`Color`, red when the wallet cannot pay) · `holdArea` (`HoldArea`: reports press and release, U5.5) · `group` (`CanvasGroup` on the panel root, faded by the hold) · lives static |
 | Settings | Popup · `Popups` group | `SettingsView` | `vibration`, `sound`, `music` (`ToggleView`) · `homeButton`, `closeButton` (`PressButton`; Home hidden in the Home variant) |
-| LoseLife | Popup · `Popups` group | `LoseLifeView` | `titleLabel`, `actionLabel` (`TMP_Text`) · `actionButton`, `closeButton` (`PressButton`) · icon and text static |
-| Play | Popup · `Popups` group | `PlayView` | `titleLabel`, `actionLabel` (`TMP_Text`) · `titleIcon` (`GameObject`: shown or hidden by the variant; the title's layout group places what is shown) · `actionButton`, `closeButton` (`PressButton`) · booster row static |
-| Home | Screen · Main, `ScreenLayer` (M2) | `HomeView` | `coinLabel`, `levelLabel` (`TMP_Text`) · `levelButton`, `settingsButton` (`PressButton`) · `tabBar` (`TabBar`) · lives static |
+| LoseLife | Popup · `Popups` group | `LoseLifeView` | `titleText`, `actionText` (`TextMeshProUGUI`) · `actionButton`, `closeButton` (`PressButton`) · icon and text static |
+| Play | Popup · `Popups` group | `PlayView` | `titleText`, `actionText` (`TextMeshProUGUI`) · `titleIcon` (`GameObject`: shown or hidden by the variant; the title's layout group places what is shown) · `actionButton`, `closeButton` (`PressButton`) · booster row static |
+| Home | Screen · Main, `ScreenLayer` (M2) | `HomeView` | `coinText`, `levelText` (`TextMeshProUGUI`) · `levelButton`, `settingsButton` (`PressButton`) · `tabBar` (`TabBar`) · lives static |
 | Tab bar | Part of Home (M2) | `TabBar`; each tab a `TabButton` | `TabBar.tabs` (`TabButton[]`) · `TabButton`: `button` (`PressButton`), `selectedLook` (`GameObject`, `ActiveTab`) |
 | Loading cover | Made by code for the whole run · `Boot` group (U0.4) | `LoadingCover` | `canvas` (its own `Canvas`, sort order 100, above `UIRoot`; `CanvasScaler` as `UIRoot`; `GraphicRaycaster`) · `group` (`CanvasGroup`) · full-screen `bg_home_screen` image with an envelope `AspectRatioFitter`, no `SafeArea` |
 | LEVEL TEST badge | `Assets/Prefabs/UI/LevelTestBadge.prefab`, referenced by `LevelTestConfig.badge`, made under the level test's scope by `LevelTestServicesInstaller` (U0.5) | — | own `Canvas` (sort order 90: above `UIRoot`, under the cover) + `CanvasScaler` as `UIRoot`, no `GraphicRaycaster` · `SafeRoot` (`SafeArea`) → `Badge` (top centre, raycast off) → `Label` "LEVEL TEST" |
@@ -475,7 +475,7 @@ One phase per answer, following the production process. **Files touched** are de
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
 | U0 | Canvas, Safe Area & Contracts | Order: U0.2 → U0.1 → U0.3 → U0.6 → U0.4 → U0.5, one sub-step at a time<br>• U0.1 `UIRoot` prefab in Gameplay: 1080×1920 scaler, `ScreenLayer` / `ModalLayer` (D135)<br>• U0.2 `SafeArea`<br>• U0.3 `PressButton` alone on an empty object, no Unity `Button`; children `Background` (raycast off, the target that shrinks while pressed) and `Raycast` (the fixed hit area; its Raycast Target is the button's on / off, set in the Editor or from code); a release over it is a click (`Clicked`), dragging off cancels<br>• U0.4 loading cover over every content scene change, lifted when the scene is ready (D119); a `Boot` prefab made by the shared root code, so both starts get it without a copy in their scene (D135)<br>• U0.5 "LEVEL TEST" badge in level tests, made by `LevelTestServicesInstaller` from a prefab in `LevelTestConfig`; live code never makes or checks it (D131, D135)<br>• U0.6 view contracts (§5): every screen, panel, popup and part with its root component and serialized references, so the prefabs are built before the phase that wires them (D135) | `SafeArea_FitsTheRect_ForA20x9Notch` | ✅ |
-| U1 | HUD | • U1.1 level number, `mm:ss` countdown, coins<br>• U1.2 restart and pause buttons (they open their popups from U2 / U3)<br>• U1.3 booster bar, visual only<br>• U1.4 a pointer over the UI starts no drag | `TimerText_ShowsMinutesAndSeconds_AndStopsAtZero` | ⏳ |
+| U1 | HUD | • U1.1 level number, `mm:ss` countdown, coins<br>• U1.2 restart and pause buttons (they open their popups from U2 / U3)<br>• U1.3 booster bar, visual only<br>• U1.4 a pointer over the UI starts no drag | `TimerText_ShowsMinutesAndSeconds_AndStopsAtZero` | ✅ |
 | U2 | Modal Layer, Popups & Settings | • U2.1 `ModalLayer`: dim, one slot (the next replaces the current), open / close as sequencer steps, input blocked behind it (D135)<br>• U2.2 shown during play it stops the ticks and locks input; closed with resume it restarts them (D122)<br>• U2.3 popup service on the modal layer: scope-owned catalog by key (`Popups` group), released with its scope<br>• U2.4 Settings popup, Gameplay variant: three saved toggles, SFX mutes the SFX player, X resumes (D126) | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ⏳ |
 | U3 | LoseLife & Restart | • U3.1 LoseLife popup (MVP, opened only in Gameplay, D134): "Level X", Retry / Leave variants, X resumes<br>• U3.2 HUD restart → Retry → restart in the scene<br>• U3.3 Settings Home → Leave (goes Home from M3) | `LoseLifePresenter_RunsItsVariantsAction` | ⏳ |
 | U4 | Level Complete Panel | • U4.1 LevelComplete panel, placed in the Gameplay scene (D134): title, coin icon, reward on Continue<br>• U4.2 director shows it through the modal layer after the last exit step and the delay<br>• U4.3 Continue → next level, scene reopened under the cover (D127) | `Director_ShowsWin_AfterTheLastExitStep` | ⏳ |

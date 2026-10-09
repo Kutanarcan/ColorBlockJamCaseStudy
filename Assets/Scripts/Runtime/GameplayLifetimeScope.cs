@@ -13,6 +13,7 @@ namespace Game.Runtime
     {
         [SerializeField] private CameraRig cameraRig;
         [SerializeField] private HudView hud;
+        [SerializeField] private ModalLayerView modalLayer;
         [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f, 0.3f);
         [SerializeField] private ExitSettings exitSettings = new ExitSettings(0.08f, 10f, 0.5f);
 
@@ -20,6 +21,8 @@ namespace Game.Runtime
         {
             builder.RegisterInstance(cameraRig);
             builder.RegisterInstance(hud);
+            builder.RegisterInstance<IModalLayerView>(modalLayer);
+            builder.Register<ModalLayer>(Lifetime.Singleton);
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
             builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();

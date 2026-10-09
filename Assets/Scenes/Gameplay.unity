@@ -3739,6 +3739,7 @@ MonoBehaviour:
   autoInjectGameObjects: []
   cameraRig: {fileID: 308788634}
   hud: {fileID: 1837960077}
+  modalLayer: {fileID: 1200000002}
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
@@ -4388,6 +4389,17 @@ PrefabInstance:
       addedObject: {fileID: 1739603672}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bdc411dd9ad84eaea74f31f9b6479872, type: 3}
+--- !u!114 &1200000002 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7100000000000000033, guid: bdc411dd9ad84eaea74f31f9b6479872, type: 3}
+  m_PrefabInstance: {fileID: 1200000001}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc005bc6a23741c1be777d751d2dbbbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1214574752
 GameObject:
   m_ObjectHideFlags: 0
