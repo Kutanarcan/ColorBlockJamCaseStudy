@@ -46,7 +46,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | `Boot` | `GameConfig`, `LoadingCover` | the whole run (root scope) | Local | Pack Together | ✅ I4 · U0.4 (cover) |
 | `Main` | The Main scene (Home) | the Main scope | Local | Pack Together | M2.1 |
 | `Gameplay` | The Gameplay scene; `PresentationAssets` and, through it, prefabs, meshes, materials and the palette | the Gameplay scope | Local | Pack Together | ✅ I3 (scene) · I4 (presentation) |
-| `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_6` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
+| `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_17` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
 | `Popups` | Popup prefabs (`SettingsPopup`, `LoseLifePopup`, `PlayPopup`) | the scope that opened the popup | Local | Pack Together | U2.3 |
 
 **Why by lifetime:** loading one asset brings its whole bundle into memory, and the bundle stays until **every** asset loaded from it is released. Mixing Main and Gameplay assets in one bundle would keep Gameplay's bundle alive on Home. Grouped by lifetime, closing a scope really empties its bundles; I6 checks this with the Event Viewer.
@@ -66,7 +66,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 |---|---|---|---|
 | `Main` | `Assets/Scenes/Main.unity` | `Main` | `SceneKeys.Main`; the game's first scene (`FirstScene`, a start service) |
 | `Gameplay` | `Assets/Scenes/Gameplay.unity` | `Gameplay` | `SceneKeys.Gameplay` |
-| `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor), `SelectedLevel` |
+| `Level_1` … `Level_17` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (play order 1–5, then 8–17; 6 and 7 only through the Level Editor), `SelectedLevel` |
 | `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
 | `LoadingCover` | `Assets/Prefabs/UI/LoadingCover.prefab` (the loading cover, made once on the first scene change) | `Boot` | `LoadedCover.Key` |
 | `SettingsPopup`, `LoseLifePopup`, `PlayPopup` | `Assets/Prefabs/UI/Popups/<key>.prefab` | `Popups` | `PopupKeys` (got through the scene scope's `PopupService`) |
