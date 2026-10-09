@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-27/30_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-28/30_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -484,12 +484,12 @@ One phase per answer, following the production process. **Files touched** are de
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
 | M2 | Home | • M2.1 Main scene + `MainLifetimeScope` (`Main` group) with the canvas skeleton of U0; the bootstrapper opens Main; a level test starts in Gameplay (D131), and Home reached from a level test shows the test's values, never the live ones (D130)<br>• M2.2 top UI: lives placeholder, coins, Settings popup (Home variant)<br>• M2.3 level button → Play popup (Home variant); level track: `NextLevel` as a scroll view of the coming levels after the current one, 3–4 visible, scrollable (D141)<br>• M2.4 tab bar: every tab a `PressButton` with feedback only, the `Selector` fixed under Home, no tab code (D141) | `LevelButton_ShowsAndStartsTheCurrentLevel` | ✅ |
-| M3 | Navigation | • M3.1 Leave and Play popup X → Home<br>• M3.2 Home → Gameplay → Home as a PlayMode smoke; win → next → fail → Home as a manual check in the README (cut list 4, D142) | `SceneFlow_HomeToGameplayAndBack` (PlayMode smoke) | ⏳ |
+| M3 | Navigation | • M3.1 Leave and Play popup X → Home<br>• M3.2 Home → Gameplay → Home as a PlayMode smoke; win → next → fail → Home as a manual check in the README (cut list 4, D142) | `SceneFlow_HomeToGameplayAndBack` (PlayMode smoke) | ✅ |
 
 ### 📬 Stage F: Delivery
 | # | Phase | Sub-steps | Done when | Status |
 |---|---|---|---|---|
-| R1 | README | • R1.1 every brief §7 item<br>• R1.2 asset feedback<br>• R1.3 known problems<br>• R1.4 manual flow check: Home → level → win → next → fail → Home, with the popups between (D142) | Every brief §7 point present | ⏳ |
+| R1 | README | • R1.1 every brief §7 item<br>• ~~R1.2 asset feedback~~ left out (brief §8 makes it optional)<br>• R1.3 known problems<br>• R1.4 manual flow check: Home → level → win → next → fail → Home, with the popups between (D142) | Every brief §7 point present | ⏳ |
 | R2 | APK & Video | • R2.1 Addressables + Android build<br>• R2.2 full-flow recording ≤ 3 min | APK installed and played; video uploaded | ⏳ |
 
 ### 🚀 Stage G: Boosters (if time)
