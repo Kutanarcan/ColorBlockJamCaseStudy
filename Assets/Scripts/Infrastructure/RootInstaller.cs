@@ -50,6 +50,7 @@ namespace Game.Infrastructure
             builder.Register<SelectedLevel>(Lifetime.Singleton);
             builder.Register<AssetScope>(Lifetime.Scoped).As<IAssetLoader>();
             builder.Register<AssetLevelSource>(Lifetime.Scoped).As<ILevelSource>();
+            builder.Register<LevelLauncher>(Lifetime.Scoped);
             builder.RegisterEntryPoint<Bootstrapper>();
         }
     }

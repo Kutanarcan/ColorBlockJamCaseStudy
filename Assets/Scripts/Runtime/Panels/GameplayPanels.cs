@@ -22,30 +22,27 @@ namespace Game.Runtime
         private readonly LevelFailView levelFail;
         private readonly LoadedConfig config;
         private readonly Wallet wallet;
-        private readonly SelectedLevel selected;
-        private readonly ISceneLoader scenes;
+        private readonly LevelLauncher launcher;
         private readonly GameplayPopups popups;
         private readonly CancellationTokenSource life = new CancellationTokenSource();
         private readonly IStep win;
         private readonly IStep fail;
         private LevelSession session;
         private LevelFailPresenter failPresenter;
-        private bool continuing;
 
         public GameplayPanels(ModalLayer modals, LevelCompleteView levelComplete, LevelFailView levelFail,
-            LoadedConfig config, Wallet wallet, SelectedLevel selected, ISceneLoader scenes, GameplayPopups popups)
+            LoadedConfig config, Wallet wallet, LevelLauncher launcher, GameplayPopups popups)
         {
             this.modals = modals;
             this.levelComplete = levelComplete;
             this.levelFail = levelFail;
             this.config = config;
             this.wallet = wallet;
-            this.selected = selected;
-            this.scenes = scenes;
+            this.launcher = launcher;
             this.popups = popups;
             win = new PanelStep(this, true);
             fail = new PanelStep(this, false);
-            levelComplete.ContinueClicked += ContinueToNextLevel;
+            levelComplete.ContinueClicked += launcher.Launch;
         }
 
         /// <summary>The level being played, once the scene has built it, and the price of its continues.</summary>
@@ -77,7 +74,7 @@ namespace Game.Runtime
         {
             life.Cancel();
             life.Dispose();
-            levelComplete.ContinueClicked -= ContinueToNextLevel;
+            levelComplete.ContinueClicked -= launcher.Launch;
             failPresenter?.Dispose();
         }
 
@@ -100,19 +97,6 @@ namespace Game.Runtime
         /// solver, out of V2. A new kind adds its check here and its content on the view.
         /// </summary>
         private FailContent ContentFor(LevelSession failed) => levelFail.OutOfTime;
-
-        private void ContinueToNextLevel()
-        {
-            // One press is enough; a second would start a second scene change.
-            if (continuing)
-                return;
-
-            continuing = true;
-            selected.Select();
-
-            // Not this scene's token: the change unloads this scene, and must not be cancelled by it.
-            scenes.ReplaceContentSceneAsync(SceneKeys.Gameplay, CancellationToken.None).Forget();
-        }
 
         private sealed class PanelStep : IStep
         {
