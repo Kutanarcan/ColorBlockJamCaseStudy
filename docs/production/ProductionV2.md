@@ -350,7 +350,7 @@ What each prefab or scene object must hold so the code can wire it. The prefabs 
 |---|---|---|---|
 | **Settings** | Popup | Gameplay: with **Home** · Home: without | Vibration / SFX / Music toggles, saved, distinct on / off; only SFX acts (D126) · Home → LoseLife (Leave) · X: Gameplay resumes, Home closes · other buttons static with feedback |
 | **LoseLife** | Popup (opened only in Gameplay) | "Level X" title; fixed icon and text · Retry or Leave | Retry → restart · Leave → Home · X → resume |
-| **Play** | Popup | Title, title icon, booster row (visual) · Gameplay: Retry · Home: Play | Gameplay: Retry → restart, X → Home · Home: Play → load the level, X → close |
+| **Play** | Popup | Title, title icon, booster row (visual) · Gameplay (after a fail): "Level Failed!", the heart, Retry · Home: "Level X", no heart, Play | Gameplay: Retry → restart, X → Home · Home: Play → load the level, X → close |
 | **LevelComplete** | Panel | "Level Complete", coin icon, reward amount | Continue (+ amount) → next level (D123, D127) |
 | **LevelFail** | Panel | Fail kind content: title, icon, `+N`, description (OutOfTime: "Out Of Time", clock, +20, "Get 20 seconds to keep playing!"); lives placeholder top left, coins top right | Continue (price) → spend and add time, or red label and nothing when the wallet cannot pay (D124) · X → Play popup (Retry) in its place |
 

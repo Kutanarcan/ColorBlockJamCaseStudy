@@ -24,6 +24,7 @@ namespace Game.Runtime
         private readonly Wallet wallet;
         private readonly SelectedLevel selected;
         private readonly ISceneLoader scenes;
+        private readonly GameplayPopups popups;
         private readonly CancellationTokenSource life = new CancellationTokenSource();
         private readonly IStep win;
         private readonly IStep fail;
@@ -32,7 +33,7 @@ namespace Game.Runtime
         private bool continuing;
 
         public GameplayPanels(ModalLayer modals, LevelCompleteView levelComplete, LevelFailView levelFail,
-            LoadedConfig config, Wallet wallet, SelectedLevel selected, ISceneLoader scenes)
+            LoadedConfig config, Wallet wallet, SelectedLevel selected, ISceneLoader scenes, GameplayPopups popups)
         {
             this.modals = modals;
             this.levelComplete = levelComplete;
@@ -41,6 +42,7 @@ namespace Game.Runtime
             this.wallet = wallet;
             this.selected = selected;
             this.scenes = scenes;
+            this.popups = popups;
             win = new PanelStep(this, true);
             fail = new PanelStep(this, false);
             levelComplete.ContinueClicked += ContinueToNextLevel;
@@ -66,10 +68,8 @@ namespace Game.Runtime
             modals.Close(resume: true).Play(life.Token).Forget();
         }
 
-        void ILevelFailActions.Close()
-        {
-            // U5.4: the Play popup (Retry) takes the panel's place.
-        }
+        // The Play popup (Retry) takes the panel's place in the modal slot (U5.4); play stays paused.
+        void ILevelFailActions.Close() => popups.OpenPlay();
 
         public void Dispose()
         {
