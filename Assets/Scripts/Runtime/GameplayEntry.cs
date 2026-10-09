@@ -173,9 +173,11 @@ namespace Game.Runtime
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
                 new DragResolver(session), dragSettings, sfx, outline);
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            // The level being played; a win moves progression on at once (D123).
+            int levelNumber = progression.LevelNumber;
             modals.PauseWhileShown(loop);
-            hud = new HudPresenter(hudView, session, wallet, progression.LevelNumber, loop.Restart,
-                popups.OpenSettings);
+            popups.PlayWith(loop, levelNumber);
+            hud = new HudPresenter(hudView, session, wallet, levelNumber, popups.OpenRetry, popups.OpenSettings);
         }
 
         private Transform NewRoot(string name, bool active)

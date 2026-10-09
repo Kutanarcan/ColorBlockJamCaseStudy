@@ -8,7 +8,7 @@ namespace Game.Runtime
     /// Drives the HUD from the session and the wallet. The level number is the one being played, set once: a win moves
     /// progression on at once (D123), but the HUD keeps showing the level that was won. The countdown and the coins are
     /// read every frame and sent to the view only when what it shows changes; services raise no change events (D132
-    /// T4). What the buttons do comes from its owner: pause opens Settings (U2.4); restart restarts until LoseLife (U3).
+    /// T4). What the buttons do comes from its owner: pause opens Settings (U2.4), restart opens LoseLife Retry (U3).
     /// </summary>
     public sealed class HudPresenter : IDisposable
     {

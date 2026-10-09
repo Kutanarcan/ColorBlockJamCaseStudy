@@ -265,4 +265,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ |
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
 | U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ✅ |
-| U2.3 | `Popups` group; `PopupService` gets a popup by key through the scene scope's `AssetScope`, makes it once under the modal layer, released with the scope | ⏳ Editor check |
+| U2.3 | `Popups` group; `PopupService` gets a popup by key through the scene scope's `AssetScope`, makes it once under the modal layer, released with the scope | ✅ |

@@ -1449,13 +1449,14 @@ GameObject:
   m_Component:
   - component: {fileID: 2619608729106806910}
   - component: {fileID: 6668968246666057520}
+  - component: {fileID: 3300598322240916503}
   m_Layer: 5
   m_Name: LoseLifePopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2619608729106806910
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1488,3 +1489,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3300598322240916503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8936434229052907656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6907f79f42e8bcb4a882d14551698eee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  titleText: {fileID: 6554340181069595218}
+  actionText: {fileID: 631639961450630950}
+  actionButton: {fileID: 6181484190781741389}
+  closeButton: {fileID: 4751966440164601215}
