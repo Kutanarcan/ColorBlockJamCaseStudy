@@ -22,7 +22,7 @@ namespace Game.Runtime
         private readonly LevelFailView levelFail;
         private readonly LoadedConfig config;
         private readonly Wallet wallet;
-        private readonly LevelLauncher launcher;
+        private readonly Navigation navigation;
         private readonly GameplayPopups popups;
         private readonly CancellationTokenSource life = new CancellationTokenSource();
         private readonly IStep win;
@@ -31,18 +31,18 @@ namespace Game.Runtime
         private LevelFailPresenter failPresenter;
 
         public GameplayPanels(ModalLayer modals, LevelCompleteView levelComplete, LevelFailView levelFail,
-            LoadedConfig config, Wallet wallet, LevelLauncher launcher, GameplayPopups popups)
+            LoadedConfig config, Wallet wallet, Navigation navigation, GameplayPopups popups)
         {
             this.modals = modals;
             this.levelComplete = levelComplete;
             this.levelFail = levelFail;
             this.config = config;
             this.wallet = wallet;
-            this.launcher = launcher;
+            this.navigation = navigation;
             this.popups = popups;
             win = new PanelStep(this, true);
             fail = new PanelStep(this, false);
-            levelComplete.ContinueClicked += launcher.Launch;
+            levelComplete.ContinueClicked += navigation.PlayLevel;
         }
 
         /// <summary>The level being played, once the scene has built it, and the price of its continues.</summary>
@@ -74,7 +74,7 @@ namespace Game.Runtime
         {
             life.Cancel();
             life.Dispose();
-            levelComplete.ContinueClicked -= launcher.Launch;
+            levelComplete.ContinueClicked -= navigation.PlayLevel;
             failPresenter?.Dispose();
         }
 

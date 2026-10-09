@@ -14,7 +14,7 @@ namespace Game.Tests.Runtime
         private FakeHomeView view;
         private Scenes scenes;
         private SelectedLevel selected;
-        private LevelLauncher launcher;
+        private Navigation navigation;
 
         [SetUp]
         public void SetUp()
@@ -25,14 +25,15 @@ namespace Game.Tests.Runtime
             view = new FakeHomeView();
             scenes = new Scenes();
             selected = new SelectedLevel(new LevelByNumber(meta.Progression));
-            launcher = new LevelLauncher(selected, scenes);
+            navigation = new Navigation(selected, scenes);
         }
 
         [Test]
         public void LevelButton_ShowsAndStartsTheCurrentLevel()
         {
             // The level button opens the Play popup; its Play starts the level, as Home's actions do.
-            using var presenter = new HomePresenter(view, meta.Wallet, meta.Progression, () => { }, launcher.Launch);
+            using var presenter =
+                new HomePresenter(view, meta.Wallet, meta.Progression, () => { }, navigation.PlayLevel);
 
             Assert.That(view.Level, Is.EqualTo(3), "two levels done: the third is current");
 
@@ -49,15 +50,6 @@ namespace Game.Tests.Runtime
 
             Assert.That(view.Coins, Is.EqualTo(250));
             Assert.That(view.FirstComing, Is.EqualTo(4));
-        }
-
-        [Test]
-        public void LevelLauncher_StartsOnce_WhileTheSceneChanges()
-        {
-            launcher.Launch();
-            launcher.Launch();
-
-            Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }));
         }
 
         /// <summary>The level progression points to, named by its number.</summary>

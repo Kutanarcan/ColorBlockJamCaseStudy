@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Infrastructure;
 using Game.Meta;
 using UnityEngine;
 
@@ -9,15 +10,16 @@ namespace Game.Runtime
     /// <summary>
     /// The popups the Gameplay scene opens and what their buttons do there (D121): the Gameplay side of each popup's
     /// actions. A popup is got from the catalog on its first open, its presenter made once, and it is shown through
-    /// the modal layer, which pauses play while it is up (D122); opening one while another is up replaces it (Settings
-    /// → LoseLife, LevelFail → Play). Lives with the Gameplay scope; closing the scene stops whatever it was opening
-    /// or closing.
+    /// the modal layer, which pauses play while it is up (D122); opening one while another is up replaces it
+    /// (Settings → LoseLife, LevelFail → Play). Leave and the Play popup's X go Home (M3.1). Lives with the Gameplay
+    /// scope; closing the scene stops whatever it was opening or closing.
     /// </summary>
     public sealed class GameplayPopups : ISettingsActions, ILoseLifeActions, IPlayActions, IDisposable
     {
         private readonly PopupService popups;
         private readonly ModalLayer modals;
         private readonly Settings settings;
+        private readonly Navigation navigation;
         private readonly CancellationTokenSource life = new CancellationTokenSource();
         private GameplayLoop play;
         private int levelNumber;
@@ -28,11 +30,12 @@ namespace Game.Runtime
         private PlayView playView;
         private PlayPresenter playPresenter;
 
-        public GameplayPopups(PopupService popups, ModalLayer modals, Settings settings)
+        public GameplayPopups(PopupService popups, ModalLayer modals, Settings settings, Navigation navigation)
         {
             this.popups = popups;
             this.modals = modals;
             this.settings = settings;
+            this.navigation = navigation;
         }
 
         bool ISettingsActions.ShowsHome => true;
@@ -61,19 +64,14 @@ namespace Game.Runtime
 
         void ILoseLifeActions.Retry() => RetryLevel();
 
-        void ILoseLifeActions.Leave()
-        {
-            // M3: back to Home.
-        }
+        // Home under the cover (M3.1); the popup stays up until the scene is gone.
+        void ILoseLifeActions.Leave() => navigation.GoHome();
 
         void ILoseLifeActions.Close() => CloseAndResume();
 
         void IPlayActions.Play() => RetryLevel();
 
-        void IPlayActions.Close()
-        {
-            // M3: back to Home.
-        }
+        void IPlayActions.Close() => navigation.GoHome();
 
         public void Dispose()
         {

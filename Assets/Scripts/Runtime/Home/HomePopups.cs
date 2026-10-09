@@ -19,7 +19,7 @@ namespace Game.Runtime
         private readonly ModalLayer modals;
         private readonly Settings settings;
         private readonly Progression progression;
-        private readonly LevelLauncher launcher;
+        private readonly Navigation navigation;
         private readonly CancellationTokenSource life = new CancellationTokenSource();
         private SettingsView settingsView;
         private SettingsPresenter settingsPresenter;
@@ -27,13 +27,13 @@ namespace Game.Runtime
         private PlayPresenter playPresenter;
 
         public HomePopups(PopupService popups, ModalLayer modals, Settings settings, Progression progression,
-            LevelLauncher launcher)
+            Navigation navigation)
         {
             this.popups = popups;
             this.modals = modals;
             this.settings = settings;
             this.progression = progression;
-            this.launcher = launcher;
+            this.navigation = navigation;
         }
 
         bool ISettingsActions.ShowsHome => false;
@@ -54,7 +54,7 @@ namespace Game.Runtime
         void ISettingsActions.Close() => CloseModal();
 
         // The popup stays up under the cover while the scene changes.
-        void IPlayActions.Play() => launcher.Launch();
+        void IPlayActions.Play() => navigation.PlayLevel();
 
         void IPlayActions.Close() => CloseModal();
 
