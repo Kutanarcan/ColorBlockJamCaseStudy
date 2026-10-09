@@ -6,7 +6,7 @@
 
 ![Mode](https://img.shields.io/badge/Mode-🏗️_Production-1f6feb)
 ![Layer](https://img.shields.io/badge/Layer-Presentation_·_Infrastructure_·_UI_·_Meta-8250df)
-![Phases](https://img.shields.io/badge/Phases-25/30_done_·_+2_if_time-1f6feb)
+![Phases](https://img.shields.io/badge/Phases-26/30_done_·_+2_if_time-1f6feb)
 ![Deadline](https://img.shields.io/badge/Budget-3_days_·_~45_h-d29922)
 
 <sub>[README](../../README.md) · [ProductionV1](ProductionV1.md) · [Level Format](LevelFormat.md) · [Extending](Extending.md) · [FINDINGS (prototype)](../prototype/FINDINGS.md) · [Case brief](../Game%20Developer%20Case%202026.pdf)</sub>
@@ -479,7 +479,7 @@ One phase per answer, following the production process. **Files touched** are de
 | U2 | Modal Layer, Popups & Settings | • U2.1 `ModalLayer`: dim, one slot (the next replaces the current), open / close as sequencer steps, input blocked behind it (D135)<br>• U2.2 shown during play it stops the ticks and locks input; closed with resume it restarts them (D122)<br>• U2.3 popup service on the modal layer: scope-owned catalog by key (`Popups` group), released with its scope<br>• U2.4 Settings popup, Gameplay variant: three saved toggles, SFX mutes the SFX player, X resumes (D126) | `PopupService_ReleasesThePopup_WhenItsScopeCloses` | ✅ |
 | U3 | LoseLife & Restart | • U3.1 LoseLife popup (MVP, opened only in Gameplay, D134): "Level X", Retry / Leave variants, X resumes<br>• U3.2 HUD restart → Retry → restart in the scene<br>• U3.3 Settings Home → Leave (goes Home from M3) | `LoseLifePresenter_RunsItsVariantsAction` | ✅ |
 | U4 | Level Complete Panel | • U4.1 LevelComplete panel, placed in the Gameplay scene (D134): title, coin icon, reward on Continue<br>• U4.2 director shows it through the modal layer after the last exit step and the delay<br>• U4.3 Continue → next level, scene reopened under the cover (D127) | `Director_ShowsWin_AfterTheLastExitStep` | ✅ |
-| U5 | Level Fail Panel & Play Popup | • U5.1 LevelFail panel, placed in the Gameplay scene; fail kinds as content, OutOfTime first (D134)<br>• U5.2 Continue: spend the price and `AddTime`, or red label and no action<br>• U5.3 lives placeholder and coins<br>• U5.4 X → Play popup in the panel's slot, Gameplay variant: Retry restarts, X → Home (from M3), boosters visual<br>• U5.5 hold to see the board: holding the panel's hold area fades the whole LevelFail panel and the modal layer's dim out, releasing fades them back in (D138) | `FailPresenter_Continues_OnlyWhenTheWalletCanPay` | ⏳ |
+| U5 | Level Fail Panel & Play Popup | • U5.1 LevelFail panel, placed in the Gameplay scene; fail kinds as content, OutOfTime first (D134)<br>• U5.2 Continue: spend the price and `AddTime`, or red label and no action<br>• U5.3 lives placeholder and coins<br>• U5.4 X → Play popup in the panel's slot, Gameplay variant: Retry restarts, X → Home (from M3), boosters visual<br>• U5.5 hold to see the board: holding the panel's hold area fades the whole LevelFail panel and the modal layer's dim out, releasing fades them back in (D138) | `FailPresenter_Continues_OnlyWhenTheWalletCanPay` | ✅ |
 
 ### 🏠 Stage E: Main Menu
 | # | Phase | Sub-steps | Done when | Status |
