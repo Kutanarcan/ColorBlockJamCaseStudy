@@ -19,27 +19,43 @@ and a level editor a designer can use without code.
 > [!NOTE]
 > A case study assigned by Rollic. Color Block Jam is a mobile puzzle game by Rollic / Gybe Games (2024).
 
-## 🎬 Videos
+<details>
+<summary><b>🎬 Videos and how the project was built: prototype → production</b></summary>
+<br>
 
-<!-- Production full-flow video: replace PRODUCTION_VIDEO_URL with the uploaded asset link. APK link goes under the table. -->
+1. **Prototype (10 h):** answered one question as fast as possible: can the supplied kit build the board and move blocks out through matching doors? Free 2D drag, block autotiling from 4 quadrant meshes, clip-plane exit shader, a short marketing video. The output was **knowledge, not code**: rules, tuning values and rejected ideas went into [`FINDINGS.md`](docs/prototype/FINDINGS.md).
+2. **Production V1 (12 h):** the whole game verified in the logic layer alone, with tests, before any visuals: movement, exit, timer, win / fail, Ice and Arrow, events and commands, the JSON format and the Level Editor.
+3. **Production V2 (25 h):** the vertical slice on top of the unchanged V1 core: presentation, infrastructure, meta, gameplay UI, Home and navigation.
+
+Each stage ran in small phases: a plan first, one phase per step, a review and a playtest after each, and the next phase only on an explicit go.
+
+**Prototype**
+
 <table>
   <tr>
-    <th>Production: full flow</th>
-    <th>Level Editor</th>
-  </tr>
-  <tr>
-    <td><video src="PRODUCTION_VIDEO_URL" width="300" controls muted></video></td>
-    <td><video src="https://github.com/user-attachments/assets/8a9dca3f-37b8-452a-8c32-e50bf642923f" width="300" controls muted></video></td>
-  </tr>
-  <tr>
-    <th>Prototype gameplay</th>
-    <th>Marketing video</th>
+    <th>Gameplay</th>
+    <th>Marketing</th>
   </tr>
   <tr>
     <td><video src="https://github.com/user-attachments/assets/b70f40cb-7e7c-474b-8a10-92ef0715b7d5" width="300" controls muted></video></td>
     <td><video src="https://github.com/user-attachments/assets/39c8f7a1-a1f1-45dc-81fd-15d65a67241f" width="300" controls muted></video></td>
   </tr>
 </table>
+
+**Level Editor**
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/8a9dca3f-37b8-452a-8c32-e50bf642923f" width="100%" controls muted></video>
+</div>
+
+**Production: full flow**
+
+<!-- Production full-flow video (portrait): replace PRODUCTION_VIDEO_URL with the uploaded asset link. The APK link goes under it. -->
+<div align="center">
+  <video src="PRODUCTION_VIDEO_URL" width="300" controls muted></video>
+</div>
+
+</details>
 
 | Section | |
 |---|---|
@@ -158,18 +174,6 @@ About **47 hours** of hands-on work.
 | [`Extending.md`](docs/production/Extending.md) | How to add a mechanic; deliberate trade-offs |
 | [`LevelFormat.md`](docs/production/LevelFormat.md) | Level JSON format and change checklists |
 | [`FINDINGS.md`](docs/prototype/FINDINGS.md) · [`AlgorithmExplanation.md`](docs/prototype/AlgorithmExplanation.md) | What the prototype proved, and how its algorithms work |
-
-<details>
-<summary><b>🛤️ How the project was built: prototype → production</b></summary>
-<br>
-
-1. **Prototype (10 h):** answered one question as fast as possible: can the supplied kit build the board and move blocks out through matching doors? Free 2D drag, block autotiling from 4 quadrant meshes, clip-plane exit shader, a short marketing video. The output was **knowledge, not code**: rules, tuning values and rejected ideas went into [`FINDINGS.md`](docs/prototype/FINDINGS.md).
-2. **Production V1 (12 h):** the whole game verified in the logic layer alone, with tests, before any visuals: movement, exit, timer, win / fail, Ice and Arrow, events and commands, the JSON format and the Level Editor.
-3. **Production V2 (25 h):** the vertical slice on top of the unchanged V1 core: presentation, infrastructure, meta, gameplay UI, Home and navigation.
-
-Each stage ran in small phases: a plan first, one phase per step, a review and a playtest after each, and the next phase only on an explicit go.
-
-</details>
 
 ---
 
