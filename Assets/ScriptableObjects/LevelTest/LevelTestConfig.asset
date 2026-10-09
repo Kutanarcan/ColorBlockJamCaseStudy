@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: LevelTestConfig
   m_EditorClassIdentifier: 
   startCoins: 100000
+  badge: {fileID: 7300000000000000001, guid: c43b5d237f6a4637bf7c7f5d672eb5d7, type: 3}

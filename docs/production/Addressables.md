@@ -259,4 +259,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I4 | a: `GameConfig`, `LoadedConfig`, `Boot` group, `AssetLevelSource` · b: `GameplayLifetimeScope`, `PresentationAssets` from Addressables | ✅ |
 | I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ |
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
-| U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ⏳ Editor check |
+| U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ✅ |

@@ -335,7 +335,7 @@ What each prefab or scene object must hold so the code can wire it. The prefabs 
 | Home | Screen · Main, `ScreenLayer` (M2) | `HomeView` | `coinLabel`, `levelLabel` (`TMP_Text`) · `levelButton`, `settingsButton` (`PressButton`) · `tabBar` (`TabBar`) · lives static |
 | Tab bar | Part of Home (M2) | `TabBar`; each tab a `TabButton` | `TabBar.tabs` (`TabButton[]`) · `TabButton`: `button` (`PressButton`), `selectedLook` (`GameObject`, `ActiveTab`) |
 | Loading cover | Made by code for the whole run · `Boot` group (U0.4) | `LoadingCover` | `canvas` (its own `Canvas`, sort order 100, above `UIRoot`; `CanvasScaler` as `UIRoot`; `GraphicRaycaster`) · `group` (`CanvasGroup`) · full-screen `bg_home_screen` image with an envelope `AspectRatioFitter`, no `SafeArea` |
-| LEVEL TEST badge | Made by the level test · referenced by `LevelTestConfig` (U0.5) | — | own `Canvas` (sort order above `UIRoot`, under the cover) + `CanvasScaler` as `UIRoot` · text in a `SafeArea` root · no raycast |
+| LEVEL TEST badge | `Assets/Prefabs/UI/LevelTestBadge.prefab`, referenced by `LevelTestConfig.badge`, made under the level test's scope by `LevelTestServicesInstaller` (U0.5) | — | own `Canvas` (sort order 90: above `UIRoot`, under the cover) + `CanvasScaler` as `UIRoot`, no `GraphicRaycaster` · `SafeRoot` (`SafeArea`) → `Badge` (top centre, raycast off) → `Label` "LEVEL TEST" |
 
 ### HUD (Gameplay screen)
 - **Top:** level number · remaining time, counting down as `mm:ss` · coins (wallet) · **Restart** → LoseLife (Retry) · **Pause** → Settings. Both stop the time (D122).

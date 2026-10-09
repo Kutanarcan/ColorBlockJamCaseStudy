@@ -25,19 +25,32 @@ namespace Game.Tests.LevelTest
         };
 
         private LevelTestConfig testConfig;
+        private GameObject badge;
+        private GameObject badgeParent;
 
         [SetUp]
-        public void SetUp() => testConfig = ScriptableObject.CreateInstance<LevelTestConfig>();
+        public void SetUp()
+        {
+            badge = new GameObject("Badge");
+            badgeParent = new GameObject("LevelTestScope");
+            testConfig = TestConfigs.WithBadge(badge);
+        }
 
         [TearDown]
-        public void TearDown() => Object.DestroyImmediate(testConfig);
+        public void TearDown()
+        {
+            Object.DestroyImmediate(testConfig);
+            Object.DestroyImmediate(badge);
+            Object.DestroyImmediate(badgeParent);
+        }
 
         [Test]
         public void StartServices_RegisterTheSameContracts()
         {
             using IObjectResolver game = Build(new LiveServicesInstaller(new MemorySaveStore()));
             using IObjectResolver levelTest =
-                Build(new LevelTestServicesInstaller("Level_1", new MemorySaveStore(), testConfig));
+                Build(new LevelTestServicesInstaller("Level_1", new MemorySaveStore(), testConfig,
+                    badgeParent.transform));
 
             foreach (Type contract in Contracts)
             {

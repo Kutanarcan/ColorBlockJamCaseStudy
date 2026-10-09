@@ -11,6 +11,8 @@ namespace Game.Tests.LevelTest
     {
         private MemorySaveStore liveSave;
         private LevelTestConfig testConfig;
+        private GameObject badge;
+        private GameObject badgeParent;
 
         [SetUp]
         public void SetUp()
@@ -19,11 +21,18 @@ namespace Game.Tests.LevelTest
             liveSave.Save(Progression.SaveKey, new ProgressionData { levelsCompleted = 2 });
             liveSave.Save(Settings.SaveKey, new SettingsData { sound = false });
             liveSave.Save(Wallet.SaveKey, new WalletData { granted = true, coins = 30 });
-            testConfig = ScriptableObject.CreateInstance<LevelTestConfig>();
+            badge = new GameObject("Badge");
+            badgeParent = new GameObject("LevelTestScope");
+            testConfig = TestConfigs.WithBadge(badge);
         }
 
         [TearDown]
-        public void TearDown() => Object.DestroyImmediate(testConfig);
+        public void TearDown()
+        {
+            Object.DestroyImmediate(testConfig);
+            Object.DestroyImmediate(badge);
+            Object.DestroyImmediate(badgeParent);
+        }
 
         [Test]
         public void LevelTestLaunch_KeepsTheLiveSaveUntouched()
@@ -60,6 +69,15 @@ namespace Game.Tests.LevelTest
             Assert.That(level.Key, Is.EqualTo("Level_6"), "A win replays the tested level.");
         }
 
+        [Test]
+        public void LevelTestLaunch_PutsTheBadgeOnScreen_ForTheWholeRun()
+        {
+            using IObjectResolver container = Build("Level_6");
+
+            Assert.That(badgeParent.transform.childCount, Is.EqualTo(1), "One badge, under the level test's scope.");
+            Assert.That(badgeParent.transform.GetChild(0).name, Does.StartWith(badge.name));
+        }
+
         /// <summary>The meta and level selection the game's root installer registers, on the level test's services.</summary>
         private IObjectResolver Build(string levelKey)
         {
@@ -68,7 +86,7 @@ namespace Game.Tests.LevelTest
             builder.Register<Settings>(Lifetime.Singleton);
             builder.Register<Wallet>(Lifetime.Singleton);
             builder.Register<SelectedLevel>(Lifetime.Singleton);
-            new LevelTestServicesInstaller(levelKey, liveSave, testConfig).Install(builder);
+            new LevelTestServicesInstaller(levelKey, liveSave, testConfig, badgeParent.transform).Install(builder);
 
             return builder.Build();
         }
