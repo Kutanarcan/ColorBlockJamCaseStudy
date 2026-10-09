@@ -18,6 +18,8 @@ MonoBehaviour:
   - Level_3
   - Level_4
   - Level_5
+  - Level_6
+  - Level_7
   - Level_8
   - Level_9
   - Level_10
@@ -29,3 +31,8 @@ MonoBehaviour:
   - Level_16
   - Level_17
   winPopupDelay: 0.5
+  startCoins: 1000
+  winReward: 50
+  continueBasePrice: 900
+  continuePriceStep: 1000
+  continueSeconds: 20
