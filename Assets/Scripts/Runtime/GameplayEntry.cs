@@ -34,6 +34,7 @@ namespace Game.Runtime
         private readonly GameplayPopups popups;
         private readonly Settings settings;
         private readonly GameplayPanels panels;
+        private readonly Navigation navigation;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -46,7 +47,7 @@ namespace Game.Runtime
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
             ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals,
-            GameplayPopups popups, Settings settings, GameplayPanels panels)
+            GameplayPopups popups, Settings settings, GameplayPanels panels, Navigation navigation)
         {
             this.assets = assets;
             this.levels = levels;
@@ -64,13 +65,16 @@ namespace Game.Runtime
             this.popups = popups;
             this.settings = settings;
             this.panels = panels;
+            this.navigation = navigation;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
         {
+            bool built;
+
             try
             {
-                await BuildAsync(cancellation);
+                built = await BuildAsync(cancellation);
             }
             catch (OperationCanceledException)
             {
@@ -84,11 +88,16 @@ namespace Game.Runtime
                 throw;
             }
 
-            // Built, or a level that failed to load and logged why: either way the scene is ready to be seen.
-            cover.Hide();
+            // A level that cannot be played sends the player Home under the cover, which Home lifts: an empty board
+            // with no way out is never shown.
+            if (built)
+                cover.Hide();
+            else
+                navigation.GoHome();
         }
 
-        private async UniTask BuildAsync(CancellationToken cancellation)
+        /// <summary>False when the level could not be loaded or is invalid; the reason is logged.</summary>
+        private async UniTask<bool> BuildAsync(CancellationToken cancellation)
         {
             string key = selected.Key;
             presentation = await assets.LoadAsync<PresentationAssets>(PresentationAssets.Key, cancellation);
@@ -97,7 +106,7 @@ namespace Game.Runtime
             if (level.IsFailure)
             {
                 Debug.LogError($"Level '{key}' could not be loaded: {level.Error}");
-                return;
+                return false;
             }
 
             Result<LevelSession> session = LevelSession.TryCreate(level.Value);
@@ -105,7 +114,7 @@ namespace Game.Runtime
             if (session.IsFailure)
             {
                 Debug.LogError($"Level '{key}' is invalid: {session.Error}");
-                return;
+                return false;
             }
 
             // DOTween sets itself up on its first tween (a component and its settings asset); do it while loading,
@@ -116,6 +125,8 @@ namespace Game.Runtime
             BuildBoard(level.Value);
             BlocksView blocks = BuildBlocks(session.Value);
             WirePlay(session.Value, blocks);
+
+            return true;
         }
 
         void VContainer.Unity.ITickable.Tick()
@@ -123,12 +134,6 @@ namespace Game.Runtime
             loop?.Tick(Time.deltaTime);
             hud?.Tick();
         }
-
-        public void Restart() => loop?.Restart();
-
-        public void Pause() => loop?.Pause();
-
-        public void Resume() => loop?.Resume();
 
         public void Dispose()
         {

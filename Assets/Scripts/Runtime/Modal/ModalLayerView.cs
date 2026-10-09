@@ -11,7 +11,8 @@ namespace Game.Runtime
     /// The modal layer's look, on <c>UIRoot</c>'s <c>ModalLayer</c> (D135). The dim is the layer's first child and
     /// fills the whole screen, notch included (no <c>SafeArea</c>); while on, its raycast blocks the UI behind it. A
     /// modal opens by scaling up from <see cref="closedScale"/> while it fades in, and closes by shrinking back while
-    /// it fades out, so it is gone before it is turned off; all on unscaled time. The fade is the modal root's
+    /// it fades out, so it is gone before it is turned off; all on unscaled time. A closing modal stops taking touches
+    /// at once. The fade is the modal root's
     /// <see cref="CanvasGroup"/>, added when the root has none. A cancelled tween jumps to its end, so the layer never
     /// stays half open. Opening a modal is rare, so its tweens are not recycled.
     /// </summary>
@@ -39,7 +40,9 @@ namespace Game.Runtime
             modal.DOKill();
             modal.SetAsLastSibling();
             modal.localScale = new Vector3(closedScale, closedScale, 1f);
-            GroupOf(modal).alpha = 0f;
+            CanvasGroup group = GroupOf(modal);
+            group.alpha = 0f;
+            group.blocksRaycasts = true;
             modal.gameObject.SetActive(true);
         }
 
@@ -48,7 +51,9 @@ namespace Game.Runtime
             modal.DOKill();
             modal.gameObject.SetActive(false);
             modal.localScale = Vector3.one;
-            GroupOf(modal).alpha = 1f;
+            CanvasGroup group = GroupOf(modal);
+            group.alpha = 1f;
+            group.blocksRaycasts = true;
         }
 
         public UniTask Pop(RectTransform modal, bool open, CancellationToken cancellation)
@@ -57,6 +62,10 @@ namespace Game.Runtime
 
             CanvasGroup group = GroupOf(modal);
             float duration = open ? openDuration : closeDuration;
+
+            // A closing modal takes no more touches: a second press would act on a modal that is already gone.
+            if (!open)
+                group.blocksRaycasts = false;
 
             return DOTween.Sequence()
                 .Join(modal.DOScale(open ? 1f : closedScale, duration).SetEase(open ? Ease.OutBack : Ease.InQuad))

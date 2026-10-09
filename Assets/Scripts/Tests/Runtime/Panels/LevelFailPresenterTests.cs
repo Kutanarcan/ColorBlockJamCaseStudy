@@ -44,6 +44,23 @@ namespace Game.Tests.Runtime
         }
 
         [Test]
+        public void FailPresenter_SellsOneContinue_PerShowing()
+        {
+            wallet.Add(5000);
+            presenter.Show(new FailContent());
+
+            view.PressContinue();
+            view.PressContinue();
+
+            Assert.That(actions.Log, Is.EqualTo(new[] { "continue 20" }), "the second press lands while the panel closes");
+            Assert.That(wallet.Coins, Is.EqualTo(5100), "paid once: 6000 - 900");
+
+            presenter.Show(new FailContent());
+            view.PressContinue();
+            Assert.That(actions.Log, Is.EqualTo(new[] { "continue 20", "continue 20" }), "the next showing sells again");
+        }
+
+        [Test]
         public void FailPresenter_ShowsTheFailKind_TheBonusAndTheCoins()
         {
             presenter.Show(new FailContent());

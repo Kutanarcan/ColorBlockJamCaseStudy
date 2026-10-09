@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "width": 7,
   "height": 7,
-  "timeLimit": 60.0,
+  "timeLimit": 10.0,
   "walls": [
     {
       "cells": [

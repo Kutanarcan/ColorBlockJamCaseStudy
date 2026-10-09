@@ -1,5 +1,6 @@
 using System.IO;
 using Game.Core;
+using Game.LevelTest;
 using UnityEditor;
 using UnityEngine;
 
@@ -101,7 +102,7 @@ namespace Game.LevelEditor
             using (ButtonTint.Play())
             {
                 if (GUILayout.Button("▶ Play", EditorStyles.toolbarButton) && Save())
-                    PlayLauncher.Play(Document.Key);
+                    LevelTestLauncher.Play(Document.Key);
             }
         }
 

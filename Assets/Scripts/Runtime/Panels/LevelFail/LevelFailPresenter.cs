@@ -7,7 +7,7 @@ namespace Game.Runtime
     /// Drives the LevelFail panel (D124): the fail kind's content, the continue price and the coins. Continue pays the
     /// price from the wallet and plays on; when the wallet cannot pay, the price shows red and the press does nothing.
     /// The price rises after each continue and goes back to its base at every level start
-    /// (<see cref="ContinuePrice"/>). Holding the hold area shows the board through the panel (D138).
+    /// (<see cref="ContinuePrice"/>); one showing sells one continue. Holding the hold area shows the board through the panel (D138).
     /// </summary>
     public sealed class LevelFailPresenter : IDisposable
     {
@@ -18,6 +18,7 @@ namespace Game.Runtime
         private readonly ILevelFailActions actions;
         private readonly Action seeBoard;
         private readonly Action hideBoard;
+        private bool offered;
 
         public LevelFailPresenter(ILevelFailView view, Wallet wallet, ContinuePrice price, int seconds,
             ILevelFailActions actions)
@@ -37,6 +38,7 @@ namespace Game.Runtime
 
         public void Show(FailContent content)
         {
+            offered = true;
             view.ShowContent(content.Title, content.Icon, seconds, content.Description);
             ShowWallet();
         }
@@ -49,11 +51,13 @@ namespace Game.Runtime
             view.HoldEnded -= hideBoard;
         }
 
+        /// <summary>One continue per showing: a second press while the panel closes buys nothing.</summary>
         private void Continue()
         {
-            if (!price.TryPay(wallet))
+            if (!offered || !price.TryPay(wallet))
                 return;
 
+            offered = false;
             // The panel closes as it is; the new price and coins show the next time it opens.
             actions.Continue(seconds);
         }

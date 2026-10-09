@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using Game.Infrastructure;
 using UnityEngine;
 using VContainer;
@@ -39,16 +38,5 @@ namespace Game.Runtime
 
         /// <summary>The services this start scene runs on: the save store and the level choice.</summary>
         protected abstract void InstallStartServices(IContainerBuilder builder);
-
-        // Development hooks for the I6 release check, until navigation (M3) does the round trip: right-click the
-        // component in play mode.
-        [ContextMenu("Unload Content Scene")]
-        private void UnloadContentScene() =>
-            Container?.Resolve<ISceneLoader>().UnloadContentSceneAsync(destroyCancellationToken).Forget();
-
-        [ContextMenu("Load Gameplay")]
-        private void LoadGameplay() =>
-            Container?.Resolve<ISceneLoader>().ReplaceContentSceneAsync(SceneKeys.Gameplay, destroyCancellationToken)
-                .Forget();
     }
 }

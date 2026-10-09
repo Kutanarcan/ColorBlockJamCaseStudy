@@ -32,17 +32,7 @@ namespace Game.Runtime
             builder.Register<GameplayPanels>(Lifetime.Singleton).AsSelf().As<ILevelPanels>();
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
-            builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();
+            builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform);
         }
-
-        // Development hooks, kept until the popups own pause and restart (U2, U3): right-click the component.
-        [ContextMenu("Restart")]
-        private void Restart() => Container?.Resolve<GameplayEntry>().Restart();
-
-        [ContextMenu("Pause")]
-        private void Pause() => Container?.Resolve<GameplayEntry>().Pause();
-
-        [ContextMenu("Resume")]
-        private void Resume() => Container?.Resolve<GameplayEntry>().Resume();
     }
 }
