@@ -12,18 +12,20 @@ namespace Game.Runtime
     public sealed class GameplayLifetimeScope : LifetimeScope
     {
         [SerializeField] private CameraRig cameraRig;
+        [SerializeField] private HudView hud;
         [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f, 0.3f);
         [SerializeField] private ExitSettings exitSettings = new ExitSettings(0.08f, 10f, 0.5f);
 
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(cameraRig);
+            builder.RegisterInstance(hud);
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
             builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();
         }
 
-        // Development hooks until the HUD's restart and pause buttons exist (U1, U2): right-click the component.
+        // Development hooks, kept until the popups own pause and restart (U2, U3): right-click the component.
         [ContextMenu("Restart")]
         private void Restart() => Container?.Resolve<GameplayEntry>().Restart();
 

@@ -3377,6 +3377,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6317840577869773577, guid: 4d2690a39bfabfa42b4c28279e75d8c1, type: 3}
   m_PrefabInstance: {fileID: 991636256}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &991636258 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5221728824870461721, guid: 4d2690a39bfabfa42b4c28279e75d8c1, type: 3}
+  m_PrefabInstance: {fileID: 991636256}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &994930359
 GameObject:
   m_ObjectHideFlags: 0
@@ -3727,6 +3738,7 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   cameraRig: {fileID: 308788634}
+  hud: {fileID: 1837960077}
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
@@ -6692,6 +6704,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1837960075}
   - component: {fileID: 1837960076}
+  - component: {fileID: 1837960077}
   m_Layer: 5
   m_Name: HudView
   m_TagString: Untagged
@@ -6732,6 +6745,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1837960077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837960074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46f947eba26731440b40e9adf47c5a98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  levelText: {fileID: 757257009}
+  timerText: {fileID: 1734236106}
+  coinText: {fileID: 991636258}
+  restartButton: {fileID: 1454331459}
+  pauseButton: {fileID: 1458613249}
 --- !u!1 &1838192630
 GameObject:
   m_ObjectHideFlags: 0

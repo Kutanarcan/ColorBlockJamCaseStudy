@@ -29,6 +29,7 @@ namespace Game.Runtime
         private readonly ExitSettings exitSettings;
         private readonly Transform root;
         private readonly ILoadingCover cover;
+        private readonly HudView hudView;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -36,10 +37,11 @@ namespace Game.Runtime
         private BoardView board;
         private SelectionOutline outline;
         private GameplayLoop loop;
+        private HudPresenter hud;
 
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
-            ExitSettings exitSettings, Transform root, ILoadingCover cover)
+            ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView)
         {
             this.assets = assets;
             this.levels = levels;
@@ -52,6 +54,7 @@ namespace Game.Runtime
             this.exitSettings = exitSettings;
             this.root = root;
             this.cover = cover;
+            this.hudView = hudView;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
@@ -106,7 +109,11 @@ namespace Game.Runtime
             WirePlay(session.Value, blocks);
         }
 
-        void VContainer.Unity.ITickable.Tick() => loop?.Tick(Time.deltaTime);
+        void VContainer.Unity.ITickable.Tick()
+        {
+            loop?.Tick(Time.deltaTime);
+            hud?.Tick();
+        }
 
         public void Restart() => loop?.Restart();
 
@@ -116,6 +123,7 @@ namespace Game.Runtime
 
         public void Dispose()
         {
+            hud?.Dispose();
             flow.Dispose();
             exits.Dispose();
             outline?.Dispose();
@@ -158,6 +166,16 @@ namespace Game.Runtime
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
                 new DragResolver(session), dragSettings, sfx, outline);
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            hud = new HudPresenter(hudView, session, wallet, progression.LevelNumber, loop.Restart, TogglePause);
+        }
+
+        // Until the Settings popup pauses and resumes (U2).
+        private void TogglePause()
+        {
+            if (loop.IsPaused)
+                loop.Resume();
+            else
+                loop.Pause();
         }
 
         private Transform NewRoot(string name, bool active)
