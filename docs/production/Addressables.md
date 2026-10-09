@@ -44,7 +44,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | Group | Holds | Lives as long as | Paths | Bundle mode | Created |
 |---|---|---|---|---|---|
 | `Boot` | `GameConfig`, `LoadingCover` | the whole run (root scope) | Local | Pack Together | ✅ I4 · U0.4 (cover) |
-| `Main` | Home and settings content, the Main scene | the Main scope | Local | Pack Together | M2 |
+| `Main` | The Main scene (Home) | the Main scope | Local | Pack Together | M2.1 |
 | `Gameplay` | The Gameplay scene; `PresentationAssets` and, through it, prefabs, meshes, materials and the palette | the Gameplay scope | Local | Pack Together | ✅ I3 (scene) · I4 (presentation) |
 | `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_6` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
 | `Popups` | Popup prefabs (`SettingsPopup`, `LoseLifePopup`, `PlayPopup`) | the scope that opened the popup | Local | Pack Together | U2.3 |
@@ -64,6 +64,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 
 | Key | Asset | Group | Constant |
 |---|---|---|---|
+| `Main` | `Assets/Scenes/Main.unity` | `Main` | `SceneKeys.Main`; the game's first scene (`FirstScene`, a start service) |
 | `Gameplay` | `Assets/Scenes/Gameplay.unity` | `Gameplay` | `SceneKeys.Gameplay` |
 | `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor), `SelectedLevel` |
 | `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
@@ -180,6 +181,10 @@ Done by hand once (D115); the result is committed under `Assets/AddressableAsset
 16. Create `Popups` (`Create → Group → Packed Assets`). Paths: Local. Bundle mode: Pack Together.
 17. Drag `Assets/Prefabs/UI/Popups/SettingsPopup.prefab`, `LoseLifePopup.prefab` and `PlayPopup.prefab` into it, then `Simplify Addressable Names`: keys `SettingsPopup`, `LoseLifePopup`, `PlayPopup` (`PopupKeys`).
 
+**Main group** (M2.1)
+18. Create `Main` (`Create → Group → Packed Assets`). Paths: Local. Bundle mode: Pack Together.
+19. Drag `Assets/Scenes/Main.unity` into it, key `Main` (`SceneKeys.Main`). It is not in Build Settings: only Bootstrap is.
+
 **Play Mode Script** (Groups window → `Play Mode Script`) decides where Addressables takes assets from when you press Play in the Editor. Game code is the same in every mode; only the loading path underneath changes.
 
 | Script | Takes assets from | Use it for |
@@ -266,3 +271,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
 | U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ✅ |
 | U2.3 | `Popups` group; `PopupService` gets a popup by key through the scene scope's `AssetScope`, makes it once under the modal layer, released with the scope | ✅ |
+| M2.1 | `Main` group and scene; the bootstrapper opens the start's `FirstScene` (game: `Main`, level test: `Gameplay`) | ⏳ Editor check |

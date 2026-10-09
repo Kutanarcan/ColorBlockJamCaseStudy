@@ -8,8 +8,9 @@ namespace Game.LevelTest
 {
     /// <summary>
     /// The services a level test runs on (D130, D131): meta runs for real on a save kept in memory, the tested level is
-    /// played every time and the wallet starts with the test's coins. Only the player's settings are copied in from the
-    /// live save, once, while installing; the container never sees the live store, so nothing in a test can write it.
+    /// played every time, straight away (the first scene is Gameplay, not Home), and the wallet starts with the test's
+    /// coins. Only the player's settings are copied in from the live save, once, while installing; the container
+    /// never sees the live store, so nothing in a test can write it.
     /// It also puts the "LEVEL TEST" badge on screen for the whole run, so live code never makes or checks it (D135).
     /// A later cross-cutting service registers its null or in-memory stand-in here.
     /// </summary>
@@ -37,6 +38,7 @@ namespace Game.LevelTest
             builder.RegisterInstance<ISaveStore>(testSave);
             builder.RegisterInstance<ILevelChoice>(new FixedLevelChoice(levelKey));
             builder.RegisterInstance<IStartingCoins>(config);
+            builder.RegisterInstance(new FirstScene(SceneKeys.Gameplay));
             builder.RegisterBuildCallback(_ => Object.Instantiate(config.Badge, badgeParent));
         }
     }

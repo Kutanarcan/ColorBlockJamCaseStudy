@@ -39,7 +39,7 @@ namespace Game.Tests.Infrastructure
         }
 
         [Test]
-        public void Bootstrapper_UpdatesContent_LoadsConfig_ThenGameplay_OnlyAfterContentIsReady()
+        public void Bootstrapper_UpdatesContent_LoadsConfig_ThenTheFirstScene_OnlyAfterContentIsReady()
         {
             var content = new FakeContentInitializer(held: true);
             var delivery = new FakeContentDelivery();
@@ -52,7 +52,7 @@ namespace Game.Tests.Infrastructure
             content.Finish();
             Assert.That(delivery.Log, Is.Not.Empty);
             Assert.That(loaded.Value, Is.SameAs(config));
-            Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }));
+            Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Main }));
         }
 
         [Test]
@@ -73,8 +73,19 @@ namespace Game.Tests.Infrastructure
             Assert.That(level.Key, Is.EqualTo("Level_2"));
         }
 
-        private void Start(FakeContentInitializer content, FakeContentDelivery delivery, FakeSceneLoader scenes) =>
-            new Bootstrapper(content, new ContentUpdate(delivery), loaded, level, scenes)
+        [Test]
+        public void Bootstrapper_OpensTheStartsFirstScene()
+        {
+            var scenes = new FakeSceneLoader();
+
+            Start(new FakeContentInitializer(), new FakeContentDelivery(), scenes, SceneKeys.Gameplay);
+
+            Assert.That(scenes.Log, Is.EqualTo(new[] { "replace " + SceneKeys.Gameplay }), "a level test's level");
+        }
+
+        private void Start(FakeContentInitializer content, FakeContentDelivery delivery, FakeSceneLoader scenes,
+            string firstScene = SceneKeys.Main) =>
+            new Bootstrapper(content, new ContentUpdate(delivery), loaded, level, scenes, new FirstScene(firstScene))
                 .StartAsync(CancellationToken.None)
                 .Forget();
 

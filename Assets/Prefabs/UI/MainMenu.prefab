@@ -200,6 +200,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 749764098246763205}
+  - component: {fileID: 5662678869071857816}
   m_Layer: 5
   m_Name: TabButton_Shop
   m_TagString: Untagged
@@ -228,6 +229,23 @@ RectTransform:
   m_AnchoredPosition: {x: -249, y: 18.9127}
   m_SizeDelta: {x: 214.3951, y: 237.8255}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5662678869071857816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 557000127840095100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51e2a13fb724144b863d490163e288a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 3781011135794079478}
+  raycast: {fileID: 6945196258219488176}
+  pressedScale: 0.92
+  pressDuration: 0.06
+  releaseDuration: 0.12
 --- !u!1 &635100367550769361
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,6 +443,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6375152469565680984}
+  - component: {fileID: 623005591414565538}
   m_Layer: 5
   m_Name: TabButton_Locked
   m_TagString: Untagged
@@ -453,6 +472,23 @@ RectTransform:
   m_AnchoredPosition: {x: 394.19, y: 18.9127}
   m_SizeDelta: {x: 214.3951, y: 237.8255}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &623005591414565538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922198959747615456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51e2a13fb724144b863d490163e288a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 1450243799985318715}
+  raycast: {fileID: 8731400447493872655}
+  pressedScale: 0.92
+  pressDuration: 0.06
+  releaseDuration: 0.12
 --- !u!1 &1130617512856892287
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +685,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4507645954712244878}
+  - component: {fileID: 3628207873189196645}
   m_Layer: 5
   m_Name: TabButton_Home
   m_TagString: Untagged
@@ -678,6 +715,23 @@ RectTransform:
   m_AnchoredPosition: {x: -34.605, y: 97}
   m_SizeDelta: {x: 214.3951, y: 237.8255}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3628207873189196645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2381279775286595940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51e2a13fb724144b863d490163e288a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 3077836407757369333}
+  raycast: {fileID: 4704242917075926332}
+  pressedScale: 0.92
+  pressDuration: 0.06
+  releaseDuration: 0.12
 --- !u!1 &2517683733615076299
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,6 +871,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8827000270253420333}
+  - component: {fileID: 954939141477338734}
   m_Layer: 5
   m_Name: TabButton_Collection
   m_TagString: Untagged
@@ -845,6 +900,23 @@ RectTransform:
   m_AnchoredPosition: {x: 179.79008, y: 18.9127}
   m_SizeDelta: {x: 214.3951, y: 237.8255}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &954939141477338734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625673595486315413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51e2a13fb724144b863d490163e288a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 300271624066217397}
+  raycast: {fileID: 6244844713396099880}
+  pressedScale: 0.92
+  pressDuration: 0.06
+  releaseDuration: 0.12
 --- !u!1 &2708465584376384783
 GameObject:
   m_ObjectHideFlags: 0
@@ -3915,6 +3987,7 @@ GameObject:
   m_Component:
   - component: {fileID: 64495752836860217}
   - component: {fileID: 834514286482364312}
+  - component: {fileID: 2115809965552530624}
   m_Layer: 5
   m_Name: MainMenu
   m_TagString: Untagged
@@ -3952,6 +4025,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8190914889455610699}
   m_CullTransparentMesh: 1
+--- !u!114 &2115809965552530624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8190914889455610699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8243086431513737654
 GameObject:
   m_ObjectHideFlags: 0
@@ -4095,6 +4180,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3917186098501419519}
+  - component: {fileID: 8283398486901181958}
   m_Layer: 5
   m_Name: TabButton_Locked
   m_TagString: Untagged
@@ -4123,6 +4209,23 @@ RectTransform:
   m_AnchoredPosition: {x: -470.0024, y: 18.9127}
   m_SizeDelta: {x: 214.3951, y: 237.8255}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8283398486901181958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8580742476817952775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51e2a13fb724144b863d490163e288a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 6909798090771506068}
+  raycast: {fileID: 1944114847026677519}
+  pressedScale: 0.92
+  pressDuration: 0.06
+  releaseDuration: 0.12
 --- !u!1 &8734637059902372245
 GameObject:
   m_ObjectHideFlags: 0

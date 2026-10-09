@@ -5,8 +5,9 @@ using VContainer.Unity;
 namespace Game.Infrastructure
 {
     /// <summary>
-    /// The services the game runs on (D131): the player's save, the level progression points to and the configured
-    /// starting coins. A later cross-cutting service (analytics, live events) registers its real implementation here.
+    /// The services the game runs on (D131): the player's save, the level progression points to, the configured
+    /// starting coins, and Home as the first scene. A later cross-cutting service (analytics, live events) registers its
+    /// real implementation here.
     /// </summary>
     public sealed class LiveServicesInstaller : IInstaller
     {
@@ -19,6 +20,7 @@ namespace Game.Infrastructure
             builder.RegisterInstance(save);
             builder.Register<ProgressionLevelChoice>(Lifetime.Singleton).As<ILevelChoice>();
             builder.Register<ConfigStartingCoins>(Lifetime.Singleton).As<IStartingCoins>();
+            builder.RegisterInstance(new FirstScene(SceneKeys.Main));
         }
     }
 }

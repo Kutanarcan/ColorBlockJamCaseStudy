@@ -21,7 +21,8 @@ namespace Game.Tests.LevelTest
         {
             typeof(ISaveStore),
             typeof(ILevelChoice),
-            typeof(IStartingCoins)
+            typeof(IStartingCoins),
+            typeof(FirstScene)
         };
 
         private LevelTestConfig testConfig;

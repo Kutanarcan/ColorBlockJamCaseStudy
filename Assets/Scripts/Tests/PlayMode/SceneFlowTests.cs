@@ -16,8 +16,8 @@ using Object = UnityEngine.Object;
 namespace Game.Tests.PlayMode
 {
     /// <summary>
-    /// Smoke test of the real scene flow through Addressables (Editor play mode script). Needs the Gameplay scene
-    /// marked addressable under its key.
+    /// Smoke test of the real scene flow through Addressables (Editor play mode script). Needs the Main and Gameplay
+    /// scenes marked addressable under their keys.
     /// </summary>
     [PrebuildSetup(typeof(TestRunnerStartScene))]
     public sealed class SceneFlowTests
@@ -32,8 +32,12 @@ namespace Game.Tests.PlayMode
             await EditorSceneManager.LoadSceneAsyncInPlayMode(BootstrapPath, single);
             var root = Object.FindObjectOfType<RootLifetimeScope>();
 
-            await UniTask.WaitUntil(() => SceneManager.GetActiveScene().name == SceneKeys.Gameplay)
-                .Timeout(LoadTimeout);
+            // The game opens Home first (M2); Gameplay is opened from there, as the level button does.
+            await UniTask.WaitUntil(() => SceneManager.GetActiveScene().name == SceneKeys.Main).Timeout(LoadTimeout);
+            await root.Container.Resolve<ISceneLoader>().ReplaceContentSceneAsync(SceneKeys.Gameplay,
+                CancellationToken.None);
+            Assert.That(SceneManager.GetSceneByName(SceneKeys.Main).isLoaded, Is.False, "Home closed for Gameplay");
+
             await UniTask.DelayFrame(2); // let the scene's Start build the board
             var gameplay = Object.FindObjectOfType<GameplayLifetimeScope>();
 
