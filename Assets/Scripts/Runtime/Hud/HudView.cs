@@ -18,6 +18,9 @@ namespace Game.Runtime
         [SerializeField] private PressButton restartButton;
         [SerializeField] private PressButton pauseButton;
 
+        [Tooltip("This object's canvas group; its raycasts turn every HUD control on or off, boosters included.")]
+        [SerializeField] private CanvasGroup controls;
+
         public event Action RestartClicked
         {
             add => restartButton.Clicked += value;
@@ -35,5 +38,8 @@ namespace Game.Runtime
         public void SetTime(int minutes, int seconds) => timerText.SetText("{0:00}:{1:00}", minutes, seconds);
 
         public void SetCoins(int coins) => coinText.SetText("{0}", coins);
+
+        /// <summary>Off, no HUD control takes a touch; the HUD still shows everything.</summary>
+        public void SetControlsOn(bool on) => controls.blocksRaycasts = on;
     }
 }

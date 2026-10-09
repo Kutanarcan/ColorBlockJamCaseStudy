@@ -1175,6 +1175,7 @@ GameObject:
   m_Component:
   - component: {fileID: 380474051}
   - component: {fileID: 380474052}
+  - component: {fileID: 380474053}
   m_Layer: 5
   m_Name: LevelCompletePanel
   m_TagString: Untagged
@@ -1216,6 +1217,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &380474053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380474050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c671782ad083ad48a34b1e7cb3f7e61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rewardText: {fileID: 1116433228}
+  continueButton: {fileID: 132014027}
 --- !u!1 &390950075
 GameObject:
   m_ObjectHideFlags: 0
@@ -3730,6 +3745,7 @@ MonoBehaviour:
   cameraRig: {fileID: 308788634}
   hud: {fileID: 1837960077}
   modalLayer: {fileID: 1200000002}
+  levelComplete: {fileID: 380474053}
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
@@ -6693,6 +6709,7 @@ GameObject:
   - component: {fileID: 1837960075}
   - component: {fileID: 1837960076}
   - component: {fileID: 1837960077}
+  - component: {fileID: 1837960078}
   m_Layer: 5
   m_Name: HudView
   m_TagString: Untagged
@@ -6750,6 +6767,19 @@ MonoBehaviour:
   coinText: {fileID: 991636258}
   restartButton: {fileID: 1454331459}
   pauseButton: {fileID: 1458613249}
+  controls: {fileID: 1837960078}
+--- !u!225 &1837960078
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837960074}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1838192630
 GameObject:
   m_ObjectHideFlags: 0

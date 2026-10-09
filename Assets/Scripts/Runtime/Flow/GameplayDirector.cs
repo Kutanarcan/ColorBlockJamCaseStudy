@@ -6,7 +6,8 @@ namespace Game.Runtime
     /// <summary>
     /// Turns what the session reports into steps and owns the level's flow (D69). Two sequencers: exits run side by
     /// side and never block the player; the flow (win, fail) locks input and waits for the exits still running.
-    /// The logic has already finished when a call arrives; the director only decides what plays and when.
+    /// The logic has already finished when a call arrives; the director only decides what plays and when. What a
+    /// level-end panel shows is the scene's (<see cref="ILevelPanels"/>); the director only says when (D89).
     /// </summary>
     public sealed class GameplayDirector : ISessionObserver
     {
@@ -16,9 +17,10 @@ namespace Game.Runtime
         private readonly Sequencer flow;
         private readonly float winPopupDelay;
         private readonly LevelCompletion completion;
+        private readonly ILevelPanels panels;
 
         public GameplayDirector(IExitSteps exitSteps, InputLock input, Sequencer exits, Sequencer flow,
-            float winPopupDelay, LevelCompletion completion)
+            float winPopupDelay, LevelCompletion completion, ILevelPanels panels)
         {
             this.exitSteps = exitSteps;
             this.input = input;
@@ -26,6 +28,7 @@ namespace Game.Runtime
             this.flow = flow;
             this.winPopupDelay = winPopupDelay;
             this.completion = completion;
+            this.panels = panels;
         }
 
         /// <summary>Restart and home: nothing from the last attempt keeps playing or flying (D71).</summary>
@@ -58,11 +61,11 @@ namespace Game.Runtime
                     flow.Run(new StepSequence(
                         new WaitForIdleStep(exits),
                         new DelayStep(winPopupDelay),
-                        new PopupPlaceholderStep("Win")));
+                        panels.Win()));
                     break;
                 case GameState.Failed:
                     input.Lock(InputLockReason.Flow);
-                    flow.Run(new StepSequence(new WaitForIdleStep(exits), new PopupPlaceholderStep("Fail")));
+                    flow.Run(new StepSequence(new WaitForIdleStep(exits), panels.Fail()));
                     break;
                 default:
                     input.Unlock(InputLockReason.Flow);

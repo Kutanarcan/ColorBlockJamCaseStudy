@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Game.Runtime
 {
-    /// <summary>Waits a number of seconds.</summary>
+    /// <summary>Waits a number of seconds; none at all for zero, so a zero delay costs no frame.</summary>
     public sealed class DelayStep : IStep
     {
         private readonly float seconds;
@@ -12,6 +12,8 @@ namespace Game.Runtime
         public DelayStep(float seconds) => this.seconds = seconds;
 
         public UniTask Play(CancellationToken cancellation) =>
-            UniTask.Delay(TimeSpan.FromSeconds(seconds), cancellationToken: cancellation);
+            seconds > 0f
+                ? UniTask.Delay(TimeSpan.FromSeconds(seconds), cancellationToken: cancellation)
+                : UniTask.CompletedTask;
     }
 }

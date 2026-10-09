@@ -9,6 +9,8 @@ namespace Game.Runtime
     /// progression on at once (D123), but the HUD keeps showing the level that was won. The countdown and the coins are
     /// read every frame and sent to the view only when what it shows changes; services raise no change events (D132
     /// T4). What the buttons do comes from its owner: pause opens Settings (U2.4), restart opens LoseLife Retry (U3).
+    /// The controls work only while the level is being played: from the moment it is won or failed (the last block
+    /// entering its door) until a restart or a continue, no HUD button takes a touch.
     /// </summary>
     public sealed class HudPresenter : IDisposable
     {
@@ -19,6 +21,7 @@ namespace Game.Runtime
         private readonly Action pause;
         private TimerText shownTime;
         private int shownCoins;
+        private bool controlsOn;
 
         public HudPresenter(HudView view, LevelSession session, Wallet wallet, int levelNumber, Action restart,
             Action pause)
@@ -32,6 +35,7 @@ namespace Game.Runtime
             view.SetLevel(levelNumber);
             ShowTime(TimerText.From(session.RemainingTime));
             ShowCoins(wallet.Coins);
+            ShowControls(session.State == GameState.Playing);
             view.RestartClicked += restart;
             view.PauseClicked += pause;
         }
@@ -45,6 +49,11 @@ namespace Game.Runtime
 
             if (wallet.Coins != shownCoins)
                 ShowCoins(wallet.Coins);
+
+            bool playing = session.State == GameState.Playing;
+
+            if (playing != controlsOn)
+                ShowControls(playing);
         }
 
         public void Dispose()
@@ -63,6 +72,12 @@ namespace Game.Runtime
         {
             shownCoins = coins;
             view.SetCoins(coins);
+        }
+
+        private void ShowControls(bool on)
+        {
+            controlsOn = on;
+            view.SetControlsOn(on);
         }
     }
 }

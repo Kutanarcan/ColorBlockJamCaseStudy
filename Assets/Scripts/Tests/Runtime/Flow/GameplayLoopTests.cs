@@ -19,6 +19,8 @@ namespace Game.Tests.Runtime
         private Sequencer flow;
         private GameplayLoop loop;
         private TestMeta meta;
+        private List<string> log;
+        private FakeStep winPanel;
 
         /// <summary>One block beside its door: a single move exits it and wins the level.</summary>
         [SetUp]
@@ -33,7 +35,9 @@ namespace Game.Tests.Runtime
             session = LevelSession.TryCreate(level).Value;
             block = (Block)session.Board.EntityAt(new Cell(1, 1));
 
-            exitStep = new FakeStep("Exit", new List<string>());
+            log = new List<string>();
+            exitStep = new FakeStep("Exit", log);
+            winPanel = new FakeStep("Win panel", log);
             exitSteps = new FakeExitSteps(exitStep);
             blocks = new FakeBlocksView();
             inputLock = new InputLock();
@@ -41,7 +45,8 @@ namespace Game.Tests.Runtime
             flow = new Sequencer();
 
             meta = new TestMeta(startCoins: 100, reward: 50);
-            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, 0f, meta.Completion);
+            var director = new GameplayDirector(exitSteps, inputLock, exits, flow, 0f, meta.Completion,
+                new Panels(winPanel, new FakeStep("Fail panel", log)));
             session.Observer = director;
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, new DragResolver(session),
                 new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
@@ -109,6 +114,36 @@ namespace Game.Tests.Runtime
             Assert.That(flow.IsIdle, Is.False, "precondition: the win popup is still waiting for the exit");
             Assert.That(meta.Wallet.Coins, Is.EqualTo(150), "the reward is in");
             Assert.That(meta.Progression.LevelNumber, Is.EqualTo(2), "the next level is set");
+        }
+
+        [Test]
+        public void Director_ShowsWin_AfterTheLastExitStep()
+        {
+            session.TryMove(block, Direction.Left);
+
+            Assert.That(log, Is.EqualTo(new[] { "Exit started" }), "the panel waits for the exit");
+
+            exitStep.Finish();
+
+            Assert.That(log, Is.EqualTo(new[] { "Exit started", "Win panel started" }));
+            Assert.That(inputLock.IsLocked, "the board stays locked under the panel");
+        }
+
+        /// <summary>The level-end panels as given steps.</summary>
+        private sealed class Panels : ILevelPanels
+        {
+            private readonly IStep win;
+            private readonly IStep fail;
+
+            public Panels(IStep win, IStep fail)
+            {
+                this.win = win;
+                this.fail = fail;
+            }
+
+            public IStep Win() => win;
+
+            public IStep Fail() => fail;
         }
     }
 }

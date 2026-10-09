@@ -35,8 +35,9 @@ namespace Game.Tests.Runtime
             var inputLock = new InputLock();
             exits = new Sequencer();
             flow = new Sequencer();
+            // No door: the level never ends here, so no panel is ever asked for.
             var director = new GameplayDirector(new FakeExitSteps(null), inputLock, exits, flow, 0f,
-                new TestMeta().Completion);
+                new TestMeta().Completion, null);
             session.Observer = director;
 
             var blocks = new FakeBlocksView();

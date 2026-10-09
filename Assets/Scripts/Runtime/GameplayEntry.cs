@@ -33,6 +33,7 @@ namespace Game.Runtime
         private readonly ModalLayer modals;
         private readonly GameplayPopups popups;
         private readonly Settings settings;
+        private readonly ILevelPanels panels;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -45,7 +46,7 @@ namespace Game.Runtime
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
             ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals,
-            GameplayPopups popups, Settings settings)
+            GameplayPopups popups, Settings settings, ILevelPanels panels)
         {
             this.assets = assets;
             this.levels = levels;
@@ -62,6 +63,7 @@ namespace Game.Runtime
             this.modals = modals;
             this.popups = popups;
             this.settings = settings;
+            this.panels = panels;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
@@ -167,7 +169,7 @@ namespace Game.Runtime
             var inputLock = new InputLock();
             var completion = new LevelCompletion(wallet, progression, config.Value.WinReward);
             var director = new GameplayDirector(exitSteps, inputLock, exits, flow, config.Value.WinPopupDelay,
-                completion);
+                completion, panels);
             session.Observer = director;
 
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
