@@ -23,6 +23,7 @@ namespace Game.Runtime
             builder.RegisterInstance(hud);
             builder.RegisterInstance<IModalLayerView>(modalLayer);
             builder.Register<ModalLayer>(Lifetime.Singleton);
+            builder.Register<PopupService>(Lifetime.Singleton).WithParameter<Transform>(modalLayer.transform);
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
             builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Popups
+  m_EditorClassIdentifier: 
+  m_GroupName: Popups
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f92fca27638d82a41873aaf61a219ce5
+  m_SerializeEntries:
+  - m_GUID: 3543e6f75ea180d4d9eb4767558ee235
+    m_Address: LoseLifePopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c182a5c66c3ecf343897827a5f67ecfc
+    m_Address: SettingsPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd26aabb58660e943a0c577e5f7ff4a0
+    m_Address: PlayPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 60b992dcacead6a4f938e548cfbd458a, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ba9c69693b5b5424e800860ad794040e, type: 2}
+    - {fileID: 11400000, guid: 1a875c0e3883c2a4e8626f378ece7106, type: 2}

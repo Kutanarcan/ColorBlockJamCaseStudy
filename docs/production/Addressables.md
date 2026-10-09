@@ -47,7 +47,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | `Main` | Home and settings content, the Main scene | the Main scope | Local | Pack Together | M2 |
 | `Gameplay` | The Gameplay scene; `PresentationAssets` and, through it, prefabs, meshes, materials and the palette | the Gameplay scope | Local | Pack Together | ✅ I3 (scene) · I4 (presentation) |
 | `Levels` | Level JSONs (`TextAsset`), `Level_1`–`Level_6` | the scope that loaded the level | **Remote** | **Pack Separately** | ✅ I3 |
-| `Popups` | Popup prefabs | the scope that opened the popup | Local | Pack Together | U2 |
+| `Popups` | Popup prefabs (`SettingsPopup`, `LoseLifePopup`, `PlayPopup`) | the scope that opened the popup | Local | Pack Together | U2.3 |
 
 **Why by lifetime:** loading one asset brings its whole bundle into memory, and the bundle stays until **every** asset loaded from it is released. Mixing Main and Gameplay assets in one bundle would keep Gameplay's bundle alive on Home. Grouped by lifetime, closing a scope really empties its bundles; I6 checks this with the Event Viewer.
 
@@ -68,6 +68,7 @@ A group is a **packing** unit: which assets share a bundle. Code never names a g
 | `Level_1` … `Level_6` | `Assets/Levels/Level_N.json` | `Levels` | `GameConfig.LevelKeys` (1–5 in play order; 6 only through the Level Editor), `SelectedLevel` |
 | `GameConfig` | `Assets/ScriptableObjects/Config/GameConfig.asset` | `Boot` | `GameConfig.Key` |
 | `LoadingCover` | `Assets/Prefabs/UI/LoadingCover.prefab` (the loading cover, made once on the first scene change) | `Boot` | `LoadedCover.Key` |
+| `SettingsPopup`, `LoseLifePopup`, `PlayPopup` | `Assets/Prefabs/UI/Popups/<key>.prefab` | `Popups` | `PopupKeys` (got through the scene scope's `PopupService`) |
 | `PresentationAssets` | `Assets/ScriptableObjects/Presentation/PresentationAssets.asset` (pulls in its prefabs, meshes, materials, palette, modifier views) | `Gameplay` | `PresentationAssets.Key` |
 
 ## 4. Loading & lifetime
@@ -175,6 +176,10 @@ Done by hand once (D115); the result is committed under `Assets/AddressableAsset
 14. Drag `Assets/ScriptableObjects/Config/GameConfig.asset` into it and set its key to `GameConfig` (or `Simplify Addressable Names`).
 15. Drag `Assets/ScriptableObjects/Presentation/PresentationAssets.asset` into `Gameplay`, key `PresentationAssets`. Its references come along as dependencies; do not add them one by one.
 
+**Popups group** (U2.3)
+16. Create `Popups` (`Create → Group → Packed Assets`). Paths: Local. Bundle mode: Pack Together.
+17. Drag `Assets/Prefabs/UI/Popups/SettingsPopup.prefab`, `LoseLifePopup.prefab` and `PlayPopup.prefab` into it, then `Simplify Addressable Names`: keys `SettingsPopup`, `LoseLifePopup`, `PlayPopup` (`PopupKeys`).
+
 **Play Mode Script** (Groups window → `Play Mode Script`) decides where Addressables takes assets from when you press Play in the Editor. Game code is the same in every mode; only the loading path underneath changes.
 
 | Script | Takes assets from | Use it for |
@@ -260,3 +265,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I5 | Every Editor Play starts from Bootstrap; Level Editor Play → `PlayRequest` → `SelectedLevel`; saved levels made addressable | ✅ |
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
 | U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ✅ |
+| U2.3 | `Popups` group; `PopupService` gets a popup by key through the scene scope's `AssetScope`, makes it once under the modal layer, released with the scope | ⏳ Editor check |
