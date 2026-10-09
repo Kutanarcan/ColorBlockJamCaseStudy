@@ -1,4 +1,5 @@
 using Game.Core;
+using Game.Meta;
 using Game.Runtime;
 using NUnit.Framework;
 using UnityEngine;
@@ -44,7 +45,7 @@ namespace Game.Tests.Runtime
             resolver = new DragResolver(session);
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, resolver,
                 new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
-            loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            loop = new GameplayLoop(session, director, drag, blocks, inputLock, new ContinuePrice(900, 1000));
         }
 
         [TearDown]

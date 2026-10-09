@@ -1,4 +1,5 @@
 using Game.Core;
+using Game.Meta;
 
 namespace Game.Runtime
 {
@@ -6,7 +7,7 @@ namespace Game.Runtime
     /// The level's lifecycle: ticks the session and the drag every frame, pauses (D70) and restarts (D71).
     /// Pause stops the session's ticks and locks input; <c>Time.timeScale</c> is never touched, so UI keeps animating.
     /// Restart cancels every step, drops the drag, rebuilds the views from the restarted session: nothing of the last
-    /// attempt stays.
+    /// attempt stays, and the next continue costs the base price again (D124).
     /// </summary>
     public sealed class GameplayLoop : ITickable, IPausable
     {
@@ -15,15 +16,17 @@ namespace Game.Runtime
         private readonly DragController drag;
         private readonly IBlocksView blocks;
         private readonly InputLock inputLock;
+        private readonly ContinuePrice continuePrice;
 
         public GameplayLoop(LevelSession session, GameplayDirector director, DragController drag, IBlocksView blocks,
-            InputLock inputLock)
+            InputLock inputLock, ContinuePrice continuePrice)
         {
             this.session = session;
             this.director = director;
             this.drag = drag;
             this.blocks = blocks;
             this.inputLock = inputLock;
+            this.continuePrice = continuePrice;
         }
 
         public bool IsPaused { get; private set; }
@@ -56,6 +59,7 @@ namespace Game.Runtime
             blocks.Clear();
             session.Restart();
             blocks.Build(session.Board);
+            continuePrice.Reset();
             Resume();
         }
     }

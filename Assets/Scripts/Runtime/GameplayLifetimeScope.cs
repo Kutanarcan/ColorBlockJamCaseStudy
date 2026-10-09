@@ -15,6 +15,7 @@ namespace Game.Runtime
         [SerializeField] private HudView hud;
         [SerializeField] private ModalLayerView modalLayer;
         [SerializeField] private LevelCompleteView levelComplete;
+        [SerializeField] private LevelFailView levelFail;
         [SerializeField] private DragSettings dragSettings = new DragSettings(0.3f, 0.1f, 0.3f);
         [SerializeField] private ExitSettings exitSettings = new ExitSettings(0.08f, 10f, 0.5f);
 
@@ -27,7 +28,8 @@ namespace Game.Runtime
             builder.Register<PopupService>(Lifetime.Singleton).WithParameter<Transform>(modalLayer.transform);
             builder.Register<GameplayPopups>(Lifetime.Singleton);
             builder.RegisterInstance(levelComplete);
-            builder.Register<GameplayPanels>(Lifetime.Singleton).As<ILevelPanels>();
+            builder.RegisterInstance(levelFail);
+            builder.Register<GameplayPanels>(Lifetime.Singleton).AsSelf().As<ILevelPanels>();
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
             builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();

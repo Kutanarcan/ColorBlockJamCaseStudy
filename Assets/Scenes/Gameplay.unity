@@ -3746,6 +3746,7 @@ MonoBehaviour:
   hud: {fileID: 1837960077}
   modalLayer: {fileID: 1200000002}
   levelComplete: {fileID: 380474053}
+  levelFail: {fileID: 1821966255}
   dragSettings:
     liftHeight: 0.3
     snapDuration: 0.1
@@ -6485,6 +6486,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1821966253}
   - component: {fileID: 1821966254}
+  - component: {fileID: 1821966255}
   m_Layer: 5
   m_Name: LevelFailPanel
   m_TagString: Untagged
@@ -6526,6 +6528,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1821966255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821966252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09e0b1c836cc3c24b9d661f0b5ca487c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  titleText: {fileID: 1279322409}
+  bonusText: {fileID: 673315664}
+  descriptionText: {fileID: 1576282651}
+  priceText: {fileID: 1837867231}
+  coinText: {fileID: 8615193004521835204}
+  icon: {fileID: 996913646}
+  continueButton: {fileID: 2081639340}
+  closeButton: {fileID: 2034353283}
+  priceColor: {r: 1, g: 1, b: 1, a: 1}
+  priceShortColor: {r: 1, g: 0, b: 0, a: 1}
+  outOfTime:
+    title: Out of Time!
+    icon: {fileID: 21300000, guid: bcbb1222172acbb419264079627e6eaa, type: 3}
+    description: Get {0} seconds to keep playing!
 --- !u!1 &1822569976
 GameObject:
   m_ObjectHideFlags: 0

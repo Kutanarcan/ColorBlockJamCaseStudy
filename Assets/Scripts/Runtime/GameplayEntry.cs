@@ -33,7 +33,7 @@ namespace Game.Runtime
         private readonly ModalLayer modals;
         private readonly GameplayPopups popups;
         private readonly Settings settings;
-        private readonly ILevelPanels panels;
+        private readonly GameplayPanels panels;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -46,7 +46,7 @@ namespace Game.Runtime
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
             ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals,
-            GameplayPopups popups, Settings settings, ILevelPanels panels)
+            GameplayPopups popups, Settings settings, GameplayPanels panels)
         {
             this.assets = assets;
             this.levels = levels;
@@ -174,11 +174,13 @@ namespace Game.Runtime
 
             var drag = new DragController(session, blocks, new MousePointerInput(cameraRig.SceneCamera), inputLock,
                 new DragResolver(session), dragSettings, sfx, outline);
-            loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            var continuePrice = new ContinuePrice(config.Value.ContinueBasePrice, config.Value.ContinuePriceStep);
+            loop = new GameplayLoop(session, director, drag, blocks, inputLock, continuePrice);
             // The level being played; a win moves progression on at once (D123).
             int levelNumber = progression.LevelNumber;
             modals.PauseWhileShown(loop);
             popups.PlayWith(loop, levelNumber);
+            panels.PlayWith(session, continuePrice);
             hud = new HudPresenter(hudView, session, wallet, levelNumber, popups.OpenRetry, popups.OpenSettings);
         }
 

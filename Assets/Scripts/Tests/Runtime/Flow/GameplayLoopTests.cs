@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Core;
+using Game.Meta;
 using Game.Runtime;
 using NUnit.Framework;
 
@@ -19,6 +20,7 @@ namespace Game.Tests.Runtime
         private Sequencer flow;
         private GameplayLoop loop;
         private TestMeta meta;
+        private ContinuePrice continuePrice;
         private List<string> log;
         private FakeStep winPanel;
 
@@ -50,7 +52,8 @@ namespace Game.Tests.Runtime
             session.Observer = director;
             var drag = new DragController(session, blocks, new FakePointerInput(), inputLock, new DragResolver(session),
                 new DragSettings(0f, 0f, 0.3f), new FakeSfxPlayer(), new FakeBlockSelection());
-            loop = new GameplayLoop(session, director, drag, blocks, inputLock);
+            continuePrice = new ContinuePrice(900, 1000);
+            loop = new GameplayLoop(session, director, drag, blocks, inputLock, continuePrice);
         }
 
         [TearDown]
@@ -77,6 +80,18 @@ namespace Game.Tests.Runtime
             Assert.That(session.Board.EntityAt(new Cell(1, 1)), Is.InstanceOf<Block>(), "the block is back");
             Assert.That(session.State, Is.EqualTo(GameState.Playing));
             Assert.That(inputLock.IsLocked, Is.False);
+        }
+
+        [Test]
+        public void Restart_PutsTheContinuePriceBackToItsBase()
+        {
+            var wallet = new TestMeta(startCoins: 5000).Wallet;
+            continuePrice.TryPay(wallet);
+            Assert.That(continuePrice.Current, Is.EqualTo(1900), "precondition: one continue paid");
+
+            loop.Restart();
+
+            Assert.That(continuePrice.Current, Is.EqualTo(900));
         }
 
         [Test]
