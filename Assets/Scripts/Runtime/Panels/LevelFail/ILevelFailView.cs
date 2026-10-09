@@ -10,6 +10,11 @@ namespace Game.Runtime
 
         event Action CloseClicked;
 
+        /// <summary>The hold area is pressed (hold to see the board, D138).</summary>
+        event Action HoldStarted;
+
+        event Action HoldEnded;
+
         /// <summary><paramref name="description"/> may hold <c>{0}</c>, the bonus seconds.</summary>
         void ShowContent(string title, Sprite icon, int bonusSeconds, string description);
 

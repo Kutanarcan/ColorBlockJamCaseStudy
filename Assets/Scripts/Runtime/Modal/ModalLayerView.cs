@@ -27,6 +27,9 @@ namespace Game.Runtime
         [SerializeField, Min(0f)] private float openDuration = 0.25f;
         [SerializeField, Min(0f)] private float closeDuration = 0.2f;
 
+        [Tooltip("Fade of the modal and the dim while the player looks through them (hold to see the board, D138).")]
+        [SerializeField, Min(0f)] private float seeThroughDuration = 0.2f;
+
         private int dimChanges;
         private DOGetter<float> getDimAlpha;
         private DOSetter<float> setDimAlpha;
@@ -87,6 +90,29 @@ namespace Game.Runtime
                 if (!on && change == dimChanges)
                     dim.gameObject.SetActive(false);
             }
+        }
+
+        public UniTask SeeThrough(RectTransform modal, bool through, CancellationToken cancellation)
+        {
+            modal.DOKill();
+            dim.DOKill();
+            CanvasGroup group = GroupOf(modal);
+
+            Tween panel = DOTween.To(() => group.alpha, alpha => group.alpha = alpha, through ? 0f : 1f,
+                    seeThroughDuration)
+                .SetEase(Ease.OutQuad)
+                .SetUpdate(true)
+                .SetTarget(modal)
+                .SetLink(modal.gameObject);
+            Tween shade = DOTween.To(getDimAlpha, setDimAlpha, through ? 0f : dimAlpha, seeThroughDuration)
+                .SetEase(Ease.OutQuad)
+                .SetUpdate(true)
+                .SetTarget(dim)
+                .SetLink(dim.gameObject);
+
+            return UniTask.WhenAll(
+                panel.ToUniTask(TweenCancelBehaviour.CompleteAndCancelAwait, cancellation),
+                shade.ToUniTask(TweenCancelBehaviour.CompleteAndCancelAwait, cancellation));
         }
 
         private void Awake()

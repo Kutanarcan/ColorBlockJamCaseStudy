@@ -21,5 +21,8 @@ namespace Game.Runtime
 
         /// <summary>Fades the full-screen dim in or out; while in, it blocks the UI behind it.</summary>
         UniTask Dim(bool on, CancellationToken cancellation);
+
+        /// <summary>Fades the shown modal and the dim out to show what is behind them, or back in (D138).</summary>
+        UniTask SeeThrough(RectTransform modal, bool through, CancellationToken cancellation);
     }
 }

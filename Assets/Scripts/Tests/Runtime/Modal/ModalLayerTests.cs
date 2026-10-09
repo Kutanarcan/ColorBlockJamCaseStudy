@@ -71,6 +71,19 @@ namespace Game.Tests.Runtime
             Assert.That(view.Log[view.Log.Count - 1], Is.EqualTo("resume"), "Play restarts once the modal is gone.");
         }
 
+        [Test]
+        public void ModalLayer_SeesThroughTheShownModal_AndIgnoresAnEmptySlot()
+        {
+            Play(layer.SeeThrough(true));
+            Play(layer.Open(first));
+            view.Log.Clear();
+
+            Play(layer.SeeThrough(true));
+            Play(layer.SeeThrough(false));
+
+            Assert.That(view.Log, Is.EqualTo(new[] { "see through A on", "see through A off" }));
+        }
+
         private static void Play(IStep step) => step.Play(CancellationToken.None).GetAwaiter().GetResult();
     }
 }

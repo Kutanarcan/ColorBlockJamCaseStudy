@@ -71,6 +71,8 @@ namespace Game.Runtime
         // The Play popup (Retry) takes the panel's place in the modal slot (U5.4); play stays paused.
         void ILevelFailActions.Close() => popups.OpenPlay();
 
+        void ILevelFailActions.SeeBoard(bool seen) => modals.SeeThrough(seen).Play(life.Token).Forget();
+
         public void Dispose()
         {
             life.Cancel();

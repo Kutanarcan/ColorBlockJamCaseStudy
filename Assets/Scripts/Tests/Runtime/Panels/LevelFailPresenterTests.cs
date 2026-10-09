@@ -54,6 +54,15 @@ namespace Game.Tests.Runtime
         }
 
         [Test]
+        public void FailPresenter_ShowsTheBoard_WhileTheHoldAreaIsHeld()
+        {
+            view.Hold();
+            view.Release();
+
+            Assert.That(actions.Log, Is.EqualTo(new[] { "see board on", "see board off" }));
+        }
+
+        [Test]
         public void FailPresenter_HandsTheCloseToItsPlace()
         {
             view.PressClose();

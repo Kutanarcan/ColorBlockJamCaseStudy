@@ -21,6 +21,7 @@ namespace Game.Runtime
         [SerializeField] private Image icon;
         [SerializeField] private PressButton continueButton;
         [SerializeField] private PressButton closeButton;
+        [SerializeField] private HoldArea holdArea;
         [SerializeField] private Color priceColor = Color.white;
         [SerializeField] private Color priceShortColor = Color.red;
 
@@ -39,6 +40,18 @@ namespace Game.Runtime
         {
             add => closeButton.Clicked += value;
             remove => closeButton.Clicked -= value;
+        }
+
+        public event Action HoldStarted
+        {
+            add => holdArea.Held += value;
+            remove => holdArea.Held -= value;
+        }
+
+        public event Action HoldEnded
+        {
+            add => holdArea.Released += value;
+            remove => holdArea.Released -= value;
         }
 
         public void ShowContent(string title, Sprite iconSprite, int bonusSeconds, string description)

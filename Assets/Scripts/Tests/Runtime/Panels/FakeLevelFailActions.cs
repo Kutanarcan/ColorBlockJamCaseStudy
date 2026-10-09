@@ -3,7 +3,7 @@ using Game.Runtime;
 
 namespace Game.Tests.Runtime
 {
-    /// <summary>Does nothing; writes "continue N" and "close" to a log, in call order.</summary>
+    /// <summary>Does nothing; writes "continue N", "close" and "see board on / off" to a log, in call order.</summary>
     internal sealed class FakeLevelFailActions : ILevelFailActions
     {
         public List<string> Log { get; } = new List<string>();
@@ -11,5 +11,7 @@ namespace Game.Tests.Runtime
         public void Continue(int seconds) => Log.Add("continue " + seconds);
 
         public void Close() => Log.Add("close");
+
+        public void SeeBoard(bool seen) => Log.Add(seen ? "see board on" : "see board off");
     }
 }

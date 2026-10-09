@@ -22,6 +22,13 @@ namespace Game.Tests.Runtime
             return UniTask.CompletedTask;
         }
 
+        public UniTask SeeThrough(RectTransform modal, bool through, CancellationToken cancellation)
+        {
+            Log.Add("see through " + modal.name + (through ? " on" : " off"));
+
+            return UniTask.CompletedTask;
+        }
+
         public UniTask Dim(bool on, CancellationToken cancellation)
         {
             Log.Add(on ? "dim on" : "dim off");

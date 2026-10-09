@@ -27,6 +27,9 @@ namespace Game.Runtime
 
         public IStep Close(bool resume) => new CloseStep(this, resume);
 
+        /// <summary>Fades the shown modal and the dim out to show what is behind them, or back in (D138).</summary>
+        public IStep SeeThrough(bool through) => new SeeThroughStep(this, through);
+
         /// <summary>The play to pause while a modal is shown; set once the scene has built it.</summary>
         public void PauseWhileShown(IPausable pausable) => play = pausable;
 
@@ -71,6 +74,9 @@ namespace Game.Runtime
                 play?.Resume();
         }
 
+        private UniTask SeeThroughAsync(bool through, CancellationToken cancellation) =>
+            current == null ? UniTask.CompletedTask : view.SeeThrough(current, through, cancellation);
+
         private sealed class OpenStep : IStep
         {
             private readonly ModalLayer layer;
@@ -97,6 +103,20 @@ namespace Game.Runtime
             }
 
             public UniTask Play(CancellationToken cancellation) => layer.CloseAsync(resume, cancellation);
+        }
+
+        private sealed class SeeThroughStep : IStep
+        {
+            private readonly ModalLayer layer;
+            private readonly bool through;
+
+            public SeeThroughStep(ModalLayer layer, bool through)
+            {
+                this.layer = layer;
+                this.through = through;
+            }
+
+            public UniTask Play(CancellationToken cancellation) => layer.SeeThroughAsync(through, cancellation);
         }
     }
 }

@@ -11,6 +11,10 @@ namespace Game.Tests.Runtime
 
         public event Action CloseClicked;
 
+        public event Action HoldStarted;
+
+        public event Action HoldEnded;
+
         public string Title { get; private set; }
 
         public int Bonus { get; private set; }
@@ -38,5 +42,9 @@ namespace Game.Tests.Runtime
         public void PressContinue() => ContinueClicked?.Invoke();
 
         public void PressClose() => CloseClicked?.Invoke();
+
+        public void Hold() => HoldStarted?.Invoke();
+
+        public void Release() => HoldEnded?.Invoke();
     }
 }
