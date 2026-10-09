@@ -154,6 +154,7 @@ namespace Game.Runtime
 
             return DOTween.To(getLocalPosition, setLocalPosition, boardPosition - home, duration)
                 .SetTarget(Root)
+                .SetLink(Root.gameObject)
                 .SetRecyclable(true);
         }
 

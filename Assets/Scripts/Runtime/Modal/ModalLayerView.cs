@@ -10,9 +10,10 @@ namespace Game.Runtime
     /// <summary>
     /// The modal layer's look, on <c>UIRoot</c>'s <c>ModalLayer</c> (D135). The dim is the layer's first child and
     /// fills the whole screen, notch included (no <c>SafeArea</c>); while on, its raycast blocks the UI behind it. A
-    /// modal opens by scaling up from <see cref="closedScale"/> and closes by scaling back, on unscaled time. A
-    /// cancelled tween jumps to its end, so the layer never stays half open. Opening a modal is rare, so its tweens are
-    /// not recycled.
+    /// modal opens by scaling up from <see cref="closedScale"/> while it fades in, and closes by shrinking back while
+    /// it fades out, so it is gone before it is turned off; all on unscaled time. The fade is the modal root's
+    /// <see cref="CanvasGroup"/>, added when the root has none. A cancelled tween jumps to its end, so the layer never
+    /// stays half open. Opening a modal is rare, so its tweens are not recycled.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ModalLayerView : MonoBehaviour, IModalLayerView
@@ -24,7 +25,7 @@ namespace Game.Runtime
         [SerializeField, Min(0f)] private float dimDuration = 0.2f;
         [SerializeField, Range(0.5f, 1f)] private float closedScale = 0.85f;
         [SerializeField, Min(0f)] private float openDuration = 0.25f;
-        [SerializeField, Min(0f)] private float closeDuration = 0.15f;
+        [SerializeField, Min(0f)] private float closeDuration = 0.2f;
 
         private int dimChanges;
         private DOGetter<float> getDimAlpha;
@@ -35,6 +36,7 @@ namespace Game.Runtime
             modal.DOKill();
             modal.SetAsLastSibling();
             modal.localScale = new Vector3(closedScale, closedScale, 1f);
+            GroupOf(modal).alpha = 0f;
             modal.gameObject.SetActive(true);
         }
 
@@ -43,15 +45,23 @@ namespace Game.Runtime
             modal.DOKill();
             modal.gameObject.SetActive(false);
             modal.localScale = Vector3.one;
+            GroupOf(modal).alpha = 1f;
         }
 
         public UniTask Pop(RectTransform modal, bool open, CancellationToken cancellation)
         {
             modal.DOKill();
 
-            return modal.DOScale(open ? 1f : closedScale, open ? openDuration : closeDuration)
-                .SetEase(open ? Ease.OutBack : Ease.InQuad)
+            CanvasGroup group = GroupOf(modal);
+            float duration = open ? openDuration : closeDuration;
+
+            return DOTween.Sequence()
+                .Join(modal.DOScale(open ? 1f : closedScale, duration).SetEase(open ? Ease.OutBack : Ease.InQuad))
+                .Join(DOTween.To(() => group.alpha, alpha => group.alpha = alpha, open ? 1f : 0f, duration)
+                    .SetEase(open ? Ease.OutQuad : Ease.InQuad))
                 .SetUpdate(true)
+                .SetTarget(modal)
+                .SetLink(modal.gameObject)
                 .ToUniTask(TweenCancelBehaviour.CompleteAndCancelAwait, cancellation);
         }
 
@@ -69,6 +79,7 @@ namespace Game.Runtime
                 await DOTween.To(getDimAlpha, setDimAlpha, on ? dimAlpha : 0f, dimDuration)
                     .SetUpdate(true)
                     .SetTarget(dim)
+                    .SetLink(dim.gameObject)
                     .ToUniTask(TweenCancelBehaviour.CompleteAndCancelAwait, cancellation);
             }
             finally
@@ -87,6 +98,9 @@ namespace Game.Runtime
         }
 
         private void OnDestroy() => dim.DOKill();
+
+        private static CanvasGroup GroupOf(RectTransform modal) =>
+            modal.TryGetComponent(out CanvasGroup group) ? group : modal.gameObject.AddComponent<CanvasGroup>();
 
         private float GetDimAlpha() => dim.color.a;
 

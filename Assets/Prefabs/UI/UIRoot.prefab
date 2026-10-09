@@ -293,7 +293,7 @@ MonoBehaviour:
   dimDuration: 0.2
   closedScale: 0.85
   openDuration: 0.25
-  closeDuration: 0.15
+  closeDuration: 0.2
 --- !u!1 &7100000000000000051
 GameObject:
   m_ObjectHideFlags: 0

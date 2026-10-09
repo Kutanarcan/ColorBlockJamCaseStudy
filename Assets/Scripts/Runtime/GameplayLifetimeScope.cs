@@ -24,6 +24,7 @@ namespace Game.Runtime
             builder.RegisterInstance<IModalLayerView>(modalLayer);
             builder.Register<ModalLayer>(Lifetime.Singleton);
             builder.Register<PopupService>(Lifetime.Singleton).WithParameter<Transform>(modalLayer.transform);
+            builder.Register<GameplayPopups>(Lifetime.Singleton);
             builder.RegisterInstance(dragSettings);
             builder.RegisterInstance(exitSettings);
             builder.RegisterEntryPoint<GameplayEntry>().WithParameter(transform).AsSelf();

@@ -219,6 +219,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5619333788100511011}
   - component: {fileID: 4619996107717083189}
+  - component: {fileID: 6910285626529045677}
   m_Layer: 5
   m_Name: SoundToggle
   m_TagString: Untagged
@@ -265,6 +266,28 @@ MonoBehaviour:
   pressedScale: 0.92
   pressDuration: 0.06
   releaseDuration: 0.12
+--- !u!114 &6910285626529045677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 311269820321870407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24c9e85c2d15d0d45a72682cf51cee7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  button: {fileID: 4619996107717083189}
+  track: {fileID: 7098694224298770812}
+  knob: {fileID: 7615476272784418119}
+  onSprite: {fileID: 21300000, guid: f0981ff7765a54e4c980463c205846be, type: 3}
+  offSprite: {fileID: 21300000, guid: 25a4c24e4de85774aa4ce9cb787ba294, type: 3}
+  onColor: {r: 0.18, g: 0.67, b: 0, a: 1}
+  offColor: {r: 1, g: 1, b: 1, a: 1}
+  onX: 58
+  offX: -75
+  slideDuration: 0.3
 --- !u!1 &358768840243982245
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,13 +511,14 @@ GameObject:
   m_Component:
   - component: {fileID: 2114786338407264529}
   - component: {fileID: 8311346423470007017}
+  - component: {fileID: 2123173270007229264}
   m_Layer: 5
   m_Name: SettingsPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2114786338407264529
 RectTransform:
   m_ObjectHideFlags: 0
@@ -527,6 +551,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7ba3b5c5efa94847baa9280e3165555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2123173270007229264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 573366731366517019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7850d3e3f49ae0343b558847f2d2bbe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vibration: {fileID: 7430070740810114051}
+  sound: {fileID: 6910285626529045677}
+  music: {fileID: 4725171306559879369}
+  homeButton: {fileID: 8954421316936262536}
+  closeButton: {fileID: 3764537835279966685}
 --- !u!1 &606182906140923130
 GameObject:
   m_ObjectHideFlags: 0
@@ -647,6 +688,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4164307766962002783}
   - component: {fileID: 5652241813314515784}
+  - component: {fileID: 4725171306559879369}
   m_Layer: 5
   m_Name: MusicToggle
   m_TagString: Untagged
@@ -693,6 +735,28 @@ MonoBehaviour:
   pressedScale: 0.92
   pressDuration: 0.06
   releaseDuration: 0.12
+--- !u!114 &4725171306559879369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 644283703494350049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24c9e85c2d15d0d45a72682cf51cee7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  button: {fileID: 5652241813314515784}
+  track: {fileID: 6816843474778442892}
+  knob: {fileID: 8242094247055129417}
+  onSprite: {fileID: 21300000, guid: f0981ff7765a54e4c980463c205846be, type: 3}
+  offSprite: {fileID: 21300000, guid: 25a4c24e4de85774aa4ce9cb787ba294, type: 3}
+  onColor: {r: 0.18, g: 0.67, b: 0, a: 1}
+  offColor: {r: 1, g: 1, b: 1, a: 1}
+  onX: 58
+  offX: -75
+  slideDuration: 0.3
 --- !u!1 &654474570615339181
 GameObject:
   m_ObjectHideFlags: 0
@@ -3331,6 +3395,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9049434409543082866}
   - component: {fileID: 5896631027090622165}
+  - component: {fileID: 7430070740810114051}
   m_Layer: 5
   m_Name: VibrationToggle
   m_TagString: Untagged
@@ -3377,6 +3442,28 @@ MonoBehaviour:
   pressedScale: 0.92
   pressDuration: 0.06
   releaseDuration: 0.12
+--- !u!114 &7430070740810114051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7371849289206206309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24c9e85c2d15d0d45a72682cf51cee7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  button: {fileID: 5896631027090622165}
+  track: {fileID: 1721082281454131227}
+  knob: {fileID: 6530259353998215820}
+  onSprite: {fileID: 21300000, guid: f0981ff7765a54e4c980463c205846be, type: 3}
+  offSprite: {fileID: 21300000, guid: 25a4c24e4de85774aa4ce9cb787ba294, type: 3}
+  onColor: {r: 0.18, g: 0.67, b: 0, a: 1}
+  offColor: {r: 1, g: 1, b: 1, a: 1}
+  onX: 58
+  offX: -75
+  slideDuration: 0.3
 --- !u!1 &7437321978732286770
 GameObject:
   m_ObjectHideFlags: 0

@@ -65,7 +65,8 @@ namespace Game.Runtime
             return DOTween.To(getAlpha, setAlpha, alpha, duration)
                 .SetEase(Ease.Linear)
                 .SetUpdate(true)
-                .SetTarget(group);
+                .SetTarget(group)
+                .SetLink(group.gameObject);
         }
 
         private float GetAlpha() => group.alpha;

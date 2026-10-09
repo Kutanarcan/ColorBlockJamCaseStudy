@@ -31,6 +31,8 @@ namespace Game.Runtime
         private readonly ILoadingCover cover;
         private readonly HudView hudView;
         private readonly ModalLayer modals;
+        private readonly GameplayPopups popups;
+        private readonly Settings settings;
         private readonly Sequencer exits = new Sequencer();
         private readonly Sequencer flow = new Sequencer();
         private PresentationAssets presentation;
@@ -42,7 +44,8 @@ namespace Game.Runtime
 
         public GameplayEntry(IAssetLoader assets, ILevelSource levels, LoadedConfig config, SelectedLevel selected,
             Wallet wallet, Progression progression, CameraRig cameraRig, DragSettings dragSettings,
-            ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals)
+            ExitSettings exitSettings, Transform root, ILoadingCover cover, HudView hudView, ModalLayer modals,
+            GameplayPopups popups, Settings settings)
         {
             this.assets = assets;
             this.levels = levels;
@@ -57,6 +60,8 @@ namespace Game.Runtime
             this.cover = cover;
             this.hudView = hudView;
             this.modals = modals;
+            this.popups = popups;
+            this.settings = settings;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation = default)
@@ -153,7 +158,7 @@ namespace Game.Runtime
 
         private void WirePlay(LevelSession session, BlocksView blocks)
         {
-            var sfx = new AudioSfxPlayer(root.gameObject.AddComponent<AudioSource>(), presentation);
+            var sfx = new AudioSfxPlayer(root.gameObject.AddComponent<AudioSource>(), presentation, settings);
             var burst = new ExitBurst(presentation.ExitParticles, materials, presentation.Palette.Count,
                 NewRoot("ExitParticles", true), Environment.TickCount);
             var exitSteps = new ExitSteps(blocks, burst, sfx, exitSettings);
@@ -169,16 +174,8 @@ namespace Game.Runtime
                 new DragResolver(session), dragSettings, sfx, outline);
             loop = new GameplayLoop(session, director, drag, blocks, inputLock);
             modals.PauseWhileShown(loop);
-            hud = new HudPresenter(hudView, session, wallet, progression.LevelNumber, loop.Restart, TogglePause);
-        }
-
-        // Until the Settings popup pauses and resumes (U2).
-        private void TogglePause()
-        {
-            if (loop.IsPaused)
-                loop.Resume();
-            else
-                loop.Pause();
+            hud = new HudPresenter(hudView, session, wallet, progression.LevelNumber, loop.Restart,
+                popups.OpenSettings);
         }
 
         private Transform NewRoot(string name, bool active)

@@ -107,6 +107,7 @@ namespace Game.Runtime
                 .SetEase(ease)
                 .SetUpdate(true)
                 .SetTarget(target)
+                .SetLink(target.gameObject)
                 .SetRecyclable(true);
         }
 
