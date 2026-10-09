@@ -19,5 +19,7 @@ namespace Game.Tests.Runtime
         public void Clear() => Calls.Add("clear");
 
         public BlockView ViewOf(Block block) => null;
+
+        public void RefreshLooks() => Calls.Add("refresh looks");
     }
 }

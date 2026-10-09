@@ -45,7 +45,8 @@ namespace Game.Runtime
 
         public void OnBlockExited(Block block, Direction direction) => exits.Run(exitSteps.For(block, direction));
 
-        // Ice's melt and count updates are P2.4 follow-ups; nothing adds or removes a look here yet.
+        // Ice's count and its melt (the removal) show through the looks refreshed as each exiting block lands
+        // (RefreshLooksStep), at the crunch rather than here, before the exit has played.
         public void OnModifierAdded(Entity entity, IModifier modifier) { }
 
         public void OnModifierRemoved(Entity entity, IModifier modifier) { }

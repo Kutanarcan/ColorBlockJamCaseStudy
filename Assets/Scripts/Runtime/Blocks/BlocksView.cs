@@ -6,7 +6,8 @@ namespace Game.Runtime
 {
     /// <summary>
     /// Builds a <see cref="BlockView"/> for every block on the board: parts from the pool with their mesh swapped
-    /// (D99), the block's palette material, and each modifier's look through its presenter (D104).
+    /// (D99), the block's palette material, and each modifier's look through its presenter (D104); the looks that
+    /// change with the logic are kept to be refreshed.
     /// Keeps the views by entity id so the drag and the exits can reach a block's view; a restart clears and rebuilds.
     /// </summary>
     public sealed class BlocksView : IBlocksView
@@ -19,6 +20,7 @@ namespace Game.Runtime
         private readonly HashSet<Cell> cellBuffer = new HashSet<Cell>();
         private readonly List<BlockPart> partBuffer = new List<BlockPart>();
         private readonly MaterialPropertyBlock propertyBuffer = new MaterialPropertyBlock();
+        private readonly List<IModifierLook> looks = new List<IModifierLook>();
         private BlockView[] views;
 
         public BlocksView(Transform root, PresentationAssets assets, PaletteMaterials materials, PiecePool parts,
@@ -44,6 +46,8 @@ namespace Game.Runtime
 
         public void Clear()
         {
+            looks.Clear();
+
             if (views == null)
                 return;
 
@@ -55,6 +59,12 @@ namespace Game.Runtime
         }
 
         public BlockView ViewOf(Block block) => views[block.Id];
+
+        public void RefreshLooks()
+        {
+            for (int i = 0; i < looks.Count; i++)
+                looks[i].Refresh();
+        }
 
         private BlockView BuildBlock(Block block)
         {
@@ -96,7 +106,10 @@ namespace Game.Runtime
             for (int i = 0; i < block.ModifierCount; i++)
             {
                 IModifier modifier = block.GetModifier(i);
-                presenters.Find(modifier)?.Show(view, block, modifier);
+                IModifierLook look = presenters.Find(modifier)?.Show(view, block, modifier);
+
+                if (look != null)
+                    looks.Add(look);
             }
         }
     }

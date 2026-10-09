@@ -79,7 +79,7 @@ A new field kind (float, bool, cell, list) is not part of this recipe: it follow
 ### 2.5 Its look (V2)
 A modifier without a look still plays; it is simply not drawn. To give it one ([ProductionV2 D104](ProductionV2.md#-14-decision-log)), in `Runtime/Modifiers/<Mechanic>/`:
 1. **View** (`MonoBehaviour`, dumb): setters in Unity terms only, no `Game.Core` reference. Its prefab is a kit prefab or a small prefab of its own.
-2. **Presenter** (pure C#, `IModifierPresenter`): `Accepts` checks the modifier's type; `Show` reads the modifier and the block and calls the view.
+2. **Presenter** (pure C#, `IModifierPresenter`): `Accepts` checks the modifier's type; `Show` reads the modifier and the block, calls the view and returns an `IModifierLook` when the look changes during the level (Ice's count: `IceLook`, refreshed after each exit), else `null` (Arrow).
 3. **Register:** one line in `ModifierPresenters.Default()` and one view field in `ModifierViews`, then assign the prefab in the asset.
 
 These two lines are the presentation's accepted growth, like the catalog line in §2.2.

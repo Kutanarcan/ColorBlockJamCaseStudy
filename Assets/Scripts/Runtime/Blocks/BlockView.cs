@@ -76,6 +76,19 @@ namespace Game.Runtime
             }
         }
 
+        /// <summary>The block wears its own color again (the ice melted).</summary>
+        public void ResetSurface()
+        {
+            buffer.Clear();
+            buffer.SetColor(ColorId, color);
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                parts[i].SetMaterial(material);
+                parts[i].Renderer.SetPropertyBlock(buffer);
+            }
+        }
+
         /// <summary>
         /// Cuts the block and what is attached to it at a world plane (Game/Block shader). The parts keep their color;
         /// attached views (the arrow) keep their own material's.

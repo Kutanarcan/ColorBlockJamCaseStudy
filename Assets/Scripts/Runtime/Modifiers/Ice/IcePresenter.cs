@@ -4,7 +4,8 @@ namespace Game.Runtime
 {
     /// <summary>
     /// Reads Ice from the logic and drives its dumb view (D104): the block wears the ice surface and the remaining
-    /// exit count sits on the block's anchor cell. The only place that knows how Ice keeps its count.
+    /// exit count sits on the block's anchor cell; the returned look follows the count as exits wear it down. The only
+    /// place that knows how Ice keeps its count.
     /// </summary>
     public sealed class IcePresenter : IModifierPresenter
     {
@@ -14,7 +15,7 @@ namespace Game.Runtime
 
         public bool Accepts(IModifier modifier) => modifier is Ice;
 
-        public void Show(BlockView view, Block block, IModifier modifier)
+        public IModifierLook Show(BlockView view, Block block, IModifier modifier)
         {
             var ice = (Ice)modifier;
             IceView iceView = view.Attach(prefab);
@@ -22,6 +23,8 @@ namespace Game.Runtime
             view.SetSurface(iceView.Surface);
             iceView.Place(BoardLayout.CellCenter(BlockAnchor.Of(block)));
             iceView.SetCount(ice.Durability.Remaining);
+
+            return new IceLook(iceView, ice, view.ResetSurface);
         }
     }
 }

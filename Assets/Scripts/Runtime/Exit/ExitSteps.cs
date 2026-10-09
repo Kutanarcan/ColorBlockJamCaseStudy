@@ -12,6 +12,7 @@ namespace Game.Runtime
         private readonly ExitBurst burst;
         private readonly ISfxPlayer sfx;
         private readonly ExitSettings settings;
+        private readonly RefreshLooksStep refreshLooks;
 
         public ExitSteps(IBlocksView blocks, ExitBurst burst, ISfxPlayer sfx, ExitSettings settings)
         {
@@ -19,6 +20,7 @@ namespace Game.Runtime
             this.burst = burst;
             this.sfx = sfx;
             this.settings = settings;
+            refreshLooks = new RefreshLooksStep(blocks, settings.SnapDuration);
         }
 
         public IStep For(Block block, Direction direction)
@@ -26,7 +28,8 @@ namespace Game.Runtime
             var path = new ExitPath(block, direction, settings.ClipOffset);
             var view = new BlockExitView(blocks.ViewOf(block), burst, path, Colors.Of(block));
 
-            return new ExitStep(view, path, settings, sfx);
+            // The looks the exit changed (Ice's count) update as the block lands in the door, with the crunch.
+            return new StepGroup(new ExitStep(view, path, settings, sfx), refreshLooks);
         }
 
         public void ClearEffects() => burst.Clear();

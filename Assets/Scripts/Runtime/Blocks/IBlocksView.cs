@@ -11,5 +11,8 @@ namespace Game.Runtime
         void Clear();
 
         BlockView ViewOf(Block block);
+
+        /// <summary>Every modifier look reads its modifier again and shows what changed (Ice's count).</summary>
+        void RefreshLooks();
     }
 }
