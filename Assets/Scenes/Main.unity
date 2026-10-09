@@ -122,6 +122,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &1521173293 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5808712236650189743, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+  m_PrefabInstance: {fileID: 2200000001}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f2a216024a655b4e9ab47dec3755e0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,6 +260,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2100000003}
     m_Modifications:
+    - target: {fileID: 3647936088250825360, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3647936088250825360, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3647936088250825360, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7449968035351014881, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7449968035351014881, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7449968035351014881, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8190914889455610699, guid: 5180e5f8a1002de47aa0f10f8f04e547, type: 3}
       propertyPath: m_Name
       value: MainMenu
@@ -311,6 +346,7 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  home: {fileID: 1521173293}
   modalLayer: {fileID: 2100000002}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

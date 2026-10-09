@@ -271,4 +271,4 @@ Bootstrap scene ── RootLifetimeScope (RootInstaller)
 | I6 | Profiler round trip (§10), first APK; `RootLifetimeScope` unload / load hooks | ✅ |
 | U0.4 | `LoadingCover` prefab in `Boot`, made by `LoadedCover` on the first scene change; `CoveredSceneLoader` shows it before every change | ✅ |
 | U2.3 | `Popups` group; `PopupService` gets a popup by key through the scene scope's `AssetScope`, makes it once under the modal layer, released with the scope | ✅ |
-| M2.1 | `Main` group and scene; the bootstrapper opens the start's `FirstScene` (game: `Main`, level test: `Gameplay`) | ⏳ Editor check |
+| M2.1 | `Main` group and scene; the bootstrapper opens the start's `FirstScene` (game: `Main`, level test: `Gameplay`) | ✅ |

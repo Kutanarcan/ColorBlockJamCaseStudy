@@ -11,13 +11,16 @@ namespace Game.Runtime
     /// </summary>
     public sealed class MainLifetimeScope : LifetimeScope
     {
+        [SerializeField] private HomeView home;
         [SerializeField] private ModalLayerView modalLayer;
 
         protected override void Configure(IContainerBuilder builder)
         {
+            builder.RegisterInstance(home);
             builder.RegisterInstance<IModalLayerView>(modalLayer);
             builder.Register<ModalLayer>(Lifetime.Singleton);
             builder.Register<PopupService>(Lifetime.Singleton).WithParameter<Transform>(modalLayer.transform);
+            builder.Register<HomePopups>(Lifetime.Singleton);
             builder.RegisterEntryPoint<MainEntry>();
         }
     }
