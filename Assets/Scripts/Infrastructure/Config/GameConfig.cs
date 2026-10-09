@@ -19,6 +19,13 @@ namespace Game.Infrastructure
         [Tooltip("Seconds between the last exit finishing and the win popup (D89).")]
         [SerializeField, Min(0f)] private float winPopupDelay = 0.5f;
 
+        [Header("Timer")]
+        [Tooltip("Below this many seconds the HUD timer beats every second (D143).")]
+        [SerializeField, Min(0)] private int timerWarningSeconds = 60;
+
+        [Tooltip("From this many seconds down every beat also flashes red (D143). Not above the warning time.")]
+        [SerializeField, Min(0)] private int timerCriticalSeconds = 10;
+
         [Header("Economy")]
         [Tooltip("Coins a new player starts with.")]
         [SerializeField, Min(0)] private int startCoins = 1000;
@@ -38,6 +45,10 @@ namespace Game.Infrastructure
         public IReadOnlyList<string> LevelKeys => levelKeys;
 
         public float WinPopupDelay => winPopupDelay;
+
+        public int TimerWarningSeconds => timerWarningSeconds;
+
+        public int TimerCriticalSeconds => timerCriticalSeconds;
 
         public int StartCoins => startCoins;
 

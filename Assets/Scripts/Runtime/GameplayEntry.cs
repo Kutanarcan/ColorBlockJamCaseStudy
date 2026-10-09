@@ -186,7 +186,9 @@ namespace Game.Runtime
             modals.PauseWhileShown(loop);
             popups.PlayWith(loop, levelNumber);
             panels.PlayWith(session, continuePrice);
-            hud = new HudPresenter(hudView, session, wallet, levelNumber, popups.OpenRetry, popups.OpenSettings);
+            var timerAlarm = new TimerAlarm(config.Value.TimerWarningSeconds, config.Value.TimerCriticalSeconds);
+            hud = new HudPresenter(hudView, session, wallet, levelNumber, timerAlarm, popups.OpenRetry,
+                popups.OpenSettings);
         }
 
         private Transform NewRoot(string name, bool active)

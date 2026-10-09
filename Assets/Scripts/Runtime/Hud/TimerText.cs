@@ -18,6 +18,8 @@ namespace Game.Runtime
             Seconds = totalSeconds % 60;
         }
 
+        public int TotalSeconds => Minutes * 60 + Seconds;
+
         public static TimerText From(float remainingSeconds) =>
             new TimerText(remainingSeconds > 0f ? (int)Math.Ceiling(remainingSeconds) : 0);
 
